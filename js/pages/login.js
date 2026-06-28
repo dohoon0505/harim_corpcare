@@ -125,11 +125,6 @@ export function mount(root, { nav }) {
                     계열사 담당자 가입
                   </button>
                 </div>
-
-                <p class="auth__help">
-                  로그인에 문제가 있으신가요?
-                  <button type="button" class="auth__help-link">고객센터 문의</button>
-                </p>
               </div>
             </div>
           </div>

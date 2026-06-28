@@ -316,22 +316,6 @@
   background: var(--c-bg);
   border-color: var(--c-border-input-2);
 }
-.auth__help {
-  text-align: center;
-  font-size: var(--fs-11);
-  color: #ccc;
-  margin-top: 20px;
-  line-height: 1.6;
-}
-.auth__help-link {
-  color: var(--c-text-faint);
-  text-decoration: underline;
-  text-underline-offset: 2px;
-  transition: color 0.15s;
-}
-.auth__help-link:hover {
-  color: var(--c-text-3);
-}
 
 /* ── Responsive: show brand panel ≥1024px, hide mobile bits ── */
 @media (min-width: 1024px) {
