@@ -14,20 +14,20 @@ import { pageTitle, simpleModal } from "../ui.js";
 const INVOICE_DATA = {
   title: "26년 04월 거래명세서",
   period: "2026년 04월 귀속",
-  buyer: { address: "서울 중구 퇴계로 100 스테이트타워 남산 3층 (주)올해의경조사", company: "주식회사 싱크플로", bizNumber: "680-87-02988", ceo: "홍길동", summary: "꽃배달 이용료 청구", issueDate: "2026년 05월 01일", invoiceNote: "명세서 조회 후 발급" },
+  buyer: { address: "서울 중구 퇴계로 100 스테이트타워 남산 3층 주식회사 싱크플로", company: "주식회사 싱크플로", bizNumber: "680-87-02988", ceo: "홍길동", summary: "꽃배달 이용료 청구", issueDate: "2026년 05월 01일", invoiceNote: "명세서 조회 후 발급" },
   supplier: { company: "도랑플라워", bizNumber: "321-99-01778", ceo: "김도훈", email: "ehgns335@naver.com", fax: "053-715-2699" },
   items: [
-    { date: "2025년 08월 30일", sender: "홍길동", address: "서울 관악구 신림동 산 56-1 65동 서울대학교 교수회관", product: "근조화환(기본형)", amount: "70,000원" },
-    { date: "2025년 08월 28일", sender: "김태권", address: "서울 동산구 아에린로29 신정기념관내 로얄마크컨벤션 3층 포장홀", product: "근조화환(기본형)", amount: "100,000원" },
-    { date: "2025년 08월 23일", sender: "김태권", address: "경기 마주시 금품억로 190 새디인병원 장례식장 지하1층 특2호실", product: "근조화환(기본형)", amount: "50,000원" },
-    { date: "2025년 08월 19일", sender: "채상운", address: "부산 남구 황령대로 401-9 그랜드드몬트 6층 시그니처룸", product: "근조화환(기본형)", amount: "50,000원" },
-    { date: "2025년 08월 12일", sender: "박진찬", address: "경상북도 예천군 예천읍 양오로 154 (정북아) 예천농협장례식장 3호실", product: "근조화환(기본형)", amount: "50,000원" },
-    { date: "2025년 08월 05일", sender: "박진찬", address: "서울 강남구 논현로 645 렉시미나호텔", product: "근조화환(기본형)", amount: "50,000원" },
-    { date: "2025년 08월 30일", sender: "홍길동", address: "서울 관악구 신림동 산 56-1 65동 서울대학교 교수회관", product: "근조화환(기본형)", amount: "70,000원" },
-    { date: "2025년 08월 28일", sender: "김태권", address: "서울 동산구 아에린로29 신정기념관내 로얄마크컨벤션 3층 포장홀", product: "근조화환(기본형)", amount: "50,000원" },
+    { date: "2026년 04월 28일", sender: "홍길동", address: "서울 관악구 신림동 산 56-1 65동 서울대학교 교수회관", product: "근조 3단 화환 (기본)", amount: "75,000원" },
+    { date: "2026년 04월 25일", sender: "김태권", address: "서울 동산구 아에린로29 신정기념관내 로얄마크컨벤션 3층 포장홀", product: "축하 3단 화환 (기본)", amount: "75,000원" },
+    { date: "2026년 04월 21일", sender: "김태권", address: "경기 마주시 금품억로 190 새디인병원 장례식장 지하1층 특2호실", product: "근조 3단 화환 (기본)", amount: "75,000원" },
+    { date: "2026년 04월 17일", sender: "채상운", address: "부산 남구 황령대로 401-9 그랜드드몬트 6층 시그니처룸", product: "축하 3단 화환 (고급)", amount: "90,000원" },
+    { date: "2026년 04월 14일", sender: "박진찬", address: "경상북도 예천군 예천읍 양오로 154 (정북아) 예천농협장례식장 3호실", product: "근조 3단 화환 (기본)", amount: "75,000원" },
+    { date: "2026년 04월 10일", sender: "박진찬", address: "서울 강남구 논현로 645 렉시미나호텔", product: "축하 3단 화환 (기본)", amount: "75,000원" },
+    { date: "2026년 04월 07일", sender: "홍길동", address: "서울 관악구 신림동 산 56-1 65동 서울대학교 교수회관", product: "근조바구니(기본)", amount: "70,000원" },
+    { date: "2026년 04월 03일", sender: "김태권", address: "서울 동산구 아에린로29 신정기념관내 로얄마크컨벤션 3층 포장홀", product: "축하 3단 화환 (기본)", amount: "75,000원" },
   ],
   account: "NH농협은행 352-2284-9916-83 예금주 김도훈(도랑플라워)",
-  total: "215,000원",
+  total: "610,000원",
 };
 
 export function mount(root, { nav }) {
@@ -57,7 +57,7 @@ export function mount(root, { nav }) {
                 <button class="invoice-period__btn" data-action="change-period">기간 변경</button>
               </div>
               <div class="invoice-stats">
-                <div class="invoice-stat"><span>${state.selectedPeriod} 결제금액</span><span class="invoice-stat__v">215,000원</span></div>
+                <div class="invoice-stat"><span>${state.selectedPeriod} 결제금액</span><span class="invoice-stat__v">610,000원</span></div>
                 <div class="invoice-stat"><span>결제&정산 대금기한</span><span class="invoice-stat__due">2026년 05월 31일</span></div>
                 <div class="invoice-stat"><span>계산서 발급 동의</span>${state.agreed
                   ? html`<span class="invoice-stat__done">${icon("check-circle", { size: 12 })}동의완료</span>`
@@ -121,7 +121,7 @@ export function mount(root, { nav }) {
     const billing = store.getBillingContact();
     const rows = [
       { label: "정산 기간", value: "2026년 04월", cls: "" },
-      { label: "총 정산금액", value: "215,000원", cls: "tint-orange" },
+      { label: "총 정산금액", value: "610,000원", cls: "tint-orange" },
       { label: "결제 기한", value: "2026년 05월 31일", cls: "" },
       { label: "알림톡 수신", value: billing ? `${billing.name} · ${billing.phone}` : "미지정", cls: "" },
     ];

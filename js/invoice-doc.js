@@ -73,7 +73,7 @@ export function invoiceDoc(d, assetBase = "./assets/") {
       ])}
 
       <div style="flex:1;min-height:0;margin-bottom:22px">
-        <p style="${S.sectionTitle}">꽃배달 거래내역</p>
+        <p style="${S.sectionTitle}">거래내역</p>
         <table style="${S.table}">
           <colgroup>
             <col style="width:148px" /><col style="width:70px" /><col /><col style="width:128px" /><col style="width:92px" />
