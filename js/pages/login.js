@@ -30,7 +30,7 @@ export function mount(root, { nav }) {
               하림그룹에서 발생하는<br />모든 경조사 화환,<br />한 곳에서 관리
             </h2>
             <p class="auth__subcopy">
-              하림그룹 임직원을 위한<br />경조화환 전담 서비스입니다.
+              하림그룹 임직원을 위한 경조화환 간편처리 시스템입니다
             </p>
             <div class="auth__stats">
               ${STATS.map(
