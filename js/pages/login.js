@@ -7,8 +7,8 @@ import { resolveRole, setRole, setClientId, clearClientId } from "../session.js"
 import { store } from "../store.js";
 
 const STATS = [
-  { value: "2,400+", label: "제휴 기업" },
-  { value: "98%", label: "재계약률" },
+  { value: "전 계열사", label: "이용 대상" },
+  { value: "24시간", label: "온라인 접수" },
   { value: "1일", label: "평균 배송" },
 ];
 
@@ -25,12 +25,12 @@ export function mount(root, { nav }) {
             <span class="auth__brand-logo-text">하림그룹 경조화환 서비스</span>
           </div>
           <div class="auth__brand-body">
-            <p class="auth__eyebrow">Enterprise Service</p>
+            <p class="auth__eyebrow">하림그룹 임직원 전용 서비스</p>
             <h2 class="auth__headline">
-              기업에서 발생하는<br />모든 경조사,<br />한 곳에서 관리
+              하림그룹에서 발생하는<br />모든 경조사 화환,<br />한 곳에서 관리
             </h2>
             <p class="auth__subcopy">
-              화환·화분·꽃 맞춤형 전담서비스를<br />직접 경험해보세요.
+              하림그룹 임직원을 위한<br />경조화환 전담 서비스입니다.
             </p>
             <div class="auth__stats">
               ${STATS.map(
@@ -44,9 +44,9 @@ export function mount(root, { nav }) {
             </div>
           </div>
           <div class="auth__brand-foot">
-            <p class="auth__brand-foot-q">아직 계정이 없으신가요?</p>
+            <p class="auth__brand-foot-q">계열사 담당자이신가요?</p>
             <button type="button" class="auth__brand-foot-link" data-action="register">
-              제휴기업 회원가입 ${icon("arrow-right", { size: 11 })}
+              계열사 담당자 가입 ${icon("arrow-right", { size: 11 })}
             </button>
           </div>
         </aside>
@@ -71,7 +71,7 @@ export function mount(root, { nav }) {
                 <form class="login-card" data-form="login" novalidate>
                   <div class="login-card__head">
                     <h3>계정 로그인</h3>
-                    <p>제휴기업 아이디 또는 사업자번호로 로그인하세요</p>
+                    <p>하림그룹 계열사 계정으로 로그인하세요</p>
                   </div>
                   <div class="login-card__body">
                     <div data-slot="error"></div>
@@ -122,7 +122,7 @@ export function mount(root, { nav }) {
                     <span class="auth__divider-line"></span>
                   </div>
                   <button type="button" class="auth__alt-btn" data-action="register">
-                    제휴기업 회원가입
+                    계열사 담당자 가입
                   </button>
                 </div>
 

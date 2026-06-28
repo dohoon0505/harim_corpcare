@@ -7,10 +7,10 @@ import { store } from "../store.js";
 
 const STEPS = ["계정 설정", "담당자 정보", "사업자 정보"];
 const BENEFITS = [
-  "신규 가입 기업 경조사 상품 1회 무료 제공",
+  "하림그룹 계열사 전용 경조화환 서비스",
   "실시간 주문·배송 현황 통합 관리",
   "세금계산서 자동 발행 및 정산 처리",
-  "전담 운영팀 기업 맞춤 1:1 지원",
+  "전담 운영팀 계열사 맞춤 1:1 지원",
 ];
 
 function pwStrength(p) {
@@ -185,8 +185,8 @@ export function mount(root, { nav }) {
         <div class="rdone__icon">${icon("check", { size: 28 })}</div>
         <h2 class="rdone__title">가입이 완료되었습니다</h2>
         <p class="rdone__sub">
-          ${f.companyName ? html`<strong>${f.companyName}</strong>으로 ` : ""}제휴기업
-          회원 등록이 완료되었습니다.<br />담당자 검토 후 승인 안내를 드립니다.
+          ${f.companyName ? html`<strong>${f.companyName}</strong> ` : ""}계열사
+          담당자 등록이 완료되었습니다.<br />담당자 검토 후 승인 안내를 드립니다.
         </p>
         <div class="rdone__card">
           <div class="rdone__card-head"><h4>가입 정보</h4></div>
@@ -202,7 +202,7 @@ export function mount(root, { nav }) {
         <div class="rdone__note">
           ${icon("info", { size: 14 })}
           <p>
-            승인 완료 후 경조사 상품을 <strong>1회 무료</strong>로 이용하실 수
+            승인 완료 후 <strong>경조화환 서비스</strong>를 이용하실 수
             있습니다. 담당자 연락처(${f.contact})로 안내가 전송됩니다.
           </p>
         </div>
@@ -224,7 +224,7 @@ export function mount(root, { nav }) {
       wizard,
       html`
         <div class="auth__title">
-          <h1>제휴기업 회원가입</h1>
+          <h1>계열사 담당자 가입</h1>
           <p>모든 항목을 정확하게 입력해주세요</p>
         </div>
         <div class="rstep-bar">${stepIndicator()}</div>
@@ -314,10 +314,10 @@ export function mount(root, { nav }) {
             <span class="auth__brand-logo-text">하림그룹 경조화환 서비스</span>
           </div>
           <div class="auth__brand-body">
-            <p class="auth__eyebrow">Enterprise Service</p>
-            <h2 class="auth__headline">기업 경조사 관리,<br />더 스마트하게</h2>
+            <p class="auth__eyebrow">하림그룹 임직원 전용 서비스</p>
+            <h2 class="auth__headline">하림그룹 경조사 관리,<br />더 스마트하게</h2>
             <p class="auth__subcopy">
-              임직원 경조사 서비스를 하나의 플랫폼으로<br />통합 관리하세요.
+              하림그룹 계열사 경조사를 하나의 서비스로<br />통합 관리하세요.
             </p>
             <ul class="auth__benefits">
               ${BENEFITS.map(
