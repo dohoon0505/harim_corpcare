@@ -76,17 +76,14 @@
   font-weight: var(--fw-bold);
   color: #fff;
 }
-.auth__deadline-time {
+.auth__deadline-value {
   font-size: var(--fs-18);
   font-weight: var(--fw-bold);
   color: #fff;
   font-variant-numeric: tabular-nums;
 }
-.auth__deadline-info {
-  font-size: var(--fs-15);
-  font-weight: var(--fw-medium);
-  color: #fff;
-  line-height: 1.5;
+.auth__deadline-accent {
+  color: var(--c-orange);
 }
 .auth__deadline-track {
   height: 6px;
@@ -571,25 +568,6 @@
   margin-top: -8px;
 }
 
-.rf-note {
-  margin-top: 4px;
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  background: var(--c-surface-hover);
-  border: 1px solid #ebebeb;
-  border-radius: 7px;
-  padding: 14px 16px;
-}
-.rf-note .icon {
-  color: var(--c-text-faint);
-  margin-top: 2px;
-}
-.rf-note p {
-  font-size: var(--fs-11);
-  color: var(--c-text-ghost);
-  line-height: 1.6;
-}
 
 .rf-grid2 {
   display: grid;

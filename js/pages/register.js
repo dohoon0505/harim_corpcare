@@ -119,10 +119,6 @@ export function mount(root, { nav }) {
         ${field({ label: "경조사 담당자명", name: "managerName", placeholder: "담당자 성명을 입력해주세요" })}
         ${field({ label: "부서·직위", name: "department", placeholder: "예) 총무팀 / 인사부 대리 / 영업본부 팀장" })}
         ${field({ label: "담당자 연락처", name: "contact", placeholder: "010-0000-0000" })}
-        <div class="rf-note">
-          ${icon("info", { size: 13 })}
-          <p>담당자 정보는 주문 접수, 서비스 운영, 가입 승인 안내 등 중요 연락에 활용됩니다.</p>
-        </div>
       `;
     }
     // step 3

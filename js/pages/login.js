@@ -10,24 +10,26 @@ import { store } from "../store.js";
 const DEADLINE_MIN = 18 * 60 + 30; // 18:30
 const OPEN_MIN = 9 * 60;           // 09:00
 
+const accent = (s) => html`<span class="auth__deadline-accent">${s}</span>`;
+
 /**
- * 지금 시각에 따른 당일배송 안내 상태.
- *  00:00~09:00 → 당일 12~13시 배송 안내 (진행바 가득)
- *  09:00~18:30 → 마감까지 카운트다운 (진행바 = 잔여시간 비중)
- *  18:30~24:00 → 익일 12~13시 배송 안내 (진행바 빔)
+ * 지금 시각에 따른 당일배송 안내 상태 (라벨 + 값 + 진행바 비율).
+ *  00:00~09:00 → 지금 주문 시 / 금일 13시 전 도착 (진행바 가득)
+ *  09:00~18:30 → 당일배송 마감 / N시간 N분 후   (진행바 = 잔여시간 비중)
+ *  18:30~24:00 → 지금 주문 시 / 익일 13시 전 도착 (진행바 빔)
  */
 function deadlineState() {
   const now = new Date();
   const nowMin = now.getHours() * 60 + now.getMinutes();
   if (nowMin >= DEADLINE_MIN)
-    return { mode: "info", text: "현재 주문 시 익일 12시~13시 사이 배송됩니다.", pct: 0 };
+    return { label: "지금 주문 시", value: html`${accent("익일 13시 전")} 도착`, pct: 0 };
   if (nowMin < OPEN_MIN)
-    return { mode: "info", text: "현재 주문 시 12시~13시 사이 배송됩니다.", pct: 100 };
+    return { label: "지금 주문 시", value: html`${accent("금일 13시 전")} 도착`, pct: 100 };
   const remainMin = DEADLINE_MIN - nowMin;
   const h = Math.floor(remainMin / 60);
   const m = remainMin % 60;
   const pct = Math.round((remainMin / (DEADLINE_MIN - OPEN_MIN)) * 100);
-  return { mode: "countdown", text: h > 0 ? `${h}시간 ${m}분` : `${m}분`, pct };
+  return { label: "당일배송 마감", value: html`${h > 0 ? `${h}시간 ${m}분 후` : `${m}분 후`}`, pct };
 }
 
 export function mount(root, { nav }) {
@@ -152,19 +154,17 @@ export function mount(root, { nav }) {
     const slot = qs(root, "[data-slot='deadline']");
     if (!slot) return;
     const st = deadlineState();
-    const head =
-      st.mode === "countdown"
-        ? html`<div class="auth__deadline-row">
-            <span class="auth__deadline-label">당일배송 마감</span>
-            <span class="auth__deadline-time">${st.text}</span>
-          </div>`
-        : html`<p class="auth__deadline-info">${st.text}</p>`;
     setHTML(
       slot,
-      html`${head}
+      html`
+        <div class="auth__deadline-row">
+          <span class="auth__deadline-label">${st.label}</span>
+          <span class="auth__deadline-value">${st.value}</span>
+        </div>
         <div class="auth__deadline-track">
           <div class="auth__deadline-fill" style="width:${st.pct}%"></div>
-        </div>`
+        </div>
+      `
     );
   }
   renderDeadline();
