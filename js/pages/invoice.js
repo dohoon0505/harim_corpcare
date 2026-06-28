@@ -12,7 +12,7 @@ import { pageTitle, simpleModal } from "../ui.js";
 
 // 거래명세서 데이터 (공유 invoice-doc 렌더러에 전달)
 const INVOICE_DATA = {
-  title: "26년 04월 꽃배달 거래명세서",
+  title: "26년 04월 거래명세서",
   period: "2026년 04월 귀속",
   buyer: { address: "서울 중구 퇴계로 100 스테이트타워 남산 3층 (주)올해의경조사", company: "주식회사 싱크플로", bizNumber: "680-87-02988", ceo: "홍길동", summary: "꽃배달 이용료 청구", issueDate: "2026년 05월 01일", invoiceNote: "명세서 조회 후 발급" },
   supplier: { company: "도랑플라워", bizNumber: "321-99-01778", ceo: "김도훈", email: "ehgns335@naver.com", fax: "053-715-2699" },
