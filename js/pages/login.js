@@ -6,11 +6,11 @@ import { icon } from "../icons.js";
 import { resolveRole, setRole, setClientId, clearClientId } from "../session.js";
 import { store } from "../store.js";
 
-// 당일배송 마감 18:30 · 배송 소요 4시간(주문→도착 추정) · 익일 도착 13:00.
-// 정책 변경 시 이 세 값만 수정하면 됩니다.
-const DEADLINE_MIN = 18 * 60 + 30;     // 18:30 당일배송 마감
-const LEAD_MIN = 4 * 60;               // 주문 후 도착까지 소요(추정)
-const NEXTDAY_ARRIVAL_MIN = 13 * 60;   // 마감 후 주문 시 익일 도착 예정(13:00)
+// 당일배송 마감 18:30 · 접수 시작 09:00 · 배송 소요 4시간(09:00~18:30 동적 계산).
+// 정책 변경 시 이 값들만 수정하면 됩니다.
+const DEADLINE_MIN = 18 * 60 + 30;  // 18:30 당일배송 마감
+const OPEN_MIN = 9 * 60;            // 09:00 (이전 시간대는 금일 12:00~13:00 안내)
+const LEAD_MIN = 4 * 60;            // 주문 후 도착까지 소요(09:00~18:30)
 
 const accent = (s) => html`<span class="auth__deadline-accent">${s}</span>`;
 const hhmm = (mins) =>
@@ -18,26 +18,28 @@ const hhmm = (mins) =>
 
 /**
  * 지금 시각 기준 당일배송 안내 (마감 카운트다운 + 지금 주문 시 도착 예정).
- *  ~18:30 : "N시간 N분 후 당일배송이 마감됩니다" + "지금 주문 시 HH:MM 도착예정"(당일 = 지금+소요)
- *  18:30~ : "오늘 당일배송이 마감되었습니다"      + "지금 주문 시 익일 HH:MM 도착예정"
+ *  도착 예정(시간대별):
+ *   00:00~09:00 → 금일 12:00~13:00
+ *   09:00~18:30 → 지금 + 소요시간(HH:MM)
+ *   18:30~24:00 → 익일 12:00~13:00
+ *  마감 안내: 18:30 전 카운트다운 / 후 "오늘 마감".
  */
 function deadlineState() {
   const now = new Date();
   const nowMin = now.getHours() * 60 + now.getMinutes();
-  if (nowMin >= DEADLINE_MIN) {
-    return {
-      main: html`오늘 당일배송이 ${accent("마감")}되었습니다.`,
-      sub: html`지금 주문 시 익일 ${hhmm(NEXTDAY_ARRIVAL_MIN)} 도착예정`,
-    };
-  }
+
+  let sub;
+  if (nowMin >= DEADLINE_MIN) sub = "지금 주문 시 익일 12:00~13:00 도착예정";
+  else if (nowMin < OPEN_MIN) sub = "지금 주문 시 금일 12:00~13:00 도착예정";
+  else sub = `지금 주문 시 ${hhmm(nowMin + LEAD_MIN)} 도착예정`;
+
+  if (nowMin >= DEADLINE_MIN)
+    return { main: html`오늘 당일배송이 ${accent("마감")}되었습니다.`, sub };
   const remainMin = DEADLINE_MIN - nowMin;
   const h = Math.floor(remainMin / 60);
   const m = remainMin % 60;
   const countdown = h > 0 ? `${h}시간 ${m}분` : `${m}분`;
-  return {
-    main: html`${countdown} 후 당일배송이 ${accent("마감")}됩니다.`,
-    sub: html`지금 주문 시 ${hhmm(nowMin + LEAD_MIN)} 도착예정`,
-  };
+  return { main: html`${countdown} 후 당일배송이 ${accent("마감")}됩니다.`, sub };
 }
 
 export function mount(root, { nav }) {
