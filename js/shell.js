@@ -10,7 +10,7 @@ const MENU = [
   {
     group: "사용자 메뉴",
     items: [
-      { label: "경조상품 주문", hash: "#/app", icon: "nav-order.png" },
+      { label: "경조화환 주문", hash: "#/app", icon: "nav-order.png" },
       { label: "실시간 주문내역", hash: "#/app/orders", icon: "nav-realtime.png" },
     ],
   },

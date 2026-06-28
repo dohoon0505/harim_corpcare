@@ -1,5 +1,5 @@
 /* ============================================================
-   order.js — ports OrderPage.tsx (경조상품 주문)
+   order.js — ports OrderPage.tsx (경조화환 주문)
    ContactSelector → OrderForm + 4 modals (Ribbon/Sender/Quick/Success)
    ============================================================ */
 import { html, raw, setHTML, on, qs } from "../dom.js";
@@ -68,7 +68,7 @@ export function mount(root, { nav }) {
       root,
       html`
         <div class="page-order">
-          <div class="page-pad">${pageTitle({ icon: "🌸", title: "경조상품 주문" })}</div>
+          <div class="page-pad">${pageTitle({ icon: "🌸", title: "경조화환 주문" })}</div>
           <div class="cselect">
             <div class="cselect__inner">
               <div class="cselect__head">
@@ -198,7 +198,7 @@ export function mount(root, { nav }) {
       root,
       html`
         <div class="page-order">
-          <div class="page-pad page-order__title">${pageTitle({ icon: "🌸", title: "경조상품 주문" })}</div>
+          <div class="page-pad page-order__title">${pageTitle({ icon: "🌸", title: "경조화환 주문" })}</div>
 
           <!-- 담당자 바 -->
           <div class="oform__contactbar">
