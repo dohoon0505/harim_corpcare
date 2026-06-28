@@ -11,7 +11,7 @@ import { pageTitle } from "../ui.js";
 
 const COL = "104px 1fr 150px 196px 84px";
 const HEADERS = ["구분", "상세상품", "기본 단가", "적용 단가", "맞춤"];
-const CATS = ["전체", "경조화환", "관엽화분", "동서양란", "생화"];
+const CATS = ["전체", "축하화환", "근조화환", "특수화환", "근조바구니", "쌀화환"];
 
 export function mount(root, { nav }) {
   const clients = store.get().clients;

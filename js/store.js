@@ -11,26 +11,16 @@ import { INITIAL_CLIENTS } from "./data/admin-mock.js";
 
 /* ── Static product catalog (immutable) ─────────────────── */
 export const ALL_PRODUCTS = [
-  { category: "경조화환", product: "근조바구니",        price: "50,000원",  description: "빈소 내에 놓지하는 바구니형 애도상품", icon: "🌸" },
-  { category: "경조화환", product: "근조오브제(단형)",  price: "50,000원",  description: "웰체 스탠드 위 부분을 조화로 꾸민 오브제형 근조화환", icon: "🌸" },
-  { category: "경조화환", product: "근조오브제(2단형)", price: "75,000원",  description: "웰체 스탠드 위·아래를 조화로 꾸민 오브제형 근조화환", icon: "🌸" },
-  { category: "경조화환", product: "3단화환(기본형)",   price: "50,000원",  description: "보편적으로 가장 많이 유통되는 3단형 화환(목·근조 동일)", icon: "🌸" },
-  { category: "경조화환", product: "3단화환(고급형)",   price: "60,000원",  description: "기본 화환에서 장식이 일부 추가된 3단형 화환", icon: "🌸" },
-  { category: "경조화환", product: "3단화환(특대형)",   price: "75,000원",  description: "기본 화환에 좋은 꽃만 구비된 특대 3단형 화환", icon: "🌸" },
-  { category: "경조화환", product: "4단화환(표준형)",   price: "95,000원",  description: "기존 3단형 화환에서 1단이 추가된 대형 4단화환", icon: "🌸" },
-  { category: "경조화환", product: "평탁화(10kg)",      price: "75,000원",  description: "기본 화환 형태에 쌀 10kg가 더해져 배송되는 예도상품", icon: "🌸" },
-  { category: "경조화환", product: "평탁화(20kg)",      price: "110,000원", description: "기본 화환 형태에 쌀 20kg가 더해져 배송되는 예도상품", icon: "🌸" },
-  { category: "관엽화분", product: "박상용 마니빔분",   price: "50,000원",  description: "카운터·테이블에 두기 좋은 마니화분으로 평균 40~70cm", icon: "🌿" },
-  { category: "관엽화분", product: "박상용 중형화분",   price: "80,000원",  description: "바닥에 두는 화분 중 크기가 적당한 화분으로 평균 60~120cm", icon: "🌿" },
-  { category: "관엽화분", product: "박상용 대형화분",   price: "100,000원", description: "바닥에 두는 화분 중 크기가 큰 화분으로 평균 130~160cm", icon: "🌿" },
-  { category: "동서양란", product: "동양란(기본형)",    price: "50,000원",  description: "기본적인 동양란을 보편적인 품종으로 제공하는 동양란", icon: "🏵️" },
-  { category: "동서양란", product: "동양란(고급형)",    price: "100,000원", description: "고급 화양에 고급 품종으로 제작되는 동양란", icon: "🏵️" },
-  { category: "동서양란", product: "서양란(기본형)",    price: "50,000원",  description: "서양 꽃의 고급진 품종으로 제작되는 서양란, 꽃대 1~2대", icon: "🏵️" },
-  { category: "동서양란", product: "서양란(고급형)",    price: "80,000원",  description: "서양 꽃의 고급진 품종으로 제작되는 서양란, 꽃대 3~4대", icon: "🏵️" },
-  { category: "동서양란", product: "서양란(특대형)",    price: "120,000원", description: "서양 꽃의 고급진 품종으로 제작되는 서양란, 꽃대 6~8대", icon: "🏵️" },
-  { category: "생화",     product: "소형 꽃바구니",     price: "50,000원",  description: "생화 5~10송이로 제작, 품종·계절에 따라 상이할 수 있습니다.", icon: "💐" },
-  { category: "생화",     product: "중형 꽃바구니",     price: "80,000원",  description: "생화 10~20송이로 제작, 품종·계절에 따라 상이할 수 있습니다.", icon: "💐" },
-  { category: "생화",     product: "대형 꽃바구니",     price: "120,000원", description: "생화 20~30송이로 제작, 품종·계절에 따라 상이할 수 있습니다.", icon: "💐" },
+  { category: "축하화환",   product: "축하 3단 화환 (기본)", price: "75,000원",  description: "100% 신품 생화(국화) 60송이 + 기본 데코", icon: "🌸" },
+  { category: "축하화환",   product: "축하 3단 화환 (고급)", price: "90,000원",  description: "100% 신품 생화(국화) 80송이 + 프리미엄 데코", icon: "🌸" },
+  { category: "근조화환",   product: "근조 3단 화환 (기본)", price: "75,000원",  description: "100% 신품 생화(국화) 60송이 + 기본 데코", icon: "🏵️" },
+  { category: "근조화환",   product: "근조 3단 화환 (고급)", price: "90,000원",  description: "100% 신품 생화(국화) 80송이 + 프리미엄 데코", icon: "🏵️" },
+  { category: "특수화환",   product: "특수 화환 (오브제)",   price: "75,000원",  description: "100% 신품 생화 40송이~50송이 + 기본 데코", icon: "🌺" },
+  { category: "특수화환",   product: "특수 화환 (스탠드)",   price: "75,000원",  description: "100% 신품 생화 40송이~50송이 + 기본 데코", icon: "🌺" },
+  { category: "근조바구니", product: "근조바구니(기본)",     price: "70,000원",  description: "100% 신품 생화로 제작한 빈소용 근조 꽃바구니 (기본형)", icon: "🧺" },
+  { category: "근조바구니", product: "근조바구니(고급)",     price: "85,000원",  description: "100% 신품 생화로 제작한 빈소용 근조 꽃바구니 (고급형)", icon: "🧺" },
+  { category: "쌀화환",     product: "근조쌀화환(10kg)",     price: "90,000원",  description: "3단 화환 형태에 쌀 10kg을 더한 근조 쌀화환", icon: "🌾" },
+  { category: "쌀화환",     product: "근조쌀화환(20kg)",     price: "130,000원", description: "3단 화환 형태에 쌀 20kg을 더한 근조 쌀화환", icon: "🌾" },
 ];
 
 export const productKey = (r) => `${r.category}__${r.product}`;
