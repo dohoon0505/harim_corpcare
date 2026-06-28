@@ -82,6 +82,12 @@
   color: #fff;
   font-variant-numeric: tabular-nums;
 }
+.auth__deadline-info {
+  font-size: var(--fs-15);
+  font-weight: var(--fw-medium);
+  color: #fff;
+  line-height: 1.5;
+}
 .auth__deadline-track {
   height: 6px;
   border-radius: 999px;

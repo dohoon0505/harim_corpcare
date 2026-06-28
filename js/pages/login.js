@@ -6,24 +6,28 @@ import { icon } from "../icons.js";
 import { resolveRole, setRole, setClientId, clearClientId } from "../session.js";
 import { store } from "../store.js";
 
-// 당일배송 마감 시각(오후 2시) · 접수 시작(오전 8시) — 진행바 기준 구간.
-// 운영 정책에 맞춰 두 값만 바꾸면 됩니다.
-const DEADLINE_HOUR = 14;
-const WINDOW_OPEN_HOUR = 8;
+// 당일배송 마감 18:30 · 카운트다운 시작 09:00 (분 단위). 정책 변경 시 여기만 수정.
+const DEADLINE_MIN = 18 * 60 + 30; // 18:30
+const OPEN_MIN = 9 * 60;           // 09:00
 
-/** 지금 시각 기준 당일배송 마감까지 남은 시간 + 진행바 비율(잔여시간 비중). */
+/**
+ * 지금 시각에 따른 당일배송 안내 상태.
+ *  00:00~09:00 → 당일 12~13시 배송 안내 (진행바 가득)
+ *  09:00~18:30 → 마감까지 카운트다운 (진행바 = 잔여시간 비중)
+ *  18:30~24:00 → 익일 12~13시 배송 안내 (진행바 빔)
+ */
 function deadlineState() {
   const now = new Date();
-  const cutoff = new Date(now);
-  cutoff.setHours(DEADLINE_HOUR, 0, 0, 0);
-  const remainMs = cutoff - now;
-  if (remainMs <= 0) return { text: "오늘 마감", pct: 0 };
-  const open = new Date(now);
-  open.setHours(WINDOW_OPEN_HOUR, 0, 0, 0);
-  const pct = Math.max(0, Math.min(100, (remainMs / (cutoff - open)) * 100));
-  const h = Math.floor(remainMs / 3600000);
-  const m = Math.floor((remainMs % 3600000) / 60000);
-  return { text: h > 0 ? `${h}시간 ${m}분` : `${m}분`, pct };
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+  if (nowMin >= DEADLINE_MIN)
+    return { mode: "info", text: "현재 주문 시 익일 12시~13시 사이 배송됩니다.", pct: 0 };
+  if (nowMin < OPEN_MIN)
+    return { mode: "info", text: "현재 주문 시 12시~13시 사이 배송됩니다.", pct: 100 };
+  const remainMin = DEADLINE_MIN - nowMin;
+  const h = Math.floor(remainMin / 60);
+  const m = remainMin % 60;
+  const pct = Math.round((remainMin / (DEADLINE_MIN - OPEN_MIN)) * 100);
+  return { mode: "countdown", text: h > 0 ? `${h}시간 ${m}분` : `${m}분`, pct };
 }
 
 export function mount(root, { nav }) {
@@ -46,15 +50,7 @@ export function mount(root, { nav }) {
             <p class="auth__subcopy">
               하림그룹 임직원을 위한 경조화환 간편처리 시스템입니다
             </p>
-            <div class="auth__deadline">
-              <div class="auth__deadline-row">
-                <span class="auth__deadline-label">당일배송 마감</span>
-                <span class="auth__deadline-time" data-slot="deadline-time"></span>
-              </div>
-              <div class="auth__deadline-track">
-                <div class="auth__deadline-fill" data-slot="deadline-fill"></div>
-              </div>
-            </div>
+            <div class="auth__deadline" data-slot="deadline"></div>
           </div>
           <div class="auth__brand-foot">
             <p class="auth__brand-foot-q">계열사 담당자이신가요?</p>
@@ -151,13 +147,25 @@ export function mount(root, { nav }) {
   const pwInput = qs(root, "#login-pw");
   const eyeBtn = qs(root, "[data-action='toggle-pw']");
 
-  // ── 당일배송 마감 카운트다운 (1분 주기 갱신) ───────────────
+  // ── 당일배송 안내 (1분 주기 갱신) ─────────────────────────
   function renderDeadline() {
+    const slot = qs(root, "[data-slot='deadline']");
+    if (!slot) return;
     const st = deadlineState();
-    const t = qs(root, "[data-slot='deadline-time']");
-    const f = qs(root, "[data-slot='deadline-fill']");
-    if (t) t.textContent = st.text;
-    if (f) f.style.width = st.pct + "%";
+    const head =
+      st.mode === "countdown"
+        ? html`<div class="auth__deadline-row">
+            <span class="auth__deadline-label">당일배송 마감</span>
+            <span class="auth__deadline-time">${st.text}</span>
+          </div>`
+        : html`<p class="auth__deadline-info">${st.text}</p>`;
+    setHTML(
+      slot,
+      html`${head}
+        <div class="auth__deadline-track">
+          <div class="auth__deadline-fill" style="width:${st.pct}%"></div>
+        </div>`
+    );
   }
   renderDeadline();
   const deadlineTimer = setInterval(renderDeadline, 60000);
