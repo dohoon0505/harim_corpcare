@@ -177,7 +177,7 @@ export function mount(root, { nav }) {
 
             <div class="orders-notice">
               <span>🔴</span>
-              <p>아래에 기재되어 있지 않은 주문은 누락 가능성이 있으므로, 고객센터로 확인 문의를 꼭 부탁드립니다.</p>
+              <p>아래에 기재되어 있지 않은 주문은 누락 가능성이 있으므로, CS센터로 확인 문의를 꼭 부탁드립니다.</p>
             </div>
 
             <div class="orders-count" data-slot="count">${countBody()}</div>
