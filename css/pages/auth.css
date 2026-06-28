@@ -65,8 +65,8 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  /* 우측 패딩(40px) 밖으로 16px 확장 → 우측 여백 축소(40→24px) */
-  margin-right: -16px;
+  /* 우측 여백 확대: 패널 패딩(40px)에 더해 안쪽으로 들임 (40→64px) */
+  margin-right: 24px;
 }
 .auth__deadline-row {
   display: flex;
