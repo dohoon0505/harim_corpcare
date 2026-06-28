@@ -55,7 +55,7 @@ export function invoiceDoc(d, assetBase = "./assets/") {
     <div class="invoice-doc" style="width:794px;height:1123px;background:#fff;font-family:Pretendard,sans-serif;font-size:12px;color:#333;padding:36px 44px 28px;box-sizing:border-box;display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:28px">
         <div style="display:flex;align-items:center;gap:10px">
-          <span style="font-size:13px;font-weight:700;color:#f15a2a;white-space:nowrap">하림그룹 경조화환 서비스</span>
+          <span style="font-size:13px;font-weight:700;color:#f15a2a;white-space:nowrap">하림그룹 경조화환 시스템</span>
           <span style="font-size:18px;font-weight:700;color:#222">${d.title}</span>
         </div>
         <span style="font-size:12px;font-weight:600;color:#666">${d.period}</span>
