@@ -6,30 +6,38 @@ import { icon } from "../icons.js";
 import { resolveRole, setRole, setClientId, clearClientId } from "../session.js";
 import { store } from "../store.js";
 
-// 당일배송 마감 18:30 · 카운트다운 시작 09:00 (분 단위). 정책 변경 시 여기만 수정.
-const DEADLINE_MIN = 18 * 60 + 30; // 18:30
-const OPEN_MIN = 9 * 60;           // 09:00
+// 당일배송 마감 18:30 · 배송 소요 4시간(주문→도착 추정) · 익일 도착 13:00.
+// 정책 변경 시 이 세 값만 수정하면 됩니다.
+const DEADLINE_MIN = 18 * 60 + 30;     // 18:30 당일배송 마감
+const LEAD_MIN = 4 * 60;               // 주문 후 도착까지 소요(추정)
+const NEXTDAY_ARRIVAL_MIN = 13 * 60;   // 마감 후 주문 시 익일 도착 예정(13:00)
 
 const accent = (s) => html`<span class="auth__deadline-accent">${s}</span>`;
+const hhmm = (mins) =>
+  `${String(Math.floor(mins / 60) % 24).padStart(2, "0")}:${String(mins % 60).padStart(2, "0")}`;
 
 /**
- * 지금 시각에 따른 당일배송 안내 상태 (라벨 + 값 + 진행바 비율).
- *  00:00~09:00 → 지금 주문 시 / 금일 13시 전 도착 (진행바 가득)
- *  09:00~18:30 → 당일배송 마감 / N시간 N분 후   (진행바 = 잔여시간 비중)
- *  18:30~24:00 → 지금 주문 시 / 익일 13시 전 도착 (진행바 빔)
+ * 지금 시각 기준 당일배송 안내 (마감 카운트다운 + 지금 주문 시 도착 예정).
+ *  ~18:30 : "N시간 N분 후 당일배송이 마감됩니다" + "지금 주문 시 HH:MM 도착예정"(당일 = 지금+소요)
+ *  18:30~ : "오늘 당일배송이 마감되었습니다"      + "지금 주문 시 익일 HH:MM 도착예정"
  */
 function deadlineState() {
   const now = new Date();
   const nowMin = now.getHours() * 60 + now.getMinutes();
-  if (nowMin >= DEADLINE_MIN)
-    return { label: "지금 주문 시", value: html`${accent("익일 13시 전")} 도착`, pct: 0 };
-  if (nowMin < OPEN_MIN)
-    return { label: "지금 주문 시", value: html`${accent("금일 13시 전")} 도착`, pct: 100 };
+  if (nowMin >= DEADLINE_MIN) {
+    return {
+      main: html`오늘 당일배송이 ${accent("마감")}되었습니다.`,
+      sub: html`지금 주문 시 익일 ${hhmm(NEXTDAY_ARRIVAL_MIN)} 도착예정`,
+    };
+  }
   const remainMin = DEADLINE_MIN - nowMin;
   const h = Math.floor(remainMin / 60);
   const m = remainMin % 60;
-  const pct = Math.round((remainMin / (DEADLINE_MIN - OPEN_MIN)) * 100);
-  return { label: "당일배송 마감", value: html`${h > 0 ? `${h}시간 ${m}분 후` : `${m}분 후`}`, pct };
+  const countdown = h > 0 ? `${h}시간 ${m}분` : `${m}분`;
+  return {
+    main: html`${countdown} 후 당일배송이 ${accent("마감")}됩니다.`,
+    sub: html`지금 주문 시 ${hhmm(nowMin + LEAD_MIN)} 도착예정`,
+  };
 }
 
 export function mount(root, { nav }) {
@@ -157,13 +165,8 @@ export function mount(root, { nav }) {
     setHTML(
       slot,
       html`
-        <div class="auth__deadline-row">
-          <span class="auth__deadline-label">${st.label}</span>
-          <span class="auth__deadline-value">${st.value}</span>
-        </div>
-        <div class="auth__deadline-track">
-          <div class="auth__deadline-fill" style="width:${st.pct}%"></div>
-        </div>
+        <p class="auth__deadline-main">${st.main}</p>
+        <p class="auth__deadline-sub">${st.sub}</p>
       `
     );
   }

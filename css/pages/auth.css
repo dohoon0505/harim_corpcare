@@ -62,41 +62,23 @@
   margin-bottom: 40px;
 }
 .auth__deadline {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  /* 우측 여백 확대: 패널 패딩(40px)에 더해 안쪽으로 들임 (40→64px) */
-  margin-right: 24px;
+  border-left: 3px solid var(--c-orange);
+  padding-left: 16px;
 }
-.auth__deadline-row {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-}
-.auth__deadline-label {
-  font-size: var(--fs-15);
+.auth__deadline-main {
+  font-size: var(--fs-16);
   font-weight: var(--fw-bold);
   color: #fff;
+  line-height: 1.45;
+  margin-bottom: 7px;
 }
-.auth__deadline-value {
-  font-size: var(--fs-18);
-  font-weight: var(--fw-bold);
-  color: #fff;
-  font-variant-numeric: tabular-nums;
+.auth__deadline-sub {
+  font-size: var(--fs-13);
+  color: #8a8a9a;
+  line-height: 1.5;
 }
 .auth__deadline-accent {
   color: var(--c-orange);
-}
-.auth__deadline-track {
-  height: 6px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.14);
-}
-.auth__deadline-fill {
-  height: 100%;
-  border-radius: 999px;
-  background: var(--c-orange);
-  transition: width 0.6s ease;
 }
 .auth__brand-foot {
   padding: 32px 40px;
