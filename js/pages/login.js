@@ -6,11 +6,25 @@ import { icon } from "../icons.js";
 import { resolveRole, setRole, setClientId, clearClientId } from "../session.js";
 import { store } from "../store.js";
 
-const STATS = [
-  { value: "전 계열사", label: "이용 대상" },
-  { value: "24시간", label: "온라인 접수" },
-  { value: "1일", label: "평균 배송" },
-];
+// 당일배송 마감 시각(오후 2시) · 접수 시작(오전 8시) — 진행바 기준 구간.
+// 운영 정책에 맞춰 두 값만 바꾸면 됩니다.
+const DEADLINE_HOUR = 14;
+const WINDOW_OPEN_HOUR = 8;
+
+/** 지금 시각 기준 당일배송 마감까지 남은 시간 + 진행바 비율(잔여시간 비중). */
+function deadlineState() {
+  const now = new Date();
+  const cutoff = new Date(now);
+  cutoff.setHours(DEADLINE_HOUR, 0, 0, 0);
+  const remainMs = cutoff - now;
+  if (remainMs <= 0) return { text: "오늘 마감", pct: 0 };
+  const open = new Date(now);
+  open.setHours(WINDOW_OPEN_HOUR, 0, 0, 0);
+  const pct = Math.max(0, Math.min(100, (remainMs / (cutoff - open)) * 100));
+  const h = Math.floor(remainMs / 3600000);
+  const m = Math.floor((remainMs % 3600000) / 60000);
+  return { text: h > 0 ? `${h}시간 ${m}분` : `${m}분`, pct };
+}
 
 export function mount(root, { nav }) {
   let showPassword = false;
@@ -32,15 +46,14 @@ export function mount(root, { nav }) {
             <p class="auth__subcopy">
               하림그룹 임직원을 위한 경조화환 간편처리 시스템입니다
             </p>
-            <div class="auth__stats">
-              ${STATS.map(
-                (s) => html`
-                  <div class="auth__stat">
-                    <p class="auth__stat-value">${s.value}</p>
-                    <p class="auth__stat-label">${s.label}</p>
-                  </div>
-                `
-              )}
+            <div class="auth__deadline">
+              <div class="auth__deadline-row">
+                <span class="auth__deadline-label">당일배송 마감</span>
+                <span class="auth__deadline-time" data-slot="deadline-time"></span>
+              </div>
+              <div class="auth__deadline-track">
+                <div class="auth__deadline-fill" data-slot="deadline-fill"></div>
+              </div>
             </div>
           </div>
           <div class="auth__brand-foot">
@@ -138,6 +151,17 @@ export function mount(root, { nav }) {
   const pwInput = qs(root, "#login-pw");
   const eyeBtn = qs(root, "[data-action='toggle-pw']");
 
+  // ── 당일배송 마감 카운트다운 (1분 주기 갱신) ───────────────
+  function renderDeadline() {
+    const st = deadlineState();
+    const t = qs(root, "[data-slot='deadline-time']");
+    const f = qs(root, "[data-slot='deadline-fill']");
+    if (t) t.textContent = st.text;
+    if (f) f.style.width = st.pct + "%";
+  }
+  renderDeadline();
+  const deadlineTimer = setInterval(renderDeadline, 60000);
+
   function clearError() {
     errorSlot.innerHTML = "";
   }
@@ -190,6 +214,7 @@ export function mount(root, { nav }) {
   );
 
   return () => {
+    clearInterval(deadlineTimer);
     offSubmit();
     offInput();
     offEye();
