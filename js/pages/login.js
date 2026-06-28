@@ -25,7 +25,7 @@ export function mount(root, { nav }) {
             <span class="auth__brand-logo-text">하림그룹 경조화환 서비스</span>
           </div>
           <div class="auth__brand-body">
-            <p class="auth__eyebrow">하림그룹 임직원 전용 서비스</p>
+            <p class="auth__eyebrow">Enterprise Service</p>
             <h2 class="auth__headline">
               하림그룹에서 발생하는<br />모든 경조사 화환,<br />한 곳에서 관리
             </h2>

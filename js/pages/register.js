@@ -314,7 +314,7 @@ export function mount(root, { nav }) {
             <span class="auth__brand-logo-text">하림그룹 경조화환 서비스</span>
           </div>
           <div class="auth__brand-body">
-            <p class="auth__eyebrow">하림그룹 임직원 전용 서비스</p>
+            <p class="auth__eyebrow">Enterprise Service</p>
             <h2 class="auth__headline">하림그룹 경조사 관리,<br />더 스마트하게</h2>
             <p class="auth__subcopy">
               하림그룹 계열사 경조사를 하나의 서비스로<br />통합 관리하세요.
