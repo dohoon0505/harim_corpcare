@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>경조상품 주문 · 라이브 리본</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
+<style>
+  :root{
+    --c-orange:#f15a2a; --c-orange-ink:#d94000; --c-orange-soft:#fff1ec;
+    --c-blue:#4169e1; --c-blue-soft:#f0f3fd; --c-dark:#111118;
+    --c-bg:#f9f9f9; --c-surface:#fff; --c-surface-2:#f5f5f7; --c-surface-3:#f5f5f5;
+    --c-border:#e0e0e0; --c-border-strong:#d8d8d8; --c-divider:#e8e8e8;
+    --c-text:#222; --c-text-strong:#111; --c-text-2:#444; --c-text-3:#555;
+    --c-text-muted:#888; --c-text-faint:#aaa;
+    --c-success:#4caf50; --c-success-soft:#e8f5e9; --c-success-ink:#2e7d32;
+    --c-danger:#f44336; --c-danger-soft:#ffebee; --c-warn:#ff9800;
+    --r-5:5px; --r-6:6px; --r-8:8px; --r-10:10px; --r-14:14px; --r-16:16px;
+    --sh-sticky:0 -1px 0 var(--c-border), 0 -8px 24px rgba(0,0,0,.04);
+    --sh-modal:0 24px 70px rgba(17,17,24,.22);
+    --sh-pop:0 10px 34px rgba(17,17,24,.14);
+    /* ribbon theme — defaults to 무채색 차분 (근조) */
+    --rb-accent:#3b3b42; --rb-ink:#1d1d22; --rb-soft:#f2f2f4;
+    --ease:cubic-bezier(.22,.61,.36,1);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:"Pretendard",-apple-system,"Segoe UI",sans-serif;
+    background:var(--c-bg); color:var(--c-text);
+    font-size:14px; line-height:1.5; -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+  button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+  input,textarea,select{font-family:inherit;font-size:14px;color:var(--c-text)}
+  a{color:inherit;text-decoration:none}
+  .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}
+  ::selection{background:rgba(241,90,42,.16)}
+  :focus-visible{outline:2px solid var(--c-orange);outline-offset:2px;border-radius:3px}
+
+  /* ============ App shell ============ */
+  .app{display:flex;min-height:100vh}
+  .sidebar{width:228px;flex:0 0 228px;background:var(--c-surface);border-right:1px solid var(--c-border);
+    display:flex;flex-direction:column;padding:18px 12px;gap:2px;position:sticky;top:0;height:100vh}
+  .sb-brand{display:flex;align-items:center;gap:10px;padding:6px 8px 18px}
+  .sb-logo{width:30px;height:30px;border-radius:8px;background:var(--c-dark);color:#fff;
+    display:grid;place-items:center;font-size:14px;font-weight:700;letter-spacing:-.5px}
+  .sb-brand b{font-size:14.5px;font-weight:700;color:var(--c-text-strong);letter-spacing:-.3px}
+  .sb-brand span{display:block;font-size:11px;color:var(--c-text-faint);font-weight:500;margin-top:1px}
+  .sb-sec{font-size:10.5px;font-weight:600;color:var(--c-text-faint);padding:16px 10px 5px;letter-spacing:.4px;text-transform:uppercase}
+  .sb-item{display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:8px;
+    color:var(--c-text-3);font-size:13px;font-weight:500;transition:background .14s,color .14s}
+  .sb-item:hover{background:var(--c-surface-2);color:var(--c-text)}
+  .sb-item.active{background:var(--c-surface-2);color:var(--c-text-strong);font-weight:600}
+  .sb-item.active .ico{color:var(--c-orange)}
+  .sb-item .ico{width:16px;text-align:center;font-size:14px;color:var(--c-text-faint)}
+  .sb-foot{margin-top:auto;padding:10px 8px 4px;border-top:1px solid var(--c-divider);display:flex;align-items:center;gap:10px}
+  .sb-foot .av{width:30px;height:30px;border-radius:50%;background:var(--c-surface-2);color:var(--c-text-2);
+    display:grid;place-items:center;font-weight:700;font-size:12px;border:1px solid var(--c-border)}
+  .sb-foot small{display:block;color:var(--c-text-faint);font-size:10.5px}
+  .sb-foot b{font-size:12.5px;color:var(--c-text-2);font-weight:600}
+
+  .main{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center}
+  .canvas{width:100%;max-width:1180px;padding:26px 34px 132px}
+
+  /* ============ Header ============ */
+  .crumb{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--c-text-faint);margin-bottom:14px}
+  .crumb b{color:var(--c-text-3);font-weight:500}
+  .head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:18px}
+  .head h1{font-size:25px;font-weight:700;color:var(--c-text-strong);letter-spacing:-.6px;line-height:1.15}
+  .head .lede{font-size:13px;color:var(--c-text-muted);margin-top:5px;letter-spacing:-.1px}
+  .head .lede em{font-style:normal;color:var(--c-orange-ink);font-weight:600}
+
+  /* manager — inline at top, never a gate */
+  .mgr{display:flex;align-items:center;gap:11px;background:var(--c-surface);border:1px solid var(--c-border);
+    border-radius:var(--r-14);padding:8px 8px 8px 12px}
+  .mgr-av{width:38px;height:38px;border-radius:11px;background:var(--c-surface-2);border:1px solid var(--c-border);
+    display:grid;place-items:center;font-weight:700;font-size:14px;color:var(--c-text-2)}
+  .mgr-meta{line-height:1.3;min-width:0}
+  .mgr-meta .nm{font-size:13.5px;font-weight:700;color:var(--c-text-strong)}
+  .mgr-meta .nm span{font-weight:500;color:var(--c-text-faint);font-size:11.5px;margin-left:5px}
+  .mgr-meta .ph{font-size:11.5px;color:var(--c-text-muted)}
+  .mgr-meta .ph::before{content:"담당자 · ";color:var(--c-text-faint)}
+  .mgr-switch{position:relative}
+  .mgr-btn{display:flex;align-items:center;gap:6px;padding:8px 11px;border-radius:10px;border:1px solid var(--c-border);
+    background:var(--c-surface);font-size:12.5px;font-weight:600;color:var(--c-text-2);transition:border-color .14s,background .14s}
+  .mgr-btn:hover{border-color:var(--c-border-strong);background:var(--c-surface-2)}
+  .mgr-btn .chev{font-size:9px;color:var(--c-text-faint);transition:transform .2s}
+  .mgr-switch.open .mgr-btn .chev{transform:rotate(180deg)}
+  .mgr-pop{position:absolute;top:calc(100% + 8px);right:0;width:268px;background:var(--c-surface);
+    border:1px solid var(--c-border);border-radius:var(--r-14);box-shadow:var(--sh-pop);padding:6px;z-index:40;
+    opacity:0;transform:translateY(-6px) scale(.98);pointer-events:none;transition:opacity .16s,transform .16s var(--ease);transform-origin:top right}
+  .mgr-switch.open .mgr-pop{opacity:1;transform:none;pointer-events:auto}
+  .mgr-pop .ph-lbl{font-size:10.5px;font-weight:600;color:var(--c-text-faint);padding:7px 9px 4px;letter-spacing:.3px}
+  .mgr-opt{display:flex;align-items:center;gap:10px;padding:8px 9px;border-radius:9px;width:100%;text-align:left;transition:background .12s}
+  .mgr-opt:hover{background:var(--c-surface-2)}
+  .mgr-opt .oav{width:30px;height:30px;border-radius:9px;background:var(--c-surface-2);border:1px solid var(--c-border);
+    display:grid;place-items:center;font-weight:700;font-size:12px;color:var(--c-text-3);flex:0 0 30px}
+  .mgr-opt .ot{line-height:1.25;flex:1;min-width:0}
+  .mgr-opt .ot b{font-size:13px;color:var(--c-text-strong);font-weight:600}
+  .mgr-opt .ot b span{color:var(--c-text-faint);font-weight:500;font-size:11px;margin-left:5px}
+  .mgr-opt .ot small{display:block;font-size:11px;color:var(--c-text-muted)}
+  .mgr-opt .ok{color:var(--c-orange);font-size:13px;opacity:0;transition:opacity .12s}
+  .mgr-opt.sel{background:var(--c-orange-soft)}
+  .mgr-opt.sel .ok{opacity:1}
+  .mgr-opt.sel .ot b{color:var(--c-orange-ink)}
+  .mgr-add{display:flex;align-items:center;gap:8px;padding:9px;margin-top:3px;border-top:1px solid var(--c-divider);
+    width:100%;color:var(--c-blue);font-size:12.5px;font-weight:600}
+  .mgr-add:hover{color:#2c4fb8}
+
+  /* ============ Quick intake strip ============ */
+  .quick{display:grid;grid-template-columns:1fr auto;align-items:center;gap:16px;
+    background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-14);padding:13px 16px;margin-bottom:20px}
+  .quick-t{font-size:12.5px;color:var(--c-text-3);font-weight:500;letter-spacing:-.1px}
+  .quick-t b{color:var(--c-text-strong);font-weight:700}
+  .quick-t .k{display:inline-flex;align-items:center;gap:5px;color:var(--c-text-muted);font-weight:500}
+  .quick-btns{display:flex;gap:9px}
+  .qbtn{display:flex;align-items:center;gap:8px;padding:9px 15px;border-radius:10px;border:1px solid var(--c-border);
+    background:var(--c-surface);font-size:13px;font-weight:600;color:var(--c-text-2);transition:border-color .14s,background .14s,transform .08s}
+  .qbtn:hover{border-color:var(--c-border-strong);background:var(--c-surface-2)}
+  .qbtn:active{transform:translateY(1px)}
+  .qbtn .qi{font-size:15px}
+  .qbtn .qt small{display:block;font-size:10.5px;font-weight:500;color:var(--c-text-faint);text-align:left}
+
+  /* ============ Two-column layout ============ */
+  .layout{display:grid;grid-template-columns:minmax(0,1fr) 372px;gap:24px;align-items:start}
+
+  /* ---- Form column ---- */
+  .form-col{display:flex;flex-direction:column;gap:14px;min-width:0}
+  .block{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-16);padding:18px 20px}
+  .blk-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+  .blk-title{display:flex;align-items:center;gap:9px;font-size:14.5px;font-weight:700;color:var(--c-text-strong);letter-spacing:-.2px}
+  .blk-no{width:21px;height:21px;border-radius:7px;background:var(--c-surface-2);border:1px solid var(--c-border);
+    display:grid;place-items:center;font-size:11px;font-weight:700;color:var(--c-text-muted)}
+  .req{color:var(--c-orange);font-weight:700;font-size:12px;margin-left:1px}
+  .blk-link{font-size:12px;font-weight:600;color:var(--c-blue)}
+  .blk-link:hover{text-decoration:underline}
+
+  .field-row{display:grid;gap:12px}
+  .field-row.two{grid-template-columns:1fr 1fr}
+  .field{display:flex;flex-direction:column;gap:6px}
+  .lbl{font-size:12px;font-weight:600;color:var(--c-text-3);display:flex;align-items:center;gap:3px}
+  .inp{width:100%;height:40px;padding:0 12px;border:1px solid var(--c-border);border-radius:var(--r-8);
+    background:var(--c-surface);transition:border-color .14s,box-shadow .14s;color:var(--c-text)}
+  textarea.inp{height:auto;padding:10px 12px;resize:vertical;line-height:1.55}
+  .inp::placeholder{color:var(--c-text-faint)}
+  .inp:hover{border-color:var(--c-border-strong)}
+  .inp:focus{outline:none;border-color:var(--c-orange);box-shadow:0 0 0 3px var(--c-orange-soft)}
+  .inp.ok{border-color:#cfe6d0;background:#fcfefc}
+  select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23888' stroke-width='1.4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 12px center;padding-right:30px}
+  .hint{font-size:11px;color:var(--c-text-faint)}
+
+  /* ---- product chips ---- */
+  .prod-list{display:flex;flex-direction:column;gap:8px}
+  .prod{display:flex;align-items:center;gap:13px;padding:11px 13px;border:1px solid var(--c-border);border-radius:var(--r-10);
+    background:var(--c-surface);cursor:pointer;transition:border-color .14s,background .14s}
+  .prod:hover{border-color:var(--c-border-strong);background:var(--c-surface-2)}
+  .prod .emoji{width:40px;height:40px;border-radius:10px;background:var(--c-surface-2);display:grid;place-items:center;font-size:19px;flex:0 0 40px}
+  .prod .pm{flex:1;min-width:0;line-height:1.35}
+  .prod .pm b{font-size:13.5px;font-weight:600;color:var(--c-text-strong)}
+  .prod .pm .cat{font-size:11px;color:var(--c-text-muted)}
+  .prod .price{font-size:13.5px;font-weight:700;color:var(--c-text-2);letter-spacing:-.2px}
+  .prod .tick{width:19px;height:19px;border-radius:50%;border:1.5px solid var(--c-border-strong);flex:0 0 19px;
+    display:grid;place-items:center;transition:border-color .14s,background .14s}
+  .prod .tick::after{content:"";width:8px;height:8px;border-radius:50%;background:transparent;transition:background .14s}
+  .prod.sel{border-color:var(--c-orange);background:var(--c-orange-soft)}
+  .prod.sel .emoji{background:#fff}
+  .prod.sel .tick{border-color:var(--c-orange);background:var(--c-orange)}
+  .prod.sel .tick::after{background:#fff}
+  .prod.sel .price{color:var(--c-orange-ink)}
+  .prod-empty{border:1px dashed var(--c-border-strong);border-radius:var(--r-10);padding:22px;text-align:center}
+  .prod-empty p{font-size:12.5px;color:var(--c-text-muted);margin-bottom:12px}
+
+  /* ---- selected product summary chip ---- */
+  .picked{display:none;align-items:center;gap:10px;margin-top:11px;padding:10px 13px;
+    background:var(--c-surface-2);border:1px solid var(--c-border);border-radius:var(--r-10)}
+  .picked.show{display:flex}
+  .picked .pl{font-size:11.5px;color:var(--c-text-muted);font-weight:500}
+  .picked b{font-size:13px;color:var(--c-text-strong);font-weight:700}
+  .picked .amt{margin-left:auto;font-size:15px;font-weight:700;color:var(--c-orange-ink);letter-spacing:-.3px}
+
+  /* ---- delivery time ---- */
+  .dt-grid{display:grid;grid-template-columns:1.4fr .8fr .8fr;gap:10px}
+  .now-toggle{display:flex;align-items:center;gap:9px;margin-top:11px;padding:11px 13px;border:1px solid var(--c-border);
+    border-radius:var(--r-10);background:var(--c-surface);cursor:pointer;transition:border-color .14s,background .14s}
+  .now-toggle:hover{border-color:var(--c-border-strong)}
+  .now-toggle.on{border-color:var(--c-orange);background:var(--c-orange-soft)}
+  .chk{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--c-border-strong);display:grid;place-items:center;flex:0 0 18px;transition:.14s}
+  .chk svg{width:11px;height:11px;opacity:0;transition:opacity .12s}
+  .now-toggle.on .chk{background:var(--c-orange);border-color:var(--c-orange)}
+  .now-toggle.on .chk svg{opacity:1}
+  .now-toggle .nt{line-height:1.3}
+  .now-toggle .nt b{font-size:13px;font-weight:600;color:var(--c-text-strong)}
+  .now-toggle .nt small{display:block;font-size:11px;color:var(--c-text-muted)}
+  .now-toggle.on .nt b{color:var(--c-orange-ink)}
+  .dt-disabled{opacity:.45;pointer-events:none}
+
+  /* ---- ribbon & sender pickers (inline summary buttons) ---- */
+  .pick-btn{width:100%;display:flex;align-items:center;gap:12px;padding:13px;border:1px solid var(--c-border);
+    border-radius:var(--r-10);background:var(--c-surface);text-align:left;transition:border-color .14s,background .14s}
+  .pick-btn:hover{border-color:var(--c-border-strong);background:var(--c-surface-2)}
+  .pick-btn .pic{width:34px;height:34px;border-radius:9px;background:var(--c-surface-2);display:grid;place-items:center;
+    font-size:14px;color:var(--c-text-muted);flex:0 0 34px;transition:.14s}
+  .pick-btn .pv{flex:1;min-width:0;line-height:1.35}
+  .pick-btn .pv .pk{font-size:11px;color:var(--c-text-faint);font-weight:500;display:block}
+  .pick-btn .pv .pval{font-size:13.5px;color:var(--c-text-strong);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pick-btn .pv .pval.empty{color:var(--c-text-faint);font-weight:500}
+  .pick-btn .edit{font-size:11.5px;font-weight:600;color:var(--c-blue);flex:0 0 auto}
+  .pick-btn.filled .pic{background:var(--rb-soft);color:var(--rb-accent)}
+
+  /* ---- alert toggles ---- */
+  .alerts{display:flex;flex-direction:column;gap:2px}
+  .alert-row{display:flex;align-items:center;gap:12px;padding:11px 2px;border-bottom:1px solid var(--c-divider)}
+  .alert-row:last-child{border-bottom:none}
+  .alert-row .ar-ic{width:30px;height:30px;border-radius:9px;background:var(--c-surface-2);display:grid;place-items:center;
+    font-size:13px;color:var(--c-text-muted);flex:0 0 30px}
+  .alert-row .ar-t{flex:1;line-height:1.3}
+  .alert-row .ar-t b{font-size:13px;font-weight:600;color:var(--c-text-2)}
+  .alert-row .ar-t small{display:block;font-size:11px;color:var(--c-text-faint)}
+  .sw{width:40px;height:23px;border-radius:12px;background:var(--c-border-strong);position:relative;flex:0 0 40px;transition:background .18s var(--ease)}
+  .sw::after{content:"";position:absolute;top:2px;left:2px;width:19px;height:19px;border-radius:50%;background:#fff;
+    box-shadow:0 1px 2px rgba(0,0,0,.2);transition:transform .18s var(--ease)}
+  .sw.on{background:var(--c-success)}
+  .sw.on::after{transform:translateX(17px)}
+  .alert-note{margin-top:12px;font-size:11.5px;color:var(--c-text-muted);display:flex;gap:6px;align-items:flex-start;
+    background:var(--c-surface-2);border-radius:var(--r-8);padding:9px 11px}
+  .alert-note b{color:var(--c-success-ink);font-weight:600}
+
+  /* ---- notice list ---- */
+  .notice{background:var(--c-surface-2);border:1px solid var(--c-border);border-radius:var(--r-14);padding:15px 18px}
+  .notice h4{font-size:12.5px;font-weight:700;color:var(--c-text-3);margin-bottom:9px;letter-spacing:-.1px}
+  .notice ul{list-style:none;display:flex;flex-direction:column;gap:6px}
+  .notice li{font-size:11.5px;color:var(--c-text-muted);line-height:1.5;padding-left:14px;position:relative}
+  .notice li::before{content:"";position:absolute;left:2px;top:7px;width:3px;height:3px;border-radius:50%;background:var(--c-text-faint)}
+  .notice li b{color:var(--c-text-3);font-weight:600}
+  .notice .tel{color:var(--c-blue);font-weight:600}
+
+  /* ============ Preview column (right, sticky) ============ */
+  .preview-col{position:sticky;top:24px;display:flex;flex-direction:column;gap:14px}
+  .stage{border:1px solid var(--c-border);border-radius:var(--r-16);background:var(--c-surface);overflow:hidden}
+  .stage-top{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--c-divider)}
+  .stage-top .st{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--c-text-3)}
+  .live-dot{width:7px;height:7px;border-radius:50%;background:var(--c-success);position:relative}
+  .live-dot::after{content:"";position:absolute;inset:-4px;border-radius:50%;border:1.5px solid var(--c-success);
+    opacity:.5;animation:pulse 1.8s var(--ease) infinite}
+  @keyframes pulse{0%{transform:scale(.6);opacity:.6}100%{transform:scale(1.5);opacity:0}}
+  .stage-tag{font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;background:var(--rb-soft);color:var(--rb-accent);
+    transition:background .5s var(--ease),color .5s var(--ease)}
+
+  /* the monochrome canvas — ribbon is the only color focus */
+  .scene{position:relative;height:392px;background:
+      radial-gradient(120% 80% at 50% 0%, #fbfbfc 0%, #f3f3f5 100%);
+    display:flex;align-items:flex-start;justify-content:center;overflow:hidden}
+  .scene::before{content:"";position:absolute;left:0;right:0;bottom:0;height:84px;
+    background:linear-gradient(0deg,#ececef,transparent)}
+  /* wreath — CSS, muted/monochrome */
+  .wreath{position:absolute;top:30px;left:50%;transform:translateX(-50%);width:150px;height:150px}
+  .wreath .ring{position:absolute;inset:0;border-radius:50%;border:13px solid #e3e3e6;
+    box-shadow:inset 0 0 0 4px #d6d6da, inset 0 0 22px rgba(0,0,0,.05)}
+  .wreath .ring2{position:absolute;inset:20px;border-radius:50%;border:7px solid #ededf0}
+  .wreath .bow{position:absolute;top:-9px;left:50%;transform:translateX(-50%);width:40px;height:24px}
+  .wreath .bow span{position:absolute;top:0;width:20px;height:22px;border:3px solid var(--rb-accent);border-radius:50% 50% 50% 50%/60% 60% 40% 40%;
+    transition:border-color .5s var(--ease)}
+  .wreath .bow span.l{left:-2px;transform:rotate(-22deg)}
+  .wreath .bow span.r{right:-2px;transform:rotate(22deg)}
+  .wreath .knot{position:absolute;top:6px;left:50%;transform:translateX(-50%);width:9px;height:9px;border-radius:50%;
+    background:var(--rb-accent);transition:background .5s var(--ease)}
+  .stand{position:absolute;top:178px;left:50%;transform:translateX(-50%);width:3px;height:150px;background:#d3d3d7}
+  .stand-base{position:absolute;top:316px;left:50%;transform:translateX(-50%);width:96px;height:6px;border-radius:3px;background:#cfcfd3}
+
+  /* two vertical ribbons */
+  .ribbons{position:absolute;top:118px;left:50%;transform:translateX(-50%);display:flex;gap:13px;z-index:2}
+  .ribbon{width:54px;min-height:236px;background:var(--rb-accent);border-radius:3px 3px 0 0;
+    display:flex;flex-direction:column;align-items:center;padding:18px 4px 0;position:relative;
+    box-shadow:0 8px 22px rgba(17,17,24,.14);transition:background .5s var(--ease)}
+  .ribbon::after{content:"";position:absolute;bottom:-13px;left:0;right:0;height:14px;background:var(--rb-accent);
+    clip-path:polygon(0 0,100% 0,100% 100%,50% 55%,0 100%);transition:background .5s var(--ease)}
+  .ribbon .rtxt{writing-mode:vertical-rl;text-orientation:upright;color:#fff;font-weight:600;
+    letter-spacing:3px;line-height:1.18;font-size:15px;white-space:nowrap;max-height:208px;overflow:hidden;
+    text-shadow:0 1px 2px rgba(0,0,0,.18)}
+  .ribbon.sender .rtxt{font-size:12.5px;letter-spacing:1.5px;font-weight:500;opacity:.96}
+  .ribbon .rcap{position:absolute;top:5px;font-size:8px;color:rgba(255,255,255,.6);writing-mode:horizontal-tb;letter-spacing:0}
+  .ribbon-empty .rtxt{color:rgba(255,255,255,.45);font-weight:400;letter-spacing:2px}
+
+  /* caption strip under scene */
+  .scene-cap{padding:13px 16px;border-top:1px solid var(--c-divider);display:flex;gap:18px}
+  .scene-cap .sc{flex:1;min-width:0}
+  .scene-cap .sk{font-size:10.5px;color:var(--c-text-faint);font-weight:600;letter-spacing:.2px;margin-bottom:3px}
+  .scene-cap .sv{font-size:12.5px;color:var(--c-text-2);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .scene-cap .sv.dim{color:var(--c-text-faint);font-weight:400}
+
+  /* order summary card */
+  .osum{border:1px solid var(--c-border);border-radius:var(--r-16);background:var(--c-surface);padding:16px 18px}
+  .osum h4{font-size:13px;font-weight:700;color:var(--c-text-strong);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
+  .osum h4 .cnt{font-size:11px;font-weight:600;color:var(--c-text-faint)}
+  .srow{display:flex;align-items:flex-start;gap:10px;font-size:12px;padding:7px 0;border-bottom:1px solid var(--c-divider)}
+  .srow:last-of-type{border-bottom:none}
+  .srow .sl{color:var(--c-text-muted);flex:0 0 64px;font-weight:500}
+  .srow .svv{color:var(--c-text-2);font-weight:600;flex:1;text-align:right;word-break:keep-all;line-height:1.4}
+  .srow .svv.dim{color:var(--c-text-faint);font-weight:400}
+  .ototal{display:flex;align-items:baseline;justify-content:space-between;margin-top:13px;padding-top:13px;border-top:1.5px solid var(--c-border-strong)}
+  .ototal .tl{font-size:12.5px;font-weight:600;color:var(--c-text-3)}
+  .ototal .tv{font-size:21px;font-weight:700;color:var(--c-orange-ink);letter-spacing:-.5px}
+
+  /* ============ Sticky submit bar ============ */
+  .submitbar{position:fixed;bottom:0;left:228px;right:0;background:rgba(255,255,255,.86);backdrop-filter:blur(10px);
+    border-top:1px solid var(--c-border);box-shadow:var(--sh-sticky);padding:13px 34px;display:flex;align-items:center;
+    justify-content:space-between;gap:20px;z-index:30}
+  .sb-status{display:flex;align-items:center;gap:11px;min-width:0}
+  .sb-prog{display:flex;align-items:center;gap:6px}
+  .sb-prog .seg{width:22px;height:4px;border-radius:2px;background:var(--c-border-strong);transition:background .25s}
+  .sb-prog .seg.done{background:var(--c-orange)}
+  .sb-msg{font-size:12.5px;color:var(--c-text-muted);line-height:1.35}
+  .sb-msg b{color:var(--c-text-2);font-weight:600}
+  .sb-msg .miss{color:var(--c-orange-ink);font-weight:600}
+  .sb-right{display:flex;align-items:center;gap:16px}
+  .sb-amt{text-align:right;line-height:1.2}
+  .sb-amt small{font-size:10.5px;color:var(--c-text-faint);display:block}
+  .sb-amt b{font-size:18px;font-weight:700;color:var(--c-text-strong);letter-spacing:-.4px}
+  .submit{display:flex;align-items:center;gap:9px;padding:0 26px;height:46px;border-radius:var(--r-10);
+    background:var(--c-orange);color:#fff;font-size:14.5px;font-weight:700;letter-spacing:-.2px;
+    transition:background .15s,transform .08s,box-shadow .15s;box-shadow:0 4px 14px rgba(241,90,42,.32)}
+  .submit:hover:not(:disabled){background:var(--c-orange-ink);box-shadow:0 6px 18px rgba(217,64,0,.36)}
+  .submit:active:not(:disabled){transform:translateY(1px)}
+  .submit:disabled{background:var(--c-surface-3);color:var(--c-text-faint);cursor:not-allowed;box-shadow:none}
+  .submit .arr{transition:transform .15s}
+  .submit:hover:not(:disabled) .arr{transform:translateX(3px)}
+
+  /* ============ Modal / popover shared ============ */
+  .scrim{position:fixed;inset:0;background:rgba(17,17,24,.4);backdrop-filter:blur(2px);z-index:90;
+    display:none;align-items:center;justify-content:center;padding:24px;opacity:0;transition:opacity .2s}
+  .scrim.show{display:flex;opacity:1}
+  .modal{width:100%;max-width:480px;background:var(--c-surface);border-radius:var(--r-16);box-shadow:var(--sh-modal);
+    overflow:hidden;transform:translateY(12px) scale(.98);transition:transform .24s var(--ease);max-height:88vh;display:flex;flex-direction:column}
+  .scrim.show .modal{transform:none}
+  .modal-h{display:flex;align-items:center;justify-content:space-between;padding:18px 20px 14px;border-bottom:1px solid var(--c-divider)}
+  .modal-h h3{font-size:16px;font-weight:700;color:var(--c-text-strong);letter-spacing:-.3px}
+  .modal-h .step{font-size:11px;font-weight:600;color:var(--c-text-faint);margin-top:3px}
+  .x{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;color:var(--c-text-muted);font-size:16px;transition:background .12s}
+  .x:hover{background:var(--c-surface-2)}
+  .modal-b{padding:20px;overflow-y:auto}
+  .modal-f{padding:14px 20px;border-top:1px solid var(--c-divider);display:flex;gap:10px;justify-content:flex-end;background:var(--c-surface)}
+  .btn{padding:0 18px;height:42px;border-radius:var(--r-8);font-size:13.5px;font-weight:600;transition:.14s;display:inline-flex;align-items:center;gap:7px}
+  .btn.ghost{border:1px solid var(--c-border);color:var(--c-text-2);background:var(--c-surface)}
+  .btn.ghost:hover{background:var(--c-surface-2);border-color:var(--c-border-strong)}
+  .btn.primary{background:var(--c-orange);color:#fff;box-shadow:0 3px 10px rgba(241,90,42,.28)}
+  .btn.primary:hover:not(:disabled){background:var(--c-orange-ink)}
+  .btn.primary:disabled{background:var(--c-surface-3);color:var(--c-text-faint);cursor:not-allowed;box-shadow:none}
+
+  /* ribbon phrase groups */
+  .pgrp{margin-bottom:16px}
+  .pgrp .gt{font-size:11.5px;font-weight:600;color:var(--c-text-muted);margin-bottom:8px}
+  .chips{display:flex;flex-wrap:wrap;gap:7px}
+  .chip{padding:7px 12px;border:1px solid var(--c-border);border-radius:20px;background:var(--c-surface);
+    font-size:12.5px;font-weight:500;color:var(--c-text-2);transition:.13s}
+  .chip:hover{border-color:var(--c-border-strong);background:var(--c-surface-2)}
+  .chip.sel{border-color:var(--c-orange);background:var(--c-orange-soft);color:var(--c-orange-ink);font-weight:600}
+  .pcount{text-align:right;font-size:11px;color:var(--c-text-faint);margin-top:5px}
+  .pcount b{color:var(--c-text-3)}
+
+  /* sender radio list */
+  .srlist{display:flex;flex-direction:column;gap:9px}
+  .srl{display:flex;align-items:center;gap:12px;padding:13px;border:1px solid var(--c-border);border-radius:var(--r-10);
+    cursor:pointer;transition:.14s}
+  .srl:hover{border-color:var(--c-border-strong);background:var(--c-surface-2)}
+  .srl.sel{border-color:var(--c-orange);background:var(--c-orange-soft)}
+  .srl .radio{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--c-border-strong);flex:0 0 18px;display:grid;place-items:center;transition:.14s}
+  .srl .radio::after{content:"";width:8px;height:8px;border-radius:50%;background:transparent;transition:.14s}
+  .srl.sel .radio{border-color:var(--c-orange)}
+  .srl.sel .radio::after{background:var(--c-orange)}
+  .srl .srt{flex:1;line-height:1.35}
+  .srl .srt b{font-size:13.5px;font-weight:600;color:var(--c-text-strong)}
+  .srl .srt b span{font-size:11.5px;color:var(--c-text-faint);font-weight:500;margin-left:6px}
+  .srl .srt small{display:block;font-size:11.5px;color:var(--c-text-muted);margin-top:2px}
+
+  /* quick intake skeleton + states */
+  .qi-load{display:none;padding:6px 0}
+  .qi-load.show{display:block}
+  .skl{height:13px;border-radius:5px;background:linear-gradient(90deg,#eee 25%,#f5f5f5 50%,#eee 75%);
+    background-size:200% 100%;animation:shimmer 1.2s infinite;margin-bottom:9px}
+  @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+  .spin{width:15px;height:15px;border:2px solid var(--c-border);border-top-color:var(--c-orange);border-radius:50%;
+    animation:rot .7s linear infinite;display:inline-block;vertical-align:-2px}
+  @keyframes rot{to{transform:rotate(360deg)}}
+  .qi-result{display:none}
+  .qi-result.show{display:block}
+  .filled-box{background:var(--c-surface-2);border:1px solid var(--c-border);border-radius:var(--r-10);padding:12px 14px;margin-bottom:14px}
+  .filled-box .fl{font-size:11px;color:var(--c-text-muted);margin-bottom:2px}
+  .filled-box .fv{font-size:13px;color:var(--c-text-strong);font-weight:600;margin-bottom:9px}
+  .filled-box .fv:last-child{margin-bottom:0}
+  .auto-tag{font-size:10px;font-weight:600;color:var(--c-success-ink);background:var(--c-success-soft);padding:2px 7px;border-radius:10px;margin-left:6px}
+
+  /* success */
+  .done-wrap{text-align:center;padding:30px 24px 8px}
+  .done-ic{width:60px;height:60px;border-radius:50%;background:var(--c-success-soft);display:grid;place-items:center;margin:0 auto 16px}
+  .done-ic svg{width:30px;height:30px}
+  .done-wrap h3{font-size:19px;font-weight:700;color:var(--c-text-strong);margin-bottom:7px}
+  .done-wrap p{font-size:13px;color:var(--c-text-muted);line-height:1.6}
+  .done-card{margin-top:18px;text-align:left;background:var(--c-surface-2);border:1px solid var(--c-border);border-radius:var(--r-10);padding:14px 16px}
+  .done-card .dr{display:flex;justify-content:space-between;font-size:12.5px;padding:5px 0}
+  .done-card .dr span{color:var(--c-text-muted)}
+  .done-card .dr b{color:var(--c-text-2);font-weight:600}
+
+  .toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--c-dark);color:#fff;
+    font-size:12.5px;font-weight:500;padding:11px 18px;border-radius:var(--r-10);z-index:120;opacity:0;
+    transition:opacity .25s,transform .25s var(--ease);pointer-events:none}
+  .toast.show{opacity:1;transform:translateX(-50%)}
+
+  @media (max-width:1080px){
+    .layout{grid-template-columns:1fr}
+    .preview-col{position:static}
+    .submitbar{left:0}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- sidebar shell -->
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <div class="sb-logo">올</div>
+      <div><b>올해의경조사</b><span>경조 상품 주문</span></div>
+    </div>
+    <div class="sb-sec">주문</div>
+    <a class="sb-item active"><span class="ico">✦</span> 경조상품 주문</a>
+    <a class="sb-item"><span class="ico">▤</span> 주문 내역</a>
+    <a class="sb-item"><span class="ico">◷</span> 배송 현황</a>
+    <div class="sb-sec">설정</div>
+    <a class="sb-item"><span class="ico">★</span> 즐겨찾기 상품</a>
+    <a class="sb-item"><span class="ico">▦</span> 상품 규격 안내</a>
+    <a class="sb-item"><span class="ico">⚇</span> 담당자 관리</a>
+    <div class="sb-foot">
+      <div class="av">올</div>
+      <div><b>올해주식회사</b><small>법인 회원</small></div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="canvas">
+      <div class="crumb"><b>주문</b><span>›</span><b>경조상품 주문</b></div>
+
+      <!-- header + inline manager -->
+      <div class="head">
+        <div>
+          <h1>경조상품 주문</h1>
+          <p class="lede">입력하는 순간 <em>리본이 보입니다</em>. 우측 미리보기로 확인하며 작성하세요.</p>
+        </div>
+        <!-- INLINE manager selector — no gate, no separate screen -->
+        <div class="mgr">
+          <div class="mgr-av" id="mgrAv">할</div>
+          <div class="mgr-meta">
+            <div class="nm" id="mgrName">할다운 <span id="mgrRole">비서</span></div>
+            <div class="ph num" id="mgrPhone">010-1111-2222</div>
+          </div>
+          <div class="mgr-switch" id="mgrSwitch">
+            <button class="mgr-btn" id="mgrToggle" aria-haspopup="true" aria-expanded="false">전환 <span class="chev">▼</span></button>
+            <div class="mgr-pop" id="mgrPop" role="menu">
+              <div class="ph-lbl">담당자 전환</div>
+              <div id="mgrOpts"></div>
+              <button class="mgr-add" id="mgrAdd">＋ 새 담당자 등록</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- quick intake -->
+      <div class="quick">
+        <div class="quick-t">
+          <b>간편접수</b> · 부고장·청첩장 링크만 붙여넣으면 <span class="k">주소·받는분이 자동입력</span>됩니다.
+        </div>
+        <div class="quick-btns">
+          <button class="qbtn" data-quick="부고"><span class="qi">🕊️</span><span class="qt">부고 접수<small>부고장 URL</small></span></button>
+          <button class="qbtn" data-quick="청첩"><span class="qi">💌</span><span class="qt">청첩 접수<small>청첩장 URL</small></span></button>
+        </div>
+      </div>
+
+      <div class="layout">
+        <!-- ============ FORM COLUMN ============ -->
+        <div class="form-col">
+          <!-- 1. product -->
+          <section class="block">
+            <div class="blk-head">
+              <div class="blk-title"><span class="blk-no">1</span> 상품 선택 <span class="req">*</span></div>
+              <a class="blk-link" id="favMng">즐겨찾기 관리</a>
+            </div>
+            <div class="prod-list" id="prodList"></div>
+            <div class="picked" id="picked">
+              <span class="pl">선택한 상품</span>
+              <b id="pickedName">—</b>
+              <span class="amt num" id="pickedAmt">0원</span>
+            </div>
+          </section>
+
+          <!-- 2. delivery -->
+          <section class="block">
+            <div class="blk-head">
+              <div class="blk-title"><span class="blk-no">2</span> 배송지 정보</div>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label class="lbl">배송지 주소 <span class="req">*</span></label>
+                <input class="inp" id="fAddr" placeholder="예) 서울 강남구 테헤란로 152 3층" data-req="addr">
+              </div>
+              <div class="field-row two">
+                <div class="field">
+                  <label class="lbl">받는분 성함 <span class="req">*</span></label>
+                  <input class="inp" id="fName" placeholder="예) 김○○ 상주" data-req="rname">
+                </div>
+                <div class="field">
+                  <label class="lbl">받는분 연락처 <span class="req">*</span></label>
+                  <input class="inp num" id="fPhone" placeholder="010-0000-0000" data-req="rphone">
+                </div>
+              </div>
+              <div class="field">
+                <label class="lbl">배송요청 일시 <span class="req">*</span></label>
+                <div class="dt-grid" id="dtGrid">
+                  <input class="inp" type="date" id="fDate" data-req="date">
+                  <select class="inp" id="fHour"></select>
+                  <select class="inp" id="fMin"></select>
+                </div>
+                <button class="now-toggle" id="nowToggle" type="button">
+                  <span class="chk"><svg viewBox="0 0 12 12"><path d="M2 6.2l2.6 2.6L10 3.2" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                  <span class="nt"><b>즉시배송으로 요청</b><small id="nowMsg">선택 시 가능한 가장 빠른 시간에 배송됩니다</small></span>
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <!-- 3. ribbon -->
+          <section class="block">
+            <div class="blk-head">
+              <div class="blk-title"><span class="blk-no">3</span> 리본 정보</div>
+            </div>
+            <div class="field-row two">
+              <button class="pick-btn" id="ribbonPick" type="button">
+                <span class="pic">”</span>
+                <span class="pv"><span class="pk">리본 문구 *</span><span class="pval empty" id="ribbonVal">문구를 선택하세요</span></span>
+                <span class="edit" id="ribbonEdit">선택</span>
+              </button>
+              <button class="pick-btn" id="senderPick" type="button">
+                <span class="pic">✎</span>
+                <span class="pv"><span class="pk">보내는분 *</span><span class="pval empty" id="senderVal">프로필을 선택하세요</span></span>
+                <span class="edit" id="senderEdit">선택</span>
+              </button>
+            </div>
+          </section>
+
+          <!-- 4. alerts -->
+          <section class="block">
+            <div class="blk-head">
+              <div class="blk-title"><span class="blk-no">4</span> 배송완료 알림 수신</div>
+            </div>
+            <div class="alerts">
+              <div class="alert-row">
+                <div class="ar-ic">📥</div>
+                <div class="ar-t"><b>받는분</b><small>배송 완료 시 문자 발송</small></div>
+                <button class="sw" data-sw="recv" type="button" aria-pressed="false"></button>
+              </div>
+              <div class="alert-row">
+                <div class="ar-ic">📤</div>
+                <div class="ar-t"><b>보내는분</b><small>배송 완료 시 문자 발송</small></div>
+                <button class="sw on" data-sw="send" type="button" aria-pressed="true"></button>
+              </div>
+              <div class="alert-row">
+                <div class="ar-ic">👤</div>
+                <div class="ar-t"><b>담당자</b><small id="alManager">할다운 · 010-1111-2222</small></div>
+                <button class="sw on" data-sw="mgr" type="button" aria-pressed="true"></button>
+              </div>
+            </div>
+            <div class="alert-note">✓ <span><b>ON</b>으로 설정된 분께 배송 완료 시 문자가 자동 발송됩니다.</span></div>
+          </section>
+
+          <!-- notice -->
+          <div class="notice">
+            <h4>주문 시 참고사항</h4>
+            <ul>
+              <li>당일 <b>오전 11시 이전</b> 접수 건은 당일배송이 가능합니다.</li>
+              <li>주말·공휴일은 배송이 제한될 수 있습니다.</li>
+              <li>이른 아침·저녁 배송은 사전 협의가 필요합니다.</li>
+              <li>리본 문구는 <b>접수 후 수정이 불가</b>하니 확인 후 접수해 주세요.</li>
+              <li>문의 <span class="tel num">02-0000-0000</span></li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- ============ PREVIEW COLUMN ============ -->
+        <div class="preview-col">
+          <div class="stage">
+            <div class="stage-top">
+              <span class="st"><span class="live-dot"></span> 라이브 리본 미리보기</span>
+              <span class="stage-tag" id="stageTag">근조</span>
+            </div>
+            <div class="scene">
+              <div class="wreath">
+                <div class="ring"></div><div class="ring2"></div>
+                <div class="bow"><span class="l"></span><span class="r"></span></div>
+                <div class="knot"></div>
+              </div>
+              <div class="stand"></div><div class="stand-base"></div>
+              <div class="ribbons">
+                <div class="ribbon ribbon-empty" id="ribLeft"><span class="rcap">리본 문구</span><span class="rtxt" id="ribLeftTxt">문구 입력 대기</span></div>
+                <div class="ribbon sender ribbon-empty" id="ribRight"><span class="rcap">보내는분</span><span class="rtxt" id="ribRightTxt">보내는분 대기</span></div>
+              </div>
+            </div>
+            <div class="scene-cap">
+              <div class="sc"><div class="sk">상품</div><div class="sv dim" id="capProd">미선택</div></div>
+              <div class="sc"><div class="sk">받는분</div><div class="sv dim" id="capRecv">미입력</div></div>
+            </div>
+          </div>
+
+          <!-- order summary -->
+          <div class="osum">
+            <h4>주문 요약 <span class="cnt" id="sumCnt">0 / 7 항목</span></h4>
+            <div class="srow"><span class="sl">담당자</span><span class="svv" id="sumMgr">할다운 · 비서</span></div>
+            <div class="srow"><span class="sl">상품</span><span class="svv dim" id="sumProd">상품을 선택하세요</span></div>
+            <div class="srow"><span class="sl">받는분</span><span class="svv dim" id="sumRecv">미입력</span></div>
+            <div class="srow"><span class="sl">배송지</span><span class="svv dim" id="sumAddr">미입력</span></div>
+            <div class="srow"><span class="sl">배송일시</span><span class="svv dim" id="sumDt">미입력</span></div>
+            <div class="srow"><span class="sl">리본</span><span class="svv dim" id="sumRib">미입력</span></div>
+            <div class="srow"><span class="sl">보내는분</span><span class="svv dim" id="sumSend">미입력</span></div>
+            <div class="ototal"><span class="tl">결제 예정 금액</span><span class="tv num" id="sumTotal">0원</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- sticky submit bar -->
+<div class="submitbar">
+  <div class="sb-status">
+    <div class="sb-prog" id="prog"></div>
+    <div class="sb-msg" id="sbMsg"><b>7개 필수 항목</b> 중 <span class="miss">7개</span>가 남았습니다.</div>
+  </div>
+  <div class="sb-right">
+    <div class="sb-amt"><small>결제 예정</small><b class="num" id="sbAmt">0원</b></div>
+    <button class="submit" id="submitBtn" disabled>
+      <span id="submitTxt">필수 항목을 모두 입력해 주세요</span><span class="arr">→</span>
+    </button>
+  </div>
+</div>
+
+<!-- ===== Ribbon phrase modal ===== -->
+<div class="scrim" id="ribbonScrim">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-h">
+      <div><h3>리본 문구</h3><div class="step">자주 쓰는 문구를 고르거나 직접 입력하세요</div></div>
+      <button class="x" data-close="ribbonScrim">✕</button>
+    </div>
+    <div class="modal-b">
+      <div id="phraseGroups"></div>
+      <div class="field">
+        <label class="lbl">직접 입력 / 수정</label>
+        <textarea class="inp" id="ribbonInput" rows="2" maxlength="40" placeholder="리본에 새길 문구를 입력하세요"></textarea>
+        <div class="pcount"><b><span id="ribbonLen">0</span></b> / 40자</div>
+      </div>
+    </div>
+    <div class="modal-f">
+      <button class="btn ghost" data-close="ribbonScrim">취소</button>
+      <button class="btn primary" id="ribbonApply" disabled>적용하기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Sender modal ===== -->
+<div class="scrim" id="senderScrim">
+  <div class="modal">
+    <div class="modal-h">
+      <div><h3>보내는분</h3><div class="step">선택한 프로필의 고정문구가 리본 두 번째 줄에 새겨집니다</div></div>
+      <button class="x" data-close="senderScrim">✕</button>
+    </div>
+    <div class="modal-b">
+      <div class="srlist" id="senderList"></div>
+    </div>
+    <div class="modal-f">
+      <button class="btn ghost" data-close="senderScrim">취소</button>
+      <button class="btn primary" id="senderApply" disabled>적용하기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Quick intake modal ===== -->
+<div class="scrim" id="quickScrim">
+  <div class="modal">
+    <div class="modal-h">
+      <div><h3 id="qTitle">부고 접수</h3><div class="step" id="qStep">STEP 1 · 링크 조회</div></div>
+      <button class="x" data-close="quickScrim">✕</button>
+    </div>
+    <div class="modal-b" id="qBody"></div>
+    <div class="modal-f" id="qFoot"></div>
+  </div>
+</div>
+
+<!-- ===== Success modal ===== -->
+<div class="scrim" id="doneScrim">
+  <div class="modal">
+    <div class="done-wrap">
+      <div class="done-ic"><svg viewBox="0 0 30 30"><path d="M6 15.5l6 6L24 8.5" stroke="#2e7d32" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <h3>주문이 접수되었습니다!</h3>
+      <p>배송 진행 상황은 <b>배송 현황</b>에서 확인하실 수 있습니다.</p>
+      <div class="done-card" id="doneCard"></div>
+    </div>
+    <div class="modal-f" style="justify-content:center;border-top:none;padding-bottom:22px">
+      <button class="btn primary" data-close="doneScrim" style="padding:0 30px">확인</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+  const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);
+  const won=n=>n.toLocaleString("ko-KR")+"원";
+
+  /* ===== data ===== */
+  const MANAGERS=[
+    {av:"할",name:"할다운",role:"비서",phone:"010-1111-2222"},
+    {av:"오",name:"오임찬",role:"재경부",phone:"010-3333-4444"},
+    {av:"김",name:"김현수",role:"경리",phone:"010-5555-6666"},
+  ];
+  const SENDERS=[
+    {name:"홍길동",role:"대표이사",fixed:"(주)올해의경조사 대표이사 홍길동"},
+    {name:"정소빈",role:"대표변호사",fixed:"올해표현(유) 대표변호사 정소빈"},
+    {name:"임직원",role:"일동",fixed:"(주)올해의경조사 임직원 일동"},
+  ];
+  const PRODUCTS=[
+    {e:"🌸",name:"3단화환(기본형)",cat:"경조화환",price:50000},
+    {e:"🌸",name:"근조오브제(2단형)",cat:"경조화환",price:75000},
+    {e:"🏵️",name:"동양란(고급형)",cat:"동서양란",price:100000},
+    {e:"💐",name:"대형 꽃바구니",cat:"생화",price:120000},
+    {e:"🌿",name:"박상용 대형화분",cat:"관엽화분",price:100000},
+  ];
+  const PHRASES=[
+    {g:"부고·근조",mood:"sad",items:["삼가 고인의 명복을 빕니다","근조(謹弔)","조의를 표합니다"]},
+    {g:"결혼 축하",mood:"joy",items:["축 결혼(祝 結婚)","화혼을 진심으로 축하드립니다","행복한 새 출발을 축하합니다"]},
+    {g:"개업·취임",mood:"joy",items:["축 개업(祝 開業)","축 취임(祝 就任)","번창하시길 기원합니다"]},
+    {g:"기타",mood:"joy",items:["감사합니다","항상 건강하세요","축 승진(祝 昇進)"]},
+  ];
+
+  /* ===== state ===== */
+  const st={mgr:0,product:null,addr:"",rname:"",rphone:"",date:"",hour:"",min:"",now:false,
+    ribbon:"",ribbonMood:"sad",sender:null};
+
+  /* ===== manager inline switch ===== */
+  const mgrOpts=$("#mgrOpts");
+  MANAGERS.forEach((m,i)=>{
+    const b=document.createElement("button");
+    b.className="mgr-opt"+(i===0?" sel":""); b.setAttribute("role","menuitem");
+    b.innerHTML=`<span class="oav">${m.av}</span><span class="ot"><b>${m.name}<span>${m.role}</span></b><small class="num">${m.phone}</small></span><span class="ok">✓</span>`;
+    b.addEventListener("click",()=>{ st.mgr=i; renderMgr(); closeMgr(); });
+    mgrOpts.appendChild(b);
+  });
+  function renderMgr(){
+    const m=MANAGERS[st.mgr];
+    $("#mgrAv").textContent=m.av; $("#mgrName").firstChild.textContent=m.name+" ";
+    $("#mgrRole").textContent=m.role; $("#mgrPhone").textContent=m.phone;
+    $("#alManager").textContent=`${m.name} · ${m.phone}`;
+    $("#sumMgr").textContent=`${m.name} · ${m.role}`;
+    $$("#mgrOpts .mgr-opt").forEach((o,i)=>o.classList.toggle("sel",i===st.mgr));
+  }
+  const mgrSwitch=$("#mgrSwitch");
+  function closeMgr(){mgrSwitch.classList.remove("open");$("#mgrToggle").setAttribute("aria-expanded","false");}
+  $("#mgrToggle").addEventListener("click",e=>{e.stopPropagation();const o=mgrSwitch.classList.toggle("open");$("#mgrToggle").setAttribute("aria-expanded",o);});
+  $("#mgrAdd").addEventListener("click",()=>{closeMgr();toast("새 담당자 등록 화면으로 이동합니다");});
+  document.addEventListener("click",e=>{if(!mgrSwitch.contains(e.target))closeMgr();});
+
+  /* ===== products ===== */
+  const prodList=$("#prodList");
+  PRODUCTS.forEach((p,i)=>{
+    const el=document.createElement("button");
+    el.className="prod"; el.type="button";
+    el.innerHTML=`<span class="emoji">${p.e}</span><span class="pm"><b>${p.name}</b><span class="cat">${p.cat}</span></span><span class="price num">${won(p.price)}</span><span class="tick"></span>`;
+    el.addEventListener("click",()=>{
+      st.product = st.product===i ? null : i;
+      $$(".prod").forEach((x,j)=>x.classList.toggle("sel",j===st.product));
+      render();
+    });
+    prodList.appendChild(el);
+  });
+
+  /* ===== delivery time selects ===== */
+  const fHour=$("#fHour"), fMin=$("#fMin");
+  fHour.innerHTML='<option value="">시</option>'+Array.from({length:24},(_,h)=>`<option value="${h}">${h}시</option>`).join("");
+  fMin.innerHTML='<option value="">분</option>'+[0,10,20,30,40,50].map(m=>`<option value="${m}">${String(m).padStart(2,"0")}분</option>`).join("");
+  ["fAddr","fName","fPhone"].forEach(id=>$("#"+id).addEventListener("input",e=>{
+    const key={fAddr:"addr",fName:"rname",fPhone:"rphone"}[id];
+    st[key]=e.target.value.trim(); e.target.classList.toggle("ok",!!st[key]); render();
+  }));
+  $("#fDate").addEventListener("change",e=>{st.date=e.target.value;render();});
+  fHour.addEventListener("change",e=>{st.hour=e.target.value;render();});
+  fMin.addEventListener("change",e=>{st.min=e.target.value;render();});
+  // default date = today
+  (function(){const d=new Date();$("#fDate").value=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;st.date=$("#fDate").value;})();
+
+  const nowToggle=$("#nowToggle"), dtGrid=$("#dtGrid");
+  nowToggle.addEventListener("click",()=>{
+    st.now=!st.now; nowToggle.classList.toggle("on",st.now);
+    dtGrid.classList.toggle("dt-disabled",st.now);
+    $("#nowMsg").textContent = st.now ? "약 2시간 후 배송됩니다 (가장 빠른 시간)" : "선택 시 가능한 가장 빠른 시간에 배송됩니다";
+    render();
+  });
+
+  /* ===== ribbon phrase modal ===== */
+  const pgWrap=$("#phraseGroups"); let pendingPhrase="", pendingMood="sad";
+  PHRASES.forEach(grp=>{
+    const d=document.createElement("div"); d.className="pgrp";
+    d.innerHTML=`<div class="gt">${grp.g}</div>`;
+    const chips=document.createElement("div"); chips.className="chips";
+    grp.items.forEach(t=>{
+      const c=document.createElement("button"); c.className="chip"; c.type="button"; c.textContent=t;
+      c.addEventListener("click",()=>{
+        pendingPhrase=t; pendingMood=grp.mood;
+        $("#ribbonInput").value=t; $("#ribbonLen").textContent=t.length;
+        $$("#phraseGroups .chip").forEach(x=>x.classList.remove("sel")); c.classList.add("sel");
+        $("#ribbonApply").disabled=false;
+      });
+      chips.appendChild(c);
+    });
+    d.appendChild(chips); pgWrap.appendChild(d);
+  });
+  $("#ribbonInput").addEventListener("input",e=>{
+    pendingPhrase=e.target.value; $("#ribbonLen").textContent=e.target.value.length;
+    $("#ribbonApply").disabled=!e.target.value.trim();
+    $$("#phraseGroups .chip").forEach(x=>x.classList.toggle("sel",x.textContent===e.target.value.trim()));
+  });
+  function openRibbon(){
+    pendingPhrase=st.ribbon; pendingMood=st.ribbonMood;
+    $("#ribbonInput").value=st.ribbon; $("#ribbonLen").textContent=st.ribbon.length;
+    $("#ribbonApply").disabled=!st.ribbon;
+    $$("#phraseGroups .chip").forEach(x=>x.classList.toggle("sel",x.textContent===st.ribbon));
+    openModal("ribbonScrim");
+  }
+  $("#ribbonPick").addEventListener("click",openRibbon);
+  $("#ribbonApply").addEventListener("click",()=>{
+    st.ribbon=pendingPhrase.trim(); st.ribbonMood=pendingMood;
+    closeModal("ribbonScrim"); render();
+  });
+
+  /* ===== sender modal ===== */
+  const senderList=$("#senderList"); let pendingSender=null;
+  SENDERS.forEach((s,i)=>{
+    const el=document.createElement("button"); el.className="srl"; el.type="button";
+    el.innerHTML=`<span class="radio"></span><span class="srt"><b>${s.name}<span>${s.role}</span></b><small>${s.fixed}</small></span>`;
+    el.addEventListener("click",()=>{
+      pendingSender=i; $$("#senderList .srl").forEach((x,j)=>x.classList.toggle("sel",j===i));
+      $("#senderApply").disabled=false;
+    });
+    senderList.appendChild(el);
+  });
+  $("#senderPick").addEventListener("click",()=>{
+    pendingSender=st.sender;
+    $$("#senderList .srl").forEach((x,j)=>x.classList.toggle("sel",j===st.sender));
+    $("#senderApply").disabled=st.sender===null;
+    openModal("senderScrim");
+  });
+  $("#senderApply").addEventListener("click",()=>{st.sender=pendingSender;closeModal("senderScrim");render();});
+
+  /* ===== alert switches ===== */
+  $$(".sw").forEach(sw=>sw.addEventListener("click",()=>{
+    const on=sw.classList.toggle("on"); sw.setAttribute("aria-pressed",on);
+  }));
+
+  /* ===== favorites link ===== */
+  $("#favMng").addEventListener("click",()=>toast("즐겨찾기 관리 화면으로 이동합니다"));
+
+  /* ===== modal helpers ===== */
+  function openModal(id){$("#"+id).classList.add("show");}
+  function closeModal(id){$("#"+id).classList.remove("show");}
+  $$("[data-close]").forEach(b=>b.addEventListener("click",()=>closeModal(b.dataset.close)));
+  $$(".scrim").forEach(s=>s.addEventListener("click",e=>{if(e.target===s)closeModal(s.id);}));
+  document.addEventListener("keydown",e=>{if(e.key==="Escape")$$(".scrim.show").forEach(s=>s.classList.remove("show"));});
+
+  let toastT;
+  function toast(msg){const t=$("#toast");t.textContent=msg;t.classList.add("show");clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove("show"),2200);}
+
+  /* ===== quick intake 2-step modal ===== */
+  let quickType="";
+  $$("[data-quick]").forEach(b=>b.addEventListener("click",()=>{quickType=b.dataset.quick;openQuickStep1();}));
+  function openQuickStep1(){
+    $("#qTitle").textContent = quickType==="부고" ? "부고 접수" : "청첩 접수";
+    $("#qStep").textContent="STEP 1 · 링크 조회";
+    const label = quickType==="부고" ? "부고장" : "청첩장";
+    $("#qBody").innerHTML=`
+      <div class="field" style="margin-bottom:14px">
+        <label class="lbl">${label} URL</label>
+        <input class="inp" id="qUrl" placeholder="https://..." value="https://obit.example.com/8421">
+        <div class="hint">URL을 입력하고 조회하면 배송지·받는분 정보가 자동입력됩니다.</div>
+      </div>
+      <div class="qi-load" id="qiLoad">
+        <div class="skl" style="width:40%"></div><div class="skl" style="width:88%"></div><div class="skl" style="width:64%"></div>
+      </div>
+      <div class="qi-result" id="qiResult"></div>`;
+    $("#qFoot").innerHTML=`<button class="btn ghost" data-close="quickScrim">취소</button><button class="btn primary" id="qLookup">조회</button>`;
+    $("#qFoot [data-close]").addEventListener("click",()=>closeModal("quickScrim"));
+    $("#qLookup").addEventListener("click",runLookup);
+    openModal("quickScrim");
+  }
+  function runLookup(){
+    const btn=$("#qLookup"); btn.disabled=true; btn.innerHTML='<span class="spin"></span> 조회 중';
+    $("#qiLoad").classList.add("show");
+    setTimeout(()=>{
+      $("#qiLoad").classList.remove("show");
+      const r=$("#qiResult"); r.classList.add("show");
+      const recvName = quickType==="부고" ? "김○○ 상주" : "이○○ · 신랑측";
+      r.innerHTML=`
+        <div class="filled-box">
+          <div class="fl">배송지 주소 <span class="auto-tag">자동입력</span></div>
+          <div class="fv">서울 강남구 테헤란로 152 강남파이낸스센터 3층</div>
+          <div class="fl">받는분 성함 <span class="auto-tag">자동입력</span></div>
+          <div class="fv">${recvName}</div>
+        </div>
+        <div class="field">
+          <label class="lbl">받는분 연락처 <span class="req">*</span></label>
+          <input class="inp num" id="qPhone" placeholder="010-0000-0000">
+          <div class="hint">연락처는 자동입력되지 않아 직접 입력이 필요합니다.</div>
+        </div>`;
+      $("#qFoot").innerHTML=`<button class="btn ghost" id="qBack">다시 조회</button><button class="btn primary" id="qNext">다음 단계 →</button>`;
+      $("#qBack").addEventListener("click",openQuickStep1);
+      $("#qNext").addEventListener("click",openQuickStep2);
+    },1800);
+  }
+  function openQuickStep2(){
+    const qp=$("#qPhone")?$("#qPhone").value.trim():"";
+    quickData={addr:"서울 강남구 테헤란로 152 강남파이낸스센터 3층",rname:quickType==="부고"?"김○○ 상주":"이○○ · 신랑측",rphone:qp};
+    $("#qStep").textContent="STEP 2 · 보내는분 선택 및 확인";
+    let sopts=SENDERS.map((s,i)=>`<label class="srl" data-qs="${i}"><span class="radio"></span><span class="srt"><b>${s.name}<span>${s.role}</span></b><small>${s.fixed}</small></span></label>`).join("");
+    const prodTxt = st.product!==null ? `${PRODUCTS[st.product].name} · ${won(PRODUCTS[st.product].price)}` : "메인 화면에서 상품을 선택하세요";
+    $("#qBody").innerHTML=`
+      <div class="field" style="margin-bottom:16px">
+        <label class="lbl">보내는분 선택 <span class="req">*</span></label>
+        <div class="srlist" id="qSenders">${sopts}</div>
+      </div>
+      <div class="filled-box">
+        <div class="fl">주문 요약</div>
+        <div class="dr" style="display:flex;justify-content:space-between;font-size:12.5px;padding:4px 0"><span style="color:var(--c-text-muted)">상품</span><b>${prodTxt}</b></div>
+        <div class="dr" style="display:flex;justify-content:space-between;font-size:12.5px;padding:4px 0"><span style="color:var(--c-text-muted)">받는분</span><b>${quickData.rname}</b></div>
+        <div class="dr" style="display:flex;justify-content:space-between;font-size:12.5px;padding:4px 0"><span style="color:var(--c-text-muted)">배송지</span><b style="text-align:right;max-width:60%">${quickData.addr}</b></div>
+      </div>`;
+    let qsSel=null;
+    $$("#qSenders .srl").forEach(el=>el.addEventListener("click",()=>{
+      qsSel=+el.dataset.qs; $$("#qSenders .srl").forEach(x=>x.classList.remove("sel")); el.classList.add("sel");
+      $("#qSubmit").disabled=false;
+    }));
+    $("#qFoot").innerHTML=`<button class="btn ghost" id="qBack2">이전</button><button class="btn primary" id="qSubmit" disabled>접수하기</button>`;
+    $("#qBack2").addEventListener("click",runLookupResultBack);
+    $("#qSubmit").addEventListener("click",()=>{
+      st.addr=quickData.addr; st.rname=quickData.rname; st.rphone=quickData.rphone||st.rphone;
+      st.sender=qsSel;
+      $("#fAddr").value=st.addr; $("#fAddr").classList.add("ok");
+      $("#fName").value=st.rname; $("#fName").classList.add("ok");
+      if(st.rphone){$("#fPhone").value=st.rphone;$("#fPhone").classList.add("ok");}
+      closeModal("quickScrim"); render();
+      finishOrder(true);
+    });
+  }
+  let quickData={};
+  function runLookupResultBack(){ // go back to step1 result state
+    openQuickStep1(); $("#qLookup").click();
+  }
+
+  /* ===== submit ===== */
+  $("#submitBtn").addEventListener("click",()=>{ if(!$("#submitBtn").disabled) finishOrder(false); });
+  function finishOrder(viaQuick){
+    const m=MANAGERS[st.mgr], p=PRODUCTS[st.product];
+    const dt = st.now ? "즉시배송" : `${st.date} ${st.hour}시 ${String(st.min).padStart(2,"0")}분`;
+    $("#doneCard").innerHTML=`
+      <div class="dr"><span>상품</span><b>${p?p.name:"-"}</b></div>
+      <div class="dr"><span>받는분</span><b>${st.rname||"-"}</b></div>
+      <div class="dr"><span>배송일시</span><b>${dt}</b></div>
+      <div class="dr"><span>리본 문구</span><b>${st.ribbon||"-"}</b></div>
+      <div class="dr"><span>결제 금액</span><b class="num" style="color:var(--c-orange-ink)">${p?won(p.price):"0원"}</b></div>`;
+    openModal("doneScrim");
+  }
+
+  /* ===== theme switch (mood) ===== */
+  function applyMood(){
+    // joy when ribbon phrase mood = joy AND ribbon set; otherwise muted/근조
+    const joy = st.ribbon && st.ribbonMood==="joy";
+    const root=document.documentElement;
+    if(joy){
+      root.style.setProperty("--rb-accent","#f15a2a");
+      root.style.setProperty("--rb-ink","#d94000");
+      root.style.setProperty("--rb-soft","#fff1ec");
+      $("#stageTag").textContent="축하"; $("#stageTag").style.background="var(--c-orange-soft)"; $("#stageTag").style.color="var(--c-orange-ink)";
+    }else{
+      root.style.setProperty("--rb-accent","#3b3b42");
+      root.style.setProperty("--rb-ink","#1d1d22");
+      root.style.setProperty("--rb-soft","#f2f2f4");
+      $("#stageTag").textContent="근조"; $("#stageTag").style.background="var(--c-surface-2)"; $("#stageTag").style.color="var(--c-text-3)";
+    }
+  }
+
+  /* ===== main render ===== */
+  function render(){
+    // product
+    const p = st.product!==null ? PRODUCTS[st.product] : null;
+    if(p){
+      $("#picked").classList.add("show");
+      $("#pickedName").textContent=`${p.e} ${p.name}`; $("#pickedAmt").textContent=won(p.price);
+      $("#capProd").textContent=`${p.e} ${p.name}`; $("#capProd").classList.remove("dim");
+      $("#sumProd").textContent=`${p.name} (${p.cat})`; $("#sumProd").classList.remove("dim");
+    }else{
+      $("#picked").classList.remove("show");
+      $("#capProd").textContent="미선택"; $("#capProd").classList.add("dim");
+      $("#sumProd").textContent="상품을 선택하세요"; $("#sumProd").classList.add("dim");
+    }
+    // receiver / addr
+    setSum("#sumRecv", st.rname && st.rphone ? `${st.rname} · ${st.rphone}` : (st.rname||st.rphone||""), "미입력");
+    setSum("#sumAddr", st.addr, "미입력");
+    if(st.rname){$("#capRecv").textContent=st.rname;$("#capRecv").classList.remove("dim");}
+    else{$("#capRecv").textContent="미입력";$("#capRecv").classList.add("dim");}
+    // datetime
+    let dtOk=false, dtTxt="";
+    if(st.now){dtOk=true;dtTxt="즉시배송";}
+    else if(st.date&&st.hour!==""&&st.min!==""){dtOk=true;dtTxt=`${st.date} ${st.hour}:${String(st.min).padStart(2,"0")}`;}
+    setSum("#sumDt", dtTxt, "미입력");
+    // ribbon
+    setSum("#sumRib", st.ribbon, "미입력");
+    if(st.ribbon){$("#ribbonVal").textContent=st.ribbon;$("#ribbonVal").classList.remove("empty");$("#ribbonPick").classList.add("filled");}
+    else{$("#ribbonVal").textContent="문구를 선택하세요";$("#ribbonVal").classList.add("empty");$("#ribbonPick").classList.remove("filled");}
+    // sender
+    const sd = st.sender!==null ? SENDERS[st.sender] : null;
+    if(sd){$("#senderVal").textContent=`${sd.name} (${sd.role})`;$("#senderVal").classList.remove("empty");$("#senderPick").classList.add("filled");$("#sumSend").textContent=sd.name;$("#sumSend").classList.remove("dim");}
+    else{$("#senderVal").textContent="프로필을 선택하세요";$("#senderVal").classList.add("empty");$("#senderPick").classList.remove("filled");$("#sumSend").textContent="미입력";$("#sumSend").classList.add("dim");}
+
+    // ribbon preview text
+    const rl=$("#ribLeft"), rr=$("#ribRight");
+    if(st.ribbon){$("#ribLeftTxt").textContent=st.ribbon;rl.classList.remove("ribbon-empty");}
+    else{$("#ribLeftTxt").textContent="문구 입력 대기";rl.classList.add("ribbon-empty");}
+    if(sd){$("#ribRightTxt").textContent=sd.fixed;rr.classList.remove("ribbon-empty");}
+    else{$("#ribRightTxt").textContent="보내는분 대기";rr.classList.add("ribbon-empty");}
+
+    applyMood();
+
+    // totals
+    const amt = p?p.price:0;
+    $("#sumTotal").textContent=won(amt); $("#sbAmt").textContent=won(amt);
+
+    // required checklist (7): product, addr, rname, rphone, ribbon, sender, (date|now)
+    const checks=[!!p, !!st.addr, !!st.rname, !!st.rphone, !!st.ribbon, sd!==null, dtOk];
+    const done=checks.filter(Boolean).length, total=checks.length, miss=total-done;
+    $("#sumCnt").textContent=`${done} / ${total} 항목`;
+    // progress segments
+    const prog=$("#prog");
+    if(prog.children.length!==total){prog.innerHTML=Array.from({length:total},()=>'<span class="seg"></span>').join("");}
+    Array.from(prog.children).forEach((s,i)=>s.classList.toggle("done", i<done));
+    // submit + message
+    const btn=$("#submitBtn");
+    if(miss===0){
+      btn.disabled=false; $("#submitTxt").textContent="주문 접수하기";
+      $("#sbMsg").innerHTML="<b>모든 필수 항목</b>이 입력되었습니다.";
+    }else{
+      btn.disabled=true; $("#submitTxt").textContent="필수 항목을 모두 입력해 주세요";
+      const labels=["상품","배송지","받는분 성함","받는분 연락처","리본 문구","보내는분","배송일시"];
+      const missList=labels.filter((_,i)=>!checks[i]);
+      const show=missList.slice(0,2).join(", ")+(missList.length>2?` 외 ${missList.length-2}건`:"");
+      $("#sbMsg").innerHTML=`<b>${total}개 필수 항목</b> 중 <span class="miss">${miss}개</span> 남음 · ${show}`;
+    }
+  }
+  function setSum(sel,val,empty){
+    const el=$(sel);
+    if(val){el.textContent=val;el.classList.remove("dim");}
+    else{el.textContent=empty;el.classList.add("dim");}
+  }
+
+  renderMgr(); render();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,404 @@
+/* ============================================================
+   admin.css — ADMIN console pages (거래처 관리/정산/주문)
+   Reuses the enterprise design system; only admin-specific bits here.
+   ============================================================ */
+.page-admin {
+  padding: 24px;
+}
+.admin-inner {
+  width: 100%;
+  max-width: 1300px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* selector row (settlement year/month + client pickers) */
+.admin-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.admin-controls .select {
+  width: auto;
+  min-width: 160px;
+}
+.admin-controls__label {
+  font-size: var(--fs-13);
+  color: var(--c-text-muted);
+  font-weight: var(--fw-medium);
+}
+.admin-summary {
+  font-size: var(--fs-13);
+  color: var(--c-text-muted);
+}
+.admin-summary strong {
+  color: var(--c-text-strong);
+}
+.admin-empty {
+  padding: 40px;
+  text-align: center;
+  color: var(--c-text-ghost);
+  font-size: var(--fs-14);
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-md);
+}
+
+/* read-only field (e.g. accountId when editing a client) */
+.ofield__input.is-readonly {
+  background: var(--c-surface-3);
+  color: var(--c-text-muted);
+  cursor: not-allowed;
+}
+
+/* 3-check column header help row (settlement) */
+.admin-checkhdr {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-13);
+  color: var(--c-text-3);
+}
+
+/* ── Top filter panel (clients + settlement) ────────────────
+   Reuses the orders.css filter-panel skeleton (.orders-filters /
+   .orders-frow / .orders-fgroup / .orders-flabel / .orders-search)
+   so the admin filters match the 실시간 주문내역 filter panel exactly.
+   Only the admin-specific bits live here. */
+.orders-fgroup .select {
+  width: auto;
+  min-width: 120px;
+  padding: 7px 30px 7px 12px;
+  font-size: var(--fs-13);
+}
+.orders-fgroup .select + .select {
+  margin-left: 8px;
+}
+/* status tab count badge (sits inside the chip-based status tabs) */
+.admin-tab-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  margin-left: 2px;
+  border-radius: 999px;
+  background: var(--c-surface-3);
+  color: var(--c-text-muted);
+  font-size: var(--fs-11);
+  font-weight: var(--fw-bold);
+}
+.chip.is-active .admin-tab-count {
+  background: rgba(241, 90, 42, 0.15);
+  color: var(--c-orange-ink);
+}
+.admin-tab-count--alert {
+  background: var(--c-warn-soft-bg);
+  color: var(--c-warn-soft-ink);
+}
+
+/* ── Row actions (approve / reject) ─────────────────────── */
+.admin-rowact {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.btn-approve {
+  padding: 5px 12px;
+  border-radius: var(--r-sm);
+  background: var(--c-success);
+  color: #fff;
+  font-size: var(--fs-13);
+  font-weight: var(--fw-semibold);
+  transition: background 0.15s;
+}
+.btn-approve:hover {
+  background: var(--c-success-ink);
+}
+.btn-reject {
+  padding: 5px 12px;
+  border-radius: var(--r-sm);
+  background: var(--c-surface);
+  color: var(--c-danger);
+  border: 1px solid var(--c-danger);
+  font-size: var(--fs-13);
+  font-weight: var(--fw-medium);
+  transition: background 0.15s;
+}
+.btn-reject:hover {
+  background: var(--c-danger-bg);
+}
+
+/* ── Reject-reason modal ────────────────────────────────── */
+.areject {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.areject__msg {
+  font-size: var(--fs-15);
+  color: var(--c-text-2);
+}
+.areject__msg strong {
+  color: var(--c-text);
+}
+.areject__foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.areject__confirm {
+  padding: 8px 16px;
+  background: var(--c-danger);
+  color: #fff;
+  border-radius: 4px;
+  font-size: var(--fs-14);
+  font-weight: var(--fw-medium);
+  transition: background 0.15s;
+}
+.areject__confirm:disabled {
+  background: var(--c-border);
+  color: var(--c-text-faint);
+  cursor: not-allowed;
+}
+.areject__confirm:not(:disabled):hover {
+  background: #d32f2f;
+}
+
+/* reject-reason banner in the edit modal */
+.cedit__rejectnote {
+  margin: 0 24px;
+  padding: 10px 14px;
+  background: var(--c-danger-bg);
+  border: 1px solid #f3c0c0;
+  border-radius: var(--r-md);
+  font-size: var(--fs-13);
+  color: var(--c-danger-ink);
+}
+
+/* ── Toast ──────────────────────────────────────────────── */
+.admin-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 32px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-radius: var(--r-lg);
+  background: var(--c-text-strong);
+  color: #fff;
+  font-size: var(--fs-14);
+  font-weight: var(--fw-medium);
+  box-shadow: var(--sh-modal);
+  z-index: 60;
+  max-width: 90vw;
+  animation: toastIn 0.2s ease;
+}
+.admin-toast--ok .icon {
+  color: #7be0a0;
+}
+.admin-toast--warn .icon {
+  color: #ffcf80;
+}
+@keyframes toastIn {
+  from { opacity: 0; transform: translate(-50%, 12px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+/* ── 기업별 상품단가 설정 (admin-pricing) ────────────────── */
+.prc-default {
+  color: var(--c-text-muted);
+}
+.prc-input {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+}
+.prc-input input {
+  flex: 1;
+  min-width: 0;
+  width: auto;
+  border: 1px solid var(--c-border-field);
+  border-radius: var(--r-md);
+  padding: 7px 10px;
+  font-size: var(--fs-13);
+  text-align: right;
+  color: var(--c-text);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.prc-input input:focus {
+  border-color: var(--c-indigo);
+  box-shadow: var(--ring-field);
+}
+.prc-input input::placeholder {
+  color: var(--c-text-faint);
+}
+.prc-won {
+  font-size: var(--fs-13);
+  color: var(--c-text-muted);
+  flex-shrink: 0;
+}
+.prc-reset {
+  flex-shrink: 0;
+  padding: 5px 8px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--c-border);
+  background: var(--c-surface);
+  color: var(--c-text-muted);
+  font-size: var(--fs-12);
+  font-weight: var(--fw-medium);
+  transition: all 0.15s;
+}
+.prc-reset:hover {
+  border-color: var(--c-border-strong);
+  color: var(--c-text-3);
+}
+.prc-dash {
+  color: var(--c-text-faint);
+}
+.prc-savebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 14px 16px;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-md);
+}
+.prc-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-13);
+  color: var(--c-text-muted);
+}
+.prc-savebar__btns {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.prc-save {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  border-radius: var(--r-md);
+  background: var(--c-orange);
+  color: #fff;
+  font-size: var(--fs-14);
+  font-weight: var(--fw-semibold);
+  transition: background 0.15s;
+}
+.prc-save:hover {
+  background: #d94e24;
+}
+
+/* ── 정산회계: 조회 기간 빠른 선택(이번달/저번달) ────────── */
+.settle-quickmonth {
+  margin-left: 12px;
+}
+
+/* ── 정산회계: 기간 정산액 요약 (총/입금완료/미입금) ─────── */
+.settle-sum {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.settle-sumcard {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 18px;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-md);
+}
+.settle-sumcard__lbl {
+  font-size: var(--fs-13);
+  color: var(--c-text-muted);
+  font-weight: var(--fw-medium);
+}
+.settle-sumcard__val {
+  font-size: var(--fs-22);
+  font-weight: var(--fw-bold);
+  color: var(--c-text-strong);
+  letter-spacing: -0.01em;
+}
+.settle-sumcard--ok {
+  background: var(--c-success-bg);
+  border-color: var(--c-success);
+}
+.settle-sumcard--ok .settle-sumcard__val {
+  color: var(--c-success-ink);
+}
+.settle-sumcard--warn {
+  background: var(--c-danger-bg);
+  border-color: #f3c0c0;
+}
+.settle-sumcard--warn .settle-sumcard__val {
+  color: var(--c-danger-ink);
+}
+
+/* ── 정산회계: 공개 링크 복사 버튼 ──────────────────────── */
+.settle-linkbtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 9px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--c-border-input-2);
+  background: var(--c-surface);
+  color: var(--c-blue);
+  font-size: var(--fs-12);
+  font-weight: var(--fw-medium);
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+.settle-linkbtn:hover {
+  border-color: var(--c-blue);
+  background: var(--c-blue-soft);
+}
+.settle-linkbtn .icon {
+  flex-shrink: 0;
+}
+
+/* ── 정산회계: 명세서 PDF 다운로드 버튼 ─────────────────── */
+.settle-dlbtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 9px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--c-border-input-2);
+  background: var(--c-surface);
+  color: var(--c-orange);
+  font-size: var(--fs-12);
+  font-weight: var(--fw-medium);
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+.settle-dlbtn:hover {
+  border-color: var(--c-orange);
+  background: var(--c-orange-soft);
+}
+.settle-dlbtn .icon {
+  flex-shrink: 0;
+}
+
+/* ── 정산회계 표: 거래처(첫 열) 제외 전 열 가운데 정렬 ───── */
+.page-admin .settle-thead .settle-th:not(:first-child),
+.page-admin .settle-trow .settle-td:not(:first-child) {
+  justify-content: center;
+  text-align: center;
+}

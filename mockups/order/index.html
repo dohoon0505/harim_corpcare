@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>경조상품 주문 — 재설계 시안 (v2)</title>
+    <link rel="icon" type="image/png" href="../../assets/Black_Logo_Simbol.png" />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
+    <style>
+      :root {
+        --c-orange: #f15a2a; --c-orange-ink: #d94000; --c-orange-soft: #fff1ec;
+        --c-blue: #4169e1; --c-blue-soft: #f0f3fd; --c-dark: #111118;
+        --c-bg: #f9f9f9; --c-surface: #fff; --c-surface-2: #f5f5f7;
+        --c-border: #e0e0e0; --c-border-strong: #d8d8d8; --c-divider: #e8e8e8;
+        --c-text: #222; --c-text-strong: #111; --c-text-2: #444; --c-text-3: #555; --c-text-muted: #888; --c-text-faint: #aaa;
+        --c-success: #2e7d32;
+        --r-md: 6px; --r-lg: 8px; --r-xl: 12px;
+        --font-sans: "Pretendard", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: var(--font-sans); background: var(--c-bg); color: var(--c-text); -webkit-font-smoothing: antialiased; }
+      .wrap { max-width: 1280px; margin: 0 auto; padding: 48px 28px 96px; }
+      .eyebrow { font-size: 12px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--c-orange-ink); }
+      h1 { font-size: 30px; font-weight: 700; color: var(--c-text-strong); letter-spacing: -.5px; margin-top: 10px; }
+      .sub { font-size: 14px; color: var(--c-text-3); margin-top: 12px; line-height: 1.7; max-width: 760px; }
+      .meta { margin-top: 16px; display: flex; gap: 18px; flex-wrap: wrap; font-size: 12.5px; color: var(--c-text-muted); }
+      .meta b { color: var(--c-text-2); font-weight: 600; }
+      .changes { margin: 26px 0 32px; border: 1px solid var(--c-border); border-radius: var(--r-lg); overflow: hidden; }
+      .changes .row { display: flex; gap: 12px; padding: 13px 18px; font-size: 13px; line-height: 1.6; color: var(--c-text-2); }
+      .changes .row + .row { border-top: 1px solid var(--c-divider); }
+      .changes .row .k { flex: 0 0 124px; font-weight: 600; color: var(--c-text-strong); }
+      .changes .row .k.ok { color: var(--c-orange-ink); }
+      .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
+      @media (max-width: 920px) { .grid { grid-template-columns: 1fr; } }
+      .card { background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--r-xl); overflow: hidden; transition: border-color .16s, transform .16s; display: flex; flex-direction: column; }
+      .card:hover { transform: translateY(-2px); border-color: var(--c-border-strong); }
+      .thumb { position: relative; height: 300px; border-bottom: 1px solid var(--c-divider); background: var(--c-surface-2); overflow: hidden; }
+      .thumb iframe { position: absolute; top: 0; left: 0; width: 1200px; height: 850px; border: 0; transform: scale(.5); transform-origin: top left; pointer-events: none; background: #fff; }
+      .thumb a.cover { position: absolute; inset: 0; z-index: 2; }
+      .thumb .num { position: absolute; top: 12px; left: 12px; z-index: 3; min-width: 28px; height: 28px; padding: 0 9px; border-radius: 7px; background: var(--c-dark); color: #fff; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(0,0,0,.22); }
+      .body { padding: 18px 20px 20px; display: flex; flex-direction: column; gap: 11px; flex: 1; }
+      .title-row { display: flex; align-items: baseline; gap: 9px; flex-wrap: wrap; }
+      .title-row h2 { font-size: 18px; font-weight: 700; color: var(--c-text-strong); letter-spacing: -.3px; }
+      .ref { font-size: 11.5px; font-weight: 600; color: var(--c-blue); background: var(--c-blue-soft); border-radius: 999px; padding: 3px 9px; }
+      .tagline { font-size: 13px; color: var(--c-text-3); line-height: 1.5; }
+      ul.hi { list-style: none; display: flex; flex-direction: column; gap: 6px; margin-top: 2px; }
+      ul.hi li { position: relative; padding-left: 16px; font-size: 12.5px; color: var(--c-text-3); line-height: 1.55; }
+      ul.hi li::before { content: ""; position: absolute; left: 2px; top: 7px; width: 5px; height: 5px; border-radius: 1px; background: var(--c-orange); }
+      .actions { margin-top: auto; padding-top: 8px; }
+      .btn { display: block; text-align: center; padding: 11px 14px; border-radius: var(--r-md); font-size: 14px; font-weight: 600; text-decoration: none; background: var(--c-orange); color: #fff; transition: background .15s; }
+      .btn:hover { background: var(--c-orange-ink); }
+      footer { margin-top: 44px; text-align: center; font-size: 12px; color: var(--c-text-faint); line-height: 1.8; }
+      code { font-family: ui-monospace, "SFMono-Regular", Menlo, monospace; font-size: .92em; color: var(--c-text-2); }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <p class="eyebrow">Redesign · v2</p>
+      <h1>경조상품 주문 — 재설계 시안</h1>
+      <p class="sub">2026 디자인 트렌드 리서치를 반영해 다시 작성했습니다. 5개 모두 <b style="color:var(--c-text-2)">담당자 인라인 · 단일 화면</b>(별도 선택 화면·챕터 전환 없음)이며, "AI가 만든 듯한" 제네릭 요소를 의도적으로 배제했습니다. 직접 클릭·입력해 보고 마음에 드는 안을 알려주세요.</p>
+      <div class="meta">
+        <span><b>톤 유지</b> 오렌지/블루 · Pretendard · 경조사 정제 톤</span>
+        <span><b>색은 의미로만</b> 헤어라인 보더 · tabular-nums</span>
+        <span><b>로컬 전용</b> 미커밋 · 샘플 데이터</span>
+      </div>
+
+      <div class="changes">
+        <div class="row"><span class="k ok">바뀐 점 1</span><span>담당자 선택을 <b>상단 인라인</b>으로 통합 — 별도 진입 화면/게이트 제거(기본값 할다운, 인라인 전환).</span></div>
+        <div class="row"><span class="k ok">바뀐 점 2</span><span>단계별 <b>챕터 전환 레이아웃 제거</b> — 모든 입력이 한 화면에 응집.</span></div>
+        <div class="row"><span class="k ok">바뀐 점 3</span><span><b>안티-AI</b>: 큰 이모지 히어로·게이트 카피·그라데이션·card-soup 배제 → 헤어라인 위계·단일 액센트·디자인된 마이크로상태.</span></div>
+      </div>
+
+      <div class="grid" id="grid"></div>
+
+      <footer>
+        올해의경조사 · 경조상품 주문 재설계 시안 v2 · 파일 <code>mockups/order/</code> · 서빙 <code>/mockups/order/</code>
+      </footer>
+    </div>
+
+    <script>
+      const SHEETS = [
+        {
+          slug: "01-bento", num: "1", name: "벤토 그리드", ref: "Bento 2.0",
+          tagline: "크기가 다른 모듈 타일로 한눈에 — 애플 키노트식 정돈을 경조사 톤으로",
+          hi: [
+            "12컬럼 그리드에 담당자·상품·배송지·일시·리본·보내는분·알림·요약 타일 배치",
+            "14~16px 라운드 + 1px 헤어라인, hover 시 -2px 미세 lift(과한 그림자 X)",
+            "'주문 요약+제출' 타일만 다크로 무게를 몰아 card-soup 회피",
+            "담당자 타일 인라인 전환 · 단일 오렌지 액센트 · tabular-nums",
+          ],
+        },
+        {
+          slug: "02-mono", num: "2", name: "모노크롬 미니멀", ref: "Linear · Vercel",
+          tagline: "색은 의미로만 — 무채색 베이스에 헤어라인·인셋으로만 위계",
+          hi: [
+            "쿨 그레이/블랙 + 1px 헤어라인·인셋(소프트섀도 도배 금지)",
+            "오렌지=주 CTA·활성 / 블루=링크·focus / 초록=성공 / 빨강=오류",
+            "상단 인라인 세그먼트 담당자 전환 + 우측 312px sticky 요약",
+            "번호 인덱스 섹션 · ⌘+Enter 단축 · 샤프 타이포 · tabular-nums",
+          ],
+        },
+        {
+          slug: "03-editorial", num: "3", name: "에디토리얼 2-pane", ref: "Document · 편집물",
+          tagline: "좌 입력 · 우 sticky 주문서 영수증 — 괘선과 여백 중심의 정제",
+          hi: [
+            "섹션 번호 01~05 + 매스트헤드 + 헤어라인 구분선(카드 남발 제거)",
+            "우측 sticky 주문서 레일이 모든 입력을 실시간 반영(ink 금액바)",
+            "담당자 상단 인라인 스트립('변경' 팝오버로 즉시 전환)",
+            "그림자는 레일·모달에만 · 의미 기반 색 · 잡지/문서 같은 차분함",
+          ],
+        },
+        {
+          slug: "04-clean", num: "4", name: "클린 · 접근성", ref: "Toss 감성",
+          tagline: "신뢰감 있는 큰 글씨 클린 폼 — 단일 컬럼 + 하단 sticky 액션바",
+          hi: [
+            "16px 큰 입력 · 48~54px 큰 터치 타깃 · 또렷한 포커스 링",
+            "단일 컬럼이되 위저드 아님 — 전 섹션 한 화면 + 하단 sticky 제출바",
+            "상단 인라인 담당자 셀렉터 행 · 인라인 검증 · 연락처 자동 하이픈",
+            "헤어라인+인셋 위계 · 따뜻하되 절제된 마이크로카피",
+          ],
+        },
+        {
+          slug: "05-live", num: "5", name: "라이브 리본 미리보기", ref: "Live preview · 리메이크",
+          tagline: "입력하는 순간 리본이 보인다 — 모노크롬 캔버스에 리본만 색의 초점",
+          hi: [
+            "우측 CSS 화환+세로 리본 2줄(문구/보내는분)이 실시간 갱신",
+            "근조=무채색 차분 / 축하=오렌지로 0.5s 부드럽게 문맥 전환",
+            "담당자 헤더 우측 인라인 팝오버 전환(별도 화면 없음)",
+            "헤어라인 위계 · 하단 sticky 7단계 progress + 남은 항목 힌트",
+          ],
+        },
+      ];
+      const grid = document.getElementById("grid");
+      grid.innerHTML = SHEETS.map((s) => `
+        <div class="card">
+          <div class="thumb">
+            <span class="num">시안 ${s.num}</span>
+            <iframe src="./${s.slug}.html" scrolling="no" loading="lazy" title="${s.name} 미리보기"></iframe>
+            <a class="cover" href="./${s.slug}.html" target="_blank" rel="noopener" aria-label="${s.name} 열기"></a>
+          </div>
+          <div class="body">
+            <div class="title-row">
+              <h2>${s.name}</h2>
+              <span class="ref">${s.ref}</span>
+            </div>
+            <p class="tagline">${s.tagline}</p>
+            <ul class="hi">${s.hi.map((h) => `<li>${h}</li>`).join("")}</ul>
+            <div class="actions">
+              <a class="btn" href="./${s.slug}.html" target="_blank" rel="noopener">시안 ${s.num} 열어보기 →</a>
+            </div>
+          </div>
+        </div>
+      `).join("");
+    </script>
+  </body>
+</html>

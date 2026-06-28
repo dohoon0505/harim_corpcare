@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>경조상품 주문 · 클린 · 접근성</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
+<style>
+  :root{
+    --c-orange:#f15a2a; --c-orange-ink:#d94000; --c-orange-soft:#fff1ec;
+    --c-blue:#4169e1; --c-blue-soft:#f0f3fd; --c-dark:#111118;
+    --c-bg:#f9f9f9; --c-surface:#fff; --c-surface-2:#f5f5f7; --c-surface-3:#f5f5f5;
+    --c-border:#e0e0e0; --c-border-strong:#d8d8d8; --c-divider:#e8e8e8;
+    --c-text:#222; --c-text-strong:#111; --c-text-2:#444; --c-text-3:#555;
+    --c-text-muted:#888; --c-text-faint:#aaa;
+    --c-success:#4caf50; --c-success-soft:#e8f5e9; --c-success-ink:#2e7d32;
+    --c-danger:#f44336; --c-danger-soft:#ffebee; --c-warn:#ff9800;
+    --r-sm:5px; --r-md:6px; --r-lg:8px; --r-xl:10px; --r-tile:14px;
+    --sh-bar:0 -1px 0 var(--c-border), 0 -8px 24px rgba(0,0,0,.05);
+    --sh-modal:0 16px 50px rgba(17,17,24,.22);
+    --sh-pop:0 8px 28px rgba(17,17,24,.14);
+    --ring:0 0 0 3px rgba(241,90,42,.18);
+    --ring-blue:0 0 0 3px rgba(65,105,225,.16);
+    --bar-h:80px;
+    --font-sans:"Pretendard",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:var(--font-sans); background:var(--c-bg); color:var(--c-text);
+    font-size:15px; line-height:1.6; -webkit-font-smoothing:antialiased;
+    letter-spacing:-0.011em;
+  }
+  button{font-family:inherit; cursor:pointer; letter-spacing:inherit; border:none; background:none;}
+  input,select,textarea{font-family:inherit; letter-spacing:inherit; color:var(--c-text);}
+  .num{font-variant-numeric:tabular-nums; font-feature-settings:"tnum";}
+  ::selection{background:var(--c-orange-soft);}
+  :focus-visible{outline:none;}
+
+  /* ====== App shell ====== */
+  .app{display:flex; min-height:100vh;}
+  .sidebar{
+    width:228px; flex:0 0 228px; background:var(--c-surface);
+    border-right:1px solid var(--c-border); padding:20px 14px;
+    display:flex; flex-direction:column; gap:2px; position:sticky; top:0; height:100vh;
+  }
+  .sb-brand{display:flex; align-items:center; gap:10px; padding:6px 8px 18px;}
+  .sb-logo{width:34px; height:34px; border-radius:10px; background:var(--c-dark); display:grid; place-items:center; color:#fff; font-size:17px;}
+  .sb-brand b{font-size:15px; color:var(--c-text-strong); font-weight:700; display:block; line-height:1.3;}
+  .sb-brand span{font-size:11.5px; color:var(--c-text-muted); font-weight:500;}
+  .sb-sec{font-size:11px; color:var(--c-text-faint); font-weight:600; padding:14px 10px 6px; letter-spacing:.03em;}
+  .sb-item{display:flex; align-items:center; gap:11px; padding:10px 10px; border-radius:var(--r-lg); color:var(--c-text-3); font-size:14px; font-weight:500; text-decoration:none; transition:background .12s, color .12s;}
+  .sb-item:hover{background:var(--c-surface-2);}
+  .sb-item.active{background:var(--c-orange-soft); color:var(--c-orange-ink); font-weight:700;}
+  .sb-item .ic{width:18px; text-align:center; font-size:15px; opacity:.9;}
+  .sb-spacer{flex:1;}
+  .sb-user{display:flex; align-items:center; gap:10px; padding:11px 8px; border-top:1px solid var(--c-divider); margin-top:8px;}
+  .sb-user .av{width:32px; height:32px; border-radius:50%; background:var(--c-blue-soft); color:var(--c-blue); display:grid; place-items:center; font-weight:700; font-size:13px;}
+  .sb-user b{font-size:13px; color:var(--c-text-2); font-weight:700; display:block; line-height:1.3;}
+  .sb-user span{font-size:11px; color:var(--c-text-muted);}
+
+  .main{flex:1; min-width:0; display:flex; flex-direction:column;}
+  .content{max-width:920px; width:100%; margin:0 auto; padding:34px 36px calc(var(--bar-h) + 44px);}
+
+  /* ====== Page header ====== */
+  .page-head{margin-bottom:22px;}
+  .page-head h1{font-size:30px; font-weight:700; color:var(--c-text-strong); margin:0; letter-spacing:-0.025em; line-height:1.25;}
+  .page-head .sub{font-size:15px; color:var(--c-text-muted); margin-top:8px;}
+
+  /* ====== Manager inline selector (top) ====== */
+  .mgr-bar{
+    display:flex; align-items:center; gap:16px; padding:16px 20px; margin-bottom:14px;
+    background:var(--c-surface); border:1px solid var(--c-border); border-radius:var(--r-tile);
+  }
+  .mgr-av{width:48px; height:48px; flex:0 0 48px; border-radius:50%; background:var(--c-orange-soft); color:var(--c-orange-ink); display:grid; place-items:center; font-size:18px; font-weight:700;}
+  .mgr-meta{min-width:0; flex:1;}
+  .mgr-meta .lbl{font-size:12px; color:var(--c-text-muted); font-weight:600; margin-bottom:1px;}
+  .mgr-meta .nm{font-size:18px; font-weight:700; color:var(--c-text-strong); display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
+  .mgr-meta .role{font-size:13px; font-weight:600; color:var(--c-blue); background:var(--c-blue-soft); padding:2px 9px; border-radius:999px;}
+  .mgr-meta .tel{font-size:14px; color:var(--c-text-3); margin-top:1px;}
+  .mgr-switch{position:relative;}
+  .mgr-trigger{
+    display:flex; align-items:center; gap:8px; padding:11px 16px; border-radius:var(--r-lg);
+    background:var(--c-surface); border:1px solid var(--c-border-strong); font-size:14px; font-weight:600; color:var(--c-text-2);
+    transition:border-color .12s, background .12s; white-space:nowrap;
+  }
+  .mgr-trigger:hover{border-color:var(--c-text-muted); background:var(--c-surface-2);}
+  .mgr-trigger .chev{font-size:11px; color:var(--c-text-muted); transition:transform .18s;}
+  .mgr-switch.open .mgr-trigger .chev{transform:rotate(180deg);}
+  .mgr-menu{
+    position:absolute; top:calc(100% + 8px); right:0; width:300px; z-index:40;
+    background:var(--c-surface); border:1px solid var(--c-border); border-radius:var(--r-xl);
+    box-shadow:var(--sh-pop); padding:7px; display:none;
+  }
+  .mgr-switch.open .mgr-menu{display:block;}
+  .mgr-opt{display:flex; align-items:center; gap:12px; width:100%; padding:11px 12px; border-radius:var(--r-lg); text-align:left; transition:background .1s;}
+  .mgr-opt:hover{background:var(--c-surface-2);}
+  .mgr-opt .oav{width:38px; height:38px; flex:0 0 38px; border-radius:50%; background:var(--c-surface-2); color:var(--c-text-3); display:grid; place-items:center; font-weight:700; font-size:14px;}
+  .mgr-opt.sel .oav{background:var(--c-orange-soft); color:var(--c-orange-ink);}
+  .mgr-opt .oinfo{flex:1; min-width:0;}
+  .mgr-opt .oinfo b{font-size:14.5px; font-weight:700; color:var(--c-text-strong); display:block;}
+  .mgr-opt .oinfo span{font-size:12.5px; color:var(--c-text-muted);}
+  .mgr-opt .ock{color:var(--c-orange); font-size:15px; opacity:0;}
+  .mgr-opt.sel .ock{opacity:1;}
+  .mgr-menu .divider{height:1px; background:var(--c-divider); margin:6px 4px;}
+  .mgr-add{display:flex; align-items:center; gap:8px; width:100%; padding:10px 12px; border-radius:var(--r-lg); color:var(--c-blue); font-size:13.5px; font-weight:600;}
+  .mgr-add:hover{background:var(--c-blue-soft);}
+
+  /* ====== Quick intake (bento pair) ====== */
+  .quick{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:22px;}
+  .quick-card{
+    display:flex; align-items:center; gap:14px; padding:18px 20px; text-align:left;
+    background:var(--c-surface); border:1px solid var(--c-border); border-radius:var(--r-tile);
+    transition:border-color .14s, background .14s, transform .06s;
+  }
+  .quick-card:hover{border-color:var(--c-text-muted); background:var(--c-surface-2);}
+  .quick-card:active{transform:scale(.992);}
+  .quick-ic{width:46px; height:46px; flex:0 0 46px; border-radius:12px; display:grid; place-items:center; font-size:22px; background:var(--c-surface-2); border:1px solid var(--c-border);}
+  .quick-tx b{font-size:16px; font-weight:700; color:var(--c-text-strong); display:block;}
+  .quick-tx span{font-size:13px; color:var(--c-text-muted);}
+  .quick-tx .go{font-size:12px; color:var(--c-blue); font-weight:600; margin-top:2px; display:inline-block;}
+
+  /* ====== Section blocks ====== */
+  .sec{margin-bottom:30px;}
+  .sec-head{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:14px;}
+  .sec-head .t{display:flex; align-items:baseline; gap:9px;}
+  .sec-head h2{font-size:20px; font-weight:700; color:var(--c-text-strong); margin:0; letter-spacing:-0.02em;}
+  .sec-head .req{color:var(--c-orange); font-size:13px; font-weight:700;}
+  .sec-head .ok{display:none; align-items:center; gap:4px; color:var(--c-success-ink); font-size:13px; font-weight:700;}
+  .sec-head .ok.show{display:inline-flex;}
+  .sec-head .help{font-size:13px; color:var(--c-text-muted);}
+  .sec-head .act{font-size:13.5px; color:var(--c-blue); font-weight:600; cursor:pointer;}
+  .sec-head .act:hover{text-decoration:underline;}
+
+  /* ====== Fields ====== */
+  .field{margin-bottom:18px;}
+  .field:last-child{margin-bottom:0;}
+  .field > label{display:flex; align-items:center; gap:6px; font-size:14.5px; font-weight:700; color:var(--c-text-2); margin-bottom:8px;}
+  .field > label .req{color:var(--c-orange); font-size:13px;}
+  .field .hint{font-size:13px; color:var(--c-text-muted); margin-bottom:8px; margin-top:-3px;}
+  .inp, .ta{
+    width:100%; background:var(--c-surface); border:1px solid var(--c-border-strong);
+    border-radius:var(--r-lg); padding:14px 15px; font-size:16px; color:var(--c-text-strong);
+    transition:border-color .12s, box-shadow .12s; line-height:1.45;
+  }
+  .inp::placeholder, .ta::placeholder{color:var(--c-text-faint);}
+  .inp:hover, .ta:hover{border-color:var(--c-text-muted);}
+  .inp:focus, .ta:focus{border-color:var(--c-orange); box-shadow:var(--ring);}
+  .inp.invalid, .ta.invalid{border-color:var(--c-danger);}
+  .ta{resize:vertical; min-height:96px;}
+  .row2{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+  .vmsg{display:none; align-items:center; gap:5px; font-size:13px; margin-top:7px; font-weight:600;}
+  .vmsg.err{color:var(--c-danger); display:flex;}
+  .vmsg.ok{color:var(--c-success-ink); display:flex;}
+
+  /* ====== Product picker ====== */
+  .prod-list{display:flex; flex-direction:column; gap:10px;}
+  .prod{
+    display:flex; align-items:center; gap:15px; width:100%; padding:16px 18px; text-align:left;
+    background:var(--c-surface); border:1px solid var(--c-border); border-radius:var(--r-tile);
+    transition:border-color .12s, box-shadow .12s, background .12s;
+  }
+  .prod:hover{border-color:var(--c-text-muted); background:var(--c-surface-2);}
+  .prod.sel{border-color:var(--c-orange); background:var(--c-orange-soft); box-shadow:var(--ring);}
+  .prod .pemo{width:50px; height:50px; flex:0 0 50px; border-radius:12px; background:var(--c-surface-2); border:1px solid var(--c-border); display:grid; place-items:center; font-size:25px;}
+  .prod.sel .pemo{background:#fff; border-color:#f3c9bb;}
+  .prod .pinfo{flex:1; min-width:0;}
+  .prod .pinfo b{font-size:16.5px; font-weight:700; color:var(--c-text-strong); display:block;}
+  .prod .pinfo .cat{font-size:13px; color:var(--c-text-muted); font-weight:600;}
+  .prod .pprice{font-size:17px; font-weight:700; color:var(--c-text-strong); text-align:right; white-space:nowrap;}
+  .prod.sel .pprice{color:var(--c-orange-ink);}
+  .prod .pradio{width:23px; height:23px; flex:0 0 23px; border-radius:50%; border:2px solid var(--c-border-strong); display:grid; place-items:center; transition:border-color .12s;}
+  .prod.sel .pradio{border-color:var(--c-orange);}
+  .prod .pradio::after{content:""; width:11px; height:11px; border-radius:50%; background:var(--c-orange); transform:scale(0); transition:transform .14s;}
+  .prod.sel .pradio::after{transform:scale(1);}
+  .prod-empty{padding:30px 24px; text-align:center; border:1px dashed var(--c-border-strong); border-radius:var(--r-tile); background:var(--c-surface-2);}
+  .prod-empty .e-ic{font-size:30px; margin-bottom:8px;}
+  .prod-empty p{font-size:14px; color:var(--c-text-3); margin:0 0 14px;}
+  .prod-empty .btn-line{display:inline-flex;}
+
+  /* ====== Chips (ribbon / sender) ====== */
+  .chip-group-lbl{font-size:13px; font-weight:700; color:var(--c-text-muted); margin:14px 0 8px;}
+  .chips{display:flex; flex-wrap:wrap; gap:8px;}
+  .chip{padding:9px 15px; border-radius:999px; border:1px solid var(--c-border-strong); background:var(--c-surface); font-size:14px; font-weight:600; color:var(--c-text-2); transition:all .1s;}
+  .chip:hover{border-color:var(--c-text-muted); background:var(--c-surface-2);}
+  .chip.sel{border-color:var(--c-orange); background:var(--c-orange-soft); color:var(--c-orange-ink);}
+
+  .ta-foot{display:flex; align-items:center; justify-content:space-between; margin-top:7px;}
+  .ta-count{font-size:13px; color:var(--c-text-muted);}
+  .ta-count .num{font-weight:700; color:var(--c-text-3);}
+
+  .ribbon-preview{margin-top:14px; padding:16px; border:1px solid var(--c-divider); border-radius:var(--r-lg); background:var(--c-surface-2);}
+  .ribbon-preview .rp-lbl{font-size:12px; color:var(--c-text-muted); font-weight:600; margin-bottom:8px;}
+  .ribbon-stage{display:flex; gap:20px; justify-content:center; padding:10px 0;}
+  .ribbon-strip{
+    width:54px; min-height:130px; padding:14px 6px; border-radius:3px; background:#fff;
+    border:1px solid var(--c-border); writing-mode:vertical-rl; text-orientation:upright;
+    font-size:16px; font-weight:700; color:var(--c-text-strong); text-align:center; line-height:1.5;
+    letter-spacing:.06em; white-space:nowrap; overflow:hidden;
+  }
+  .ribbon-strip.muted{color:var(--c-text-muted); font-size:14px; font-weight:500;}
+
+  /* ====== Sender profile rows ====== */
+  .sender-list{display:flex; flex-direction:column; gap:10px;}
+  .sender{display:flex; align-items:center; gap:14px; width:100%; padding:14px 16px; text-align:left; background:var(--c-surface); border:1px solid var(--c-border); border-radius:var(--r-tile); transition:border-color .12s, background .12s, box-shadow .12s;}
+  .sender:hover{border-color:var(--c-text-muted); background:var(--c-surface-2);}
+  .sender.sel{border-color:var(--c-orange); background:var(--c-orange-soft); box-shadow:var(--ring);}
+  .sender .sinfo{flex:1; min-width:0;}
+  .sender .sinfo b{font-size:16px; font-weight:700; color:var(--c-text-strong);}
+  .sender .sinfo .role{font-size:13px; color:var(--c-text-muted); font-weight:600; margin-left:7px;}
+  .sender .sinfo .fixed{font-size:13.5px; color:var(--c-text-3); margin-top:3px;}
+  .sender.sel .sinfo .fixed{color:var(--c-orange-ink);}
+  .sender .pradio{width:23px; height:23px; flex:0 0 23px; border-radius:50%; border:2px solid var(--c-border-strong); display:grid; place-items:center;}
+  .sender.sel .pradio{border-color:var(--c-orange);}
+  .sender .pradio::after{content:""; width:11px; height:11px; border-radius:50%; background:var(--c-orange); transform:scale(0); transition:transform .14s;}
+  .sender.sel .pradio::after{transform:scale(1);}
+
+  /* ====== Delivery time ====== */
+  .dt-grid{display:grid; grid-template-columns:1.4fr 1fr 1fr; gap:14px;}
+  .selwrap{position:relative;}
+  .selwrap select{
+    width:100%; appearance:none; background:var(--c-surface); border:1px solid var(--c-border-strong);
+    border-radius:var(--r-lg); padding:14px 38px 14px 15px; font-size:16px; color:var(--c-text-strong);
+    transition:border-color .12s, box-shadow .12s; cursor:pointer;
+  }
+  .selwrap select:hover{border-color:var(--c-text-muted);}
+  .selwrap select:focus{border-color:var(--c-orange); box-shadow:var(--ring); outline:none;}
+  .selwrap::after{content:"\25BE"; position:absolute; right:15px; top:50%; transform:translateY(-50%); color:var(--c-text-muted); font-size:11px; pointer-events:none;}
+  .selwrap.dis::after{opacity:.4;}
+  .selwrap select:disabled, .inp:disabled{background:var(--c-surface-3); color:var(--c-text-faint); cursor:not-allowed; border-color:var(--c-border);}
+
+  .now-toggle{
+    display:flex; align-items:center; gap:12px; margin-top:16px; padding:14px 16px;
+    border:1px solid var(--c-border); border-radius:var(--r-lg); background:var(--c-surface); cursor:pointer;
+    transition:border-color .12s, background .12s;
+  }
+  .now-toggle:hover{border-color:var(--c-text-muted);}
+  .now-toggle.on{border-color:var(--c-orange); background:var(--c-orange-soft);}
+  .now-toggle .tx{flex:1;}
+  .now-toggle .tx b{font-size:15px; font-weight:700; color:var(--c-text-strong);}
+  .now-toggle .tx span{display:block; font-size:13px; color:var(--c-text-muted);}
+  .now-msg{display:none; margin-top:12px; padding:13px 15px; background:var(--c-blue-soft); border:1px solid #d6def8; border-radius:var(--r-lg); font-size:14px; color:var(--c-blue); font-weight:600;}
+  .now-msg.show{display:block;}
+
+  /* ====== Switch component ====== */
+  .switch{position:relative; width:46px; height:27px; flex:0 0 46px; border-radius:999px; background:var(--c-border-strong); transition:background .16s; cursor:pointer;}
+  .switch::after{content:""; position:absolute; top:3px; left:3px; width:21px; height:21px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.25); transition:transform .18s;}
+  .switch.on{background:var(--c-orange);}
+  .switch.on::after{transform:translateX(19px);}
+
+  /* ====== Notify rows ====== */
+  .notify-row{display:flex; align-items:center; gap:14px; padding:14px 2px; border-bottom:1px solid var(--c-divider);}
+  .notify-row:last-of-type{border-bottom:none;}
+  .notify-row .ntx{flex:1;}
+  .notify-row .ntx b{font-size:15px; font-weight:700; color:var(--c-text-strong);}
+  .notify-row .ntx span{display:block; font-size:13px; color:var(--c-text-muted);}
+  .notify-foot{margin-top:10px; font-size:13px; color:var(--c-text-3);}
+  .notify-foot b{color:var(--c-orange-ink);}
+
+  /* ====== Notice card ====== */
+  .notice{background:var(--c-surface-2); border:1px solid var(--c-divider); border-radius:var(--r-tile); padding:20px 22px;}
+  .notice h3{font-size:15px; font-weight:700; color:var(--c-text-2); margin:0 0 12px; display:flex; align-items:center; gap:7px;}
+  .notice ul{margin:0; padding:0; list-style:none; display:flex; flex-direction:column; gap:9px;}
+  .notice li{position:relative; padding-left:18px; font-size:13.5px; color:var(--c-text-3); line-height:1.6;}
+  .notice li::before{content:""; position:absolute; left:3px; top:9px; width:5px; height:5px; border-radius:50%; background:var(--c-text-faint);}
+  .notice li b{color:var(--c-text-strong); font-weight:700;}
+  .notice .tel-line{margin-top:14px; padding-top:14px; border-top:1px solid var(--c-divider); font-size:13.5px; color:var(--c-text-3);}
+  .notice .tel-line b{color:var(--c-text-strong); font-weight:700;}
+
+  /* ====== Generic buttons ====== */
+  .btn-line{padding:11px 18px; border-radius:var(--r-lg); border:1px solid var(--c-border-strong); background:var(--c-surface); font-size:14px; font-weight:700; color:var(--c-text-2); transition:all .12s;}
+  .btn-line:hover{border-color:var(--c-text-muted); background:var(--c-surface-2);}
+  .btn-blue{color:var(--c-blue); border-color:#c7d3f7;}
+  .btn-blue:hover{background:var(--c-blue-soft); border-color:var(--c-blue);}
+
+  /* ====== Sticky action bar ====== */
+  .actionbar{
+    position:fixed; left:228px; right:0; bottom:0; height:var(--bar-h); z-index:50;
+    background:var(--c-surface); box-shadow:var(--sh-bar);
+    display:flex; align-items:center; justify-content:space-between; gap:24px;
+    padding:0 36px;
+  }
+  .ab-inner{max-width:920px; width:100%; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:24px;}
+  .ab-status{min-width:0;}
+  .ab-status .req-line{display:flex; align-items:center; gap:9px; font-size:14px; font-weight:600;}
+  .ab-status .req-line .dot{width:8px; height:8px; border-radius:50%; background:var(--c-warn); flex:0 0 8px;}
+  .ab-status .req-line.done .dot{background:var(--c-success);}
+  .ab-status .req-line .txt{color:var(--c-text-3);}
+  .ab-status .req-line.done .txt{color:var(--c-success-ink);}
+  .ab-status .miss{font-size:12.5px; color:var(--c-text-muted); margin-top:3px;}
+  .ab-right{display:flex; align-items:center; gap:20px;}
+  .ab-total{text-align:right;}
+  .ab-total .l{font-size:12.5px; color:var(--c-text-muted); font-weight:600;}
+  .ab-total .v{font-size:22px; font-weight:700; color:var(--c-text-strong); line-height:1.2;}
+  .ab-total .v.empty{color:var(--c-text-faint); font-size:16px; font-weight:600;}
+  .submit-btn{
+    padding:0 34px; height:54px; border-radius:var(--r-xl); font-size:17px; font-weight:700; color:#fff;
+    background:var(--c-orange); transition:background .14s, transform .06s, box-shadow .14s; white-space:nowrap;
+  }
+  .submit-btn:hover:not(:disabled){background:var(--c-orange-ink); box-shadow:0 6px 18px rgba(241,90,42,.32);}
+  .submit-btn:active:not(:disabled){transform:scale(.98);}
+  .submit-btn:disabled{background:var(--c-surface-3); color:var(--c-text-faint); cursor:not-allowed;}
+
+  /* ====== Modal / overlay ====== */
+  .overlay{position:fixed; inset:0; z-index:100; background:rgba(17,17,24,.45); display:none; align-items:center; justify-content:center; padding:24px;}
+  .overlay.show{display:flex;}
+  .modal{width:520px; max-width:100%; max-height:90vh; overflow-y:auto; background:var(--c-surface); border-radius:var(--r-tile); box-shadow:var(--sh-modal);}
+  .modal-head{display:flex; align-items:center; justify-content:space-between; padding:22px 24px 16px;}
+  .modal-head h3{font-size:20px; font-weight:700; color:var(--c-text-strong); margin:0;}
+  .modal-head .x{width:34px; height:34px; border-radius:var(--r-lg); display:grid; place-items:center; font-size:18px; color:var(--c-text-muted); transition:background .12s;}
+  .modal-head .x:hover{background:var(--c-surface-2);}
+  .modal-steps{display:flex; gap:8px; padding:0 24px 14px;}
+  .modal-steps .st{flex:1; height:5px; border-radius:999px; background:var(--c-divider);}
+  .modal-steps .st.on{background:var(--c-orange);}
+  .modal-body{padding:6px 24px 24px;}
+  .step-tag{font-size:12.5px; color:var(--c-orange-ink); font-weight:700; margin-bottom:6px;}
+  .step-title{font-size:17px; font-weight:700; color:var(--c-text-strong); margin:0 0 16px;}
+
+  .inrow{display:flex; gap:10px;}
+  .inrow .inp{flex:1;}
+  .spinner{width:18px; height:18px; border-radius:50%; border:2.5px solid rgba(255,255,255,.45); border-top-color:#fff; animation:spin .7s linear infinite; display:inline-block; vertical-align:-3px;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .btn-fetch{padding:0 20px; height:48px; border-radius:var(--r-lg); background:var(--c-blue); color:#fff; font-size:15px; font-weight:700; white-space:nowrap; transition:background .12s;}
+  .btn-fetch:hover:not(:disabled){background:#3354c4;}
+  .btn-fetch:disabled{opacity:.7; cursor:wait;}
+
+  .skel{height:14px; border-radius:5px; background:linear-gradient(90deg,var(--c-surface-2) 25%,var(--c-surface-3) 37%,var(--c-surface-2) 63%); background-size:400% 100%; animation:shimmer 1.3s infinite;}
+  @keyframes shimmer{0%{background-position:100% 0;}100%{background-position:-100% 0;}}
+  .skel-box{display:none; flex-direction:column; gap:10px; margin-top:18px; padding:16px; border:1px solid var(--c-divider); border-radius:var(--r-lg);}
+  .skel-box.show{display:flex;}
+
+  .autofill{display:none; flex-direction:column; gap:14px; margin-top:18px;}
+  .autofill.show{display:flex;}
+  .filled{padding:14px 16px; background:var(--c-surface-2); border:1px solid var(--c-divider); border-radius:var(--r-lg);}
+  .filled .fl-lbl{font-size:12px; color:var(--c-text-muted); font-weight:700; margin-bottom:3px;}
+  .filled .fl-val{font-size:15px; color:var(--c-text-strong); font-weight:600;}
+  .filled .auto-tag{font-size:11px; color:var(--c-success-ink); background:var(--c-success-soft); padding:2px 8px; border-radius:999px; font-weight:700; margin-left:6px;}
+
+  .sumlist{border:1px solid var(--c-divider); border-radius:var(--r-lg); padding:6px 16px; margin-top:16px;}
+  .sumrow{display:flex; align-items:center; justify-content:space-between; padding:11px 0; border-bottom:1px solid var(--c-divider); font-size:14px;}
+  .sumrow:last-child{border-bottom:none;}
+  .sumrow .k{color:var(--c-text-muted); font-weight:600;}
+  .sumrow .v{color:var(--c-text-strong); font-weight:700; text-align:right;}
+
+  .modal-radio{display:flex; flex-direction:column; gap:9px;}
+  .mr{display:flex; align-items:center; gap:12px; padding:13px 15px; border:1px solid var(--c-border); border-radius:var(--r-lg); transition:border-color .1s, background .1s; cursor:pointer;}
+  .mr:hover{border-color:var(--c-text-muted);}
+  .mr.sel{border-color:var(--c-orange); background:var(--c-orange-soft);}
+  .mr .pradio{width:21px; height:21px; flex:0 0 21px; border-radius:50%; border:2px solid var(--c-border-strong); display:grid; place-items:center;}
+  .mr.sel .pradio{border-color:var(--c-orange);}
+  .mr .pradio::after{content:""; width:10px; height:10px; border-radius:50%; background:var(--c-orange); transform:scale(0); transition:transform .14s;}
+  .mr.sel .pradio::after{transform:scale(1);}
+  .mr .mtx b{font-size:15px; font-weight:700; color:var(--c-text-strong);}
+  .mr .mtx span{display:block; font-size:13px; color:var(--c-text-muted);}
+
+  .modal-foot{display:flex; gap:10px; margin-top:22px;}
+  .modal-foot .grow{flex:1;}
+  .btn-primary{height:50px; border-radius:var(--r-lg); background:var(--c-orange); color:#fff; font-size:16px; font-weight:700; padding:0 24px; transition:background .12s;}
+  .btn-primary:hover:not(:disabled){background:var(--c-orange-ink);}
+  .btn-primary:disabled{background:var(--c-surface-3); color:var(--c-text-faint); cursor:not-allowed;}
+
+  .done-screen{display:none; padding:40px 24px 32px; text-align:center;}
+  .done-screen.show{display:block;}
+  .done-check{width:72px; height:72px; margin:0 auto 18px; border-radius:50%; background:var(--c-success-soft); color:var(--c-success); display:grid; place-items:center; font-size:36px;}
+  .done-screen h3{font-size:22px; font-weight:700; color:var(--c-text-strong); margin:0 0 8px;}
+  .done-screen p{font-size:14.5px; color:var(--c-text-muted); margin:0 0 24px;}
+
+  .hidden{display:none !important;}
+
+  @media (max-width:1080px){
+    .sidebar{display:none;}
+    .actionbar{left:0;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ===== Sidebar shell ===== -->
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <div class="sb-logo">화</div>
+      <div>
+        <b>올해의경조사</b>
+        <span>경조사 통합 관리</span>
+      </div>
+    </div>
+    <div class="sb-sec">주문</div>
+    <a class="sb-item active"><span class="ic">＋</span>경조상품 주문</a>
+    <a class="sb-item"><span class="ic">≣</span>주문 내역</a>
+    <a class="sb-item"><span class="ic">★</span>즐겨찾기 상품</a>
+    <div class="sb-sec">정산</div>
+    <a class="sb-item"><span class="ic">₩</span>거래 명세서</a>
+    <a class="sb-item"><span class="ic">▤</span>입금 관리</a>
+    <div class="sb-sec">설정</div>
+    <a class="sb-item"><span class="ic">⚙</span>기업 정보</a>
+    <div class="sb-spacer"></div>
+    <div class="sb-user">
+      <div class="av">올</div>
+      <div>
+        <b>(주)올해의경조사</b>
+        <span>기업회원</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ===== Main ===== -->
+  <main class="main">
+    <div class="content">
+
+      <header class="page-head">
+        <h1>경조상품 주문</h1>
+        <p class="sub">받는 분께 마음을 정성껏 전해 드릴게요. 필요한 항목만 차분히 채워 주세요.</p>
+      </header>
+
+      <!-- ===== Manager inline selector ===== -->
+      <div class="mgr-bar">
+        <div class="mgr-av" id="mgrAv">할</div>
+        <div class="mgr-meta">
+          <div class="lbl">주문 담당자</div>
+          <div class="nm"><span id="mgrName">할다운</span><span class="role" id="mgrRole">비서</span></div>
+          <div class="tel num" id="mgrTel">010-1111-2222</div>
+        </div>
+        <div class="mgr-switch" id="mgrSwitch">
+          <button class="mgr-trigger" id="mgrTrigger" aria-haspopup="true" aria-expanded="false">담당자 변경 <span class="chev">▾</span></button>
+          <div class="mgr-menu" id="mgrMenu" role="menu"></div>
+        </div>
+      </div>
+
+      <!-- ===== Quick intake ===== -->
+      <div class="quick">
+        <button class="quick-card" data-quick="부고" type="button">
+          <span class="quick-ic">🕯️</span>
+          <span class="quick-tx">
+            <b>부고 간편접수</b>
+            <span>부고장 링크로 배송지 자동입력</span>
+            <span class="go">URL 붙여넣고 바로 접수 →</span>
+          </span>
+        </button>
+        <button class="quick-card" data-quick="청첩" type="button">
+          <span class="quick-ic">💌</span>
+          <span class="quick-tx">
+            <b>청첩 간편접수</b>
+            <span>모바일 청첩장 링크로 자동입력</span>
+            <span class="go">URL 붙여넣고 바로 접수 →</span>
+          </span>
+        </button>
+      </div>
+
+      <!-- ===== 1. 상품 선택 ===== -->
+      <section class="sec">
+        <div class="sec-head">
+          <div class="t">
+            <h2>상품 선택</h2>
+            <span class="req" id="req-prod">필수</span>
+            <span class="ok" id="ok-prod">✓ 선택됨</span>
+          </div>
+          <span class="act" onclick="alert('즐겨찾기 관리 (데모)')">즐겨찾기 관리</span>
+        </div>
+        <div class="prod-list" id="prodList"></div>
+      </section>
+
+      <!-- ===== 2. 배송지 정보 ===== -->
+      <section class="sec">
+        <div class="sec-head">
+          <div class="t">
+            <h2>배송지 정보</h2>
+            <span class="req" id="req-deliv">필수</span>
+            <span class="ok" id="ok-deliv">✓ 완료</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>배송지 주소 <span class="req">*</span></label>
+          <input class="inp" id="addr" placeholder="예) 서울 강남구 테헤란로 152 강남파이낸스센터 3층" />
+          <div class="vmsg err" id="v-addr">⚠ 배송지 주소를 입력해 주세요.</div>
+        </div>
+
+        <div class="row2">
+          <div class="field">
+            <label>받는 분 성함 <span class="req">*</span></label>
+            <input class="inp" id="rname" placeholder="예) 김○○ 상주" />
+            <div class="vmsg err" id="v-rname">⚠ 받는 분 성함을 입력해 주세요.</div>
+          </div>
+          <div class="field">
+            <label>받는 분 연락처 <span class="req">*</span></label>
+            <input class="inp num" id="rtel" inputmode="numeric" placeholder="010-0000-0000" />
+            <div class="vmsg err" id="v-rtel">⚠ 연락처를 정확히 입력해 주세요.</div>
+            <div class="vmsg ok" id="vok-rtel">✓ 확인되었어요</div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>배송 요청 일시 <span class="req">*</span></label>
+          <div class="hint">받으실 날짜와 시간을 선택하세요. 바로 보내실 경우 아래 즉시배송을 켜 주세요.</div>
+          <div class="dt-grid">
+            <div class="selwrap" id="wrapDate"><select id="dDate"></select></div>
+            <div class="selwrap" id="wrapHour"><select id="dHour"></select></div>
+            <div class="selwrap" id="wrapMin"><select id="dMin"></select></div>
+          </div>
+          <button class="now-toggle" id="nowToggle" type="button">
+            <span class="switch" id="nowSwitch"></span>
+            <span class="tx">
+              <b>즉시배송</b>
+              <span>가능한 가장 빠른 시간에 배송해 드려요.</span>
+            </span>
+          </button>
+          <div class="now-msg" id="nowMsg">⏱ 약 2시간 후 배송됩니다.</div>
+        </div>
+      </section>
+
+      <!-- ===== 3. 리본 정보 ===== -->
+      <section class="sec">
+        <div class="sec-head">
+          <div class="t">
+            <h2>리본 정보</h2>
+            <span class="req" id="req-ribbon">필수</span>
+            <span class="ok" id="ok-ribbon">✓ 완료</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>리본 문구 <span class="req">*</span></label>
+          <div class="hint">상황에 맞는 문구를 고르거나 직접 입력하세요. 접수 후에는 수정이 어려우니 한 번 더 확인해 주세요.</div>
+          <div id="ribbonChipGroups"></div>
+          <textarea class="ta" id="ribbonText" maxlength="40" placeholder="리본에 새길 문구를 입력하세요" style="margin-top:14px;"></textarea>
+          <div class="ta-foot">
+            <span class="ta-count"><span class="num" id="ribbonCount">0</span> / 40자</span>
+          </div>
+          <div class="ribbon-preview">
+            <div class="rp-lbl">리본 미리보기</div>
+            <div class="ribbon-stage">
+              <div class="ribbon-strip muted" id="ribbonPrevL">삼가</div>
+              <div class="ribbon-strip muted" id="ribbonPrevR">문구를 입력하세요</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>보내는 분 <span class="req">*</span></label>
+          <div class="hint">선택하시면 리본에 표기될 고정 문구가 자동으로 적용됩니다.</div>
+          <div class="sender-list" id="senderList"></div>
+        </div>
+      </section>
+
+      <!-- ===== 4. 배송완료 알림 ===== -->
+      <section class="sec">
+        <div class="sec-head">
+          <div class="t"><h2>배송완료 알림</h2></div>
+          <span class="help">선택사항</span>
+        </div>
+        <div class="notify-row">
+          <div class="ntx"><b>받는 분</b><span>배송이 완료되면 받는 분께 문자를 보냅니다.</span></div>
+          <span class="switch" data-notify="recv"></span>
+        </div>
+        <div class="notify-row">
+          <div class="ntx"><b>보내는 분</b><span>보내는 분께 배송 완료 안내를 보냅니다.</span></div>
+          <span class="switch on" data-notify="send"></span>
+        </div>
+        <div class="notify-row">
+          <div class="ntx"><b>담당자</b><span>주문 담당자께 배송 완료 안내를 보냅니다.</span></div>
+          <span class="switch on" data-notify="mgr"></span>
+        </div>
+        <div class="notify-foot">ON으로 설정된 분께 배송 완료 시 <b>문자가 자동 발송</b>됩니다.</div>
+      </section>
+
+      <!-- ===== 5. 참고사항 ===== -->
+      <section class="sec">
+        <div class="notice">
+          <h3>📌 주문 시 참고사항</h3>
+          <ul>
+            <li><b>당일 오전 11시 이전</b> 접수 건은 당일 배송이 가능합니다.</li>
+            <li>주말·공휴일은 배송이 제한될 수 있습니다.</li>
+            <li>이른 아침·늦은 저녁 배송은 사전 협의가 필요합니다.</li>
+            <li>리본 문구는 <b>접수 후 수정이 불가</b>하오니 신중히 확인해 주세요.</li>
+          </ul>
+          <div class="tel-line">배송 관련 문의 <b class="num">02-0000-0000</b></div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<!-- ===== Sticky action bar ===== -->
+<div class="actionbar">
+  <div class="ab-inner">
+    <div class="ab-status">
+      <div class="req-line" id="reqLine">
+        <span class="dot"></span>
+        <span class="txt" id="reqTxt">필수 항목을 모두 입력해 주세요</span>
+      </div>
+      <div class="miss" id="reqMiss">남은 항목: 상품 · 배송지 · 리본</div>
+    </div>
+    <div class="ab-right">
+      <div class="ab-total">
+        <div class="l">선택 상품 금액</div>
+        <div class="v empty num" id="abTotal">상품 미선택</div>
+      </div>
+      <button class="submit-btn" id="submitBtn" disabled>주문 접수하기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Quick intake modal ===== -->
+<div class="overlay" id="quickOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="qmTitle">부고 간편접수</h3>
+      <button class="x" id="qmClose" aria-label="닫기">✕</button>
+    </div>
+    <div class="modal-steps" id="qmSteps">
+      <div class="st on"></div><div class="st"></div>
+    </div>
+
+    <!-- STEP 1 -->
+    <div class="modal-body" id="qmStep1">
+      <div class="step-tag">STEP 1 · 링크 조회</div>
+      <p class="step-title" id="qmStep1Title">부고장 링크를 붙여넣어 주세요</p>
+      <div class="field" style="margin-bottom:0;">
+        <label>링크 URL <span class="req">*</span></label>
+        <div class="inrow">
+          <input class="inp" id="qmUrl" placeholder="https://..." />
+          <button class="btn-fetch" id="qmFetch">조회</button>
+        </div>
+      </div>
+
+      <div class="skel-box" id="qmSkel">
+        <div class="skel" style="width:40%;"></div>
+        <div class="skel" style="width:88%;"></div>
+        <div class="skel" style="width:64%;"></div>
+        <div class="skel" style="width:30%;"></div>
+      </div>
+
+      <div class="autofill" id="qmAutofill">
+        <div class="filled">
+          <div class="fl-lbl">배송지 주소 <span class="auto-tag">자동입력</span></div>
+          <div class="fl-val" id="qmAddr">서울 강남구 테헤란로 152 강남파이낸스센터 3층</div>
+        </div>
+        <div class="filled">
+          <div class="fl-lbl">받는 분 성함 <span class="auto-tag">자동입력</span></div>
+          <div class="fl-val" id="qmRname">김○○ 상주</div>
+        </div>
+        <div class="field" style="margin-bottom:0;">
+          <label>받는 분 연락처 <span class="req">*</span></label>
+          <input class="inp num" id="qmRtel" inputmode="numeric" placeholder="010-0000-0000" />
+        </div>
+      </div>
+
+      <div class="modal-foot" id="qmStep1Foot" style="display:none;">
+        <button class="btn-primary grow" id="qmNext">다음</button>
+      </div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="modal-body hidden" id="qmStep2">
+      <div class="step-tag">STEP 2 · 보내는 분 · 확인</div>
+      <p class="step-title">보내는 분을 선택해 주세요</p>
+      <div class="modal-radio" id="qmSenderList"></div>
+
+      <div class="sumlist">
+        <div class="sumrow"><span class="k">상품</span><span class="v" id="qmSumProd">3단화환(기본형)</span></div>
+        <div class="sumrow"><span class="k">받는 분</span><span class="v" id="qmSumRecv">김○○ 상주</span></div>
+        <div class="sumrow"><span class="k">배송지</span><span class="v" id="qmSumAddr" style="max-width:300px;">서울 강남구 테헤란로 152…</span></div>
+        <div class="sumrow"><span class="k">결제 예정 금액</span><span class="v num" id="qmSumPrice">50,000원</span></div>
+      </div>
+
+      <div class="modal-foot">
+        <button class="btn-line" id="qmBack" style="flex:0 0 auto;">이전</button>
+        <button class="btn-primary grow" id="qmSubmit">접수하기</button>
+      </div>
+    </div>
+
+    <!-- DONE -->
+    <div class="done-screen" id="qmDone">
+      <div class="done-check">✓</div>
+      <h3>주문이 접수되었습니다!</h3>
+      <p>접수 내역과 배송 현황은 주문 내역에서 확인하실 수 있어요.</p>
+      <button class="btn-primary" id="qmDoneClose" style="width:100%;">확인</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Success modal (main submit) ===== -->
+<div class="overlay" id="successOverlay">
+  <div class="modal">
+    <div class="done-screen show" style="padding:44px 28px 34px;">
+      <div class="done-check">✓</div>
+      <h3>주문이 접수되었습니다!</h3>
+      <p id="successDesc">받는 분께 정성껏 전해 드리겠습니다.</p>
+      <button class="btn-primary" id="successClose" style="width:100%;">확인</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const $ = s => document.querySelector(s);
+  const won = n => n.toLocaleString("ko-KR") + "원";
+
+  /* ---- Data ---- */
+  const MANAGERS = [
+    {name:"할다운", role:"비서", tel:"010-1111-2222"},
+    {name:"오임찬", role:"재경부", tel:"010-3333-4444"},
+    {name:"김현수", role:"경리", tel:"010-5555-6666"},
+  ];
+  const SENDERS = [
+    {name:"홍길동", role:"대표이사", fixed:"(주)올해의경조사 대표이사 홍길동"},
+    {name:"정소빈", role:"대표변호사", fixed:"올해표현(유) 대표변호사 정소빈"},
+    {name:"임직원", role:"일동", fixed:"(주)올해의경조사 임직원 일동"},
+  ];
+  const PRODUCTS = [
+    {emo:"🌸", name:"3단화환(기본형)", cat:"경조화환", price:50000},
+    {emo:"🌸", name:"근조오브제(2단형)", cat:"경조화환", price:75000},
+    {emo:"🏵️", name:"동양란(고급형)", cat:"동서양란", price:100000},
+    {emo:"💐", name:"대형 꽃바구니", cat:"생화", price:120000},
+    {emo:"🌿", name:"박상용 대형화분", cat:"관엽화분", price:100000},
+  ];
+  const RIBBONS = [
+    {g:"부고·근조", items:["삼가 고인의 명복을 빕니다","근조(謹弔)","조의를 표합니다"]},
+    {g:"결혼 축하", items:["축 결혼(祝 結婚)","화혼을 진심으로 축하드립니다","행복한 새 출발을 축하합니다"]},
+    {g:"개업·취임", items:["축 개업(祝 開業)","축 취임(祝 就任)","번창하시길 기원합니다"]},
+    {g:"기타", items:["감사합니다","항상 건강하세요","축 승진(祝 昇進)"]},
+  ];
+
+  /* ---- State ---- */
+  const state = {
+    mgr:0, product:null, addr:"", rname:"", rtel:"",
+    date:"", hour:"", min:"", immediate:false,
+    ribbon:"", sender:null,
+  };
+
+  /* ===== Manager inline selector ===== */
+  const mgrSwitch = $("#mgrSwitch"), mgrTrigger = $("#mgrTrigger"), mgrMenu = $("#mgrMenu");
+  function renderMgr(){
+    const m = MANAGERS[state.mgr];
+    $("#mgrAv").textContent = m.name[0];
+    $("#mgrName").textContent = m.name;
+    $("#mgrRole").textContent = m.role;
+    $("#mgrTel").textContent = m.tel;
+    mgrMenu.innerHTML = MANAGERS.map((mm,i)=>`
+      <button class="mgr-opt ${i===state.mgr?'sel':''}" data-mgr="${i}" role="menuitem">
+        <span class="oav">${mm.name[0]}</span>
+        <span class="oinfo"><b>${mm.name}</b><span>${mm.role} · <span class="num">${mm.tel}</span></span></span>
+        <span class="ock">✓</span>
+      </button>`).join("")
+      + `<div class="divider"></div><button class="mgr-add" id="mgrAdd">＋ 새 담당자 등록</button>`;
+  }
+  renderMgr();
+  mgrTrigger.addEventListener("click", e=>{
+    e.stopPropagation();
+    const open = mgrSwitch.classList.toggle("open");
+    mgrTrigger.setAttribute("aria-expanded", open);
+  });
+  mgrMenu.addEventListener("click", e=>{
+    const opt = e.target.closest(".mgr-opt");
+    if(opt){ state.mgr = +opt.dataset.mgr; renderMgr(); mgrSwitch.classList.remove("open"); mgrTrigger.setAttribute("aria-expanded","false"); }
+    if(e.target.closest("#mgrAdd")){ alert("새 담당자 등록 (데모)"); }
+  });
+  document.addEventListener("click", e=>{ if(!mgrSwitch.contains(e.target)) { mgrSwitch.classList.remove("open"); mgrTrigger.setAttribute("aria-expanded","false"); } });
+
+  /* ===== Products ===== */
+  const prodList = $("#prodList");
+  prodList.innerHTML = PRODUCTS.map((p,i)=>`
+    <button class="prod" data-prod="${i}" type="button">
+      <span class="pemo">${p.emo}</span>
+      <span class="pinfo"><b>${p.name}</b><span class="cat">${p.cat}</span></span>
+      <span class="pprice num">${won(p.price)}</span>
+      <span class="pradio"></span>
+    </button>`).join("");
+  prodList.addEventListener("click", e=>{
+    const b = e.target.closest(".prod"); if(!b) return;
+    state.product = +b.dataset.prod;
+    [...prodList.children].forEach(c=>c.classList.toggle("sel", c===b));
+    update();
+  });
+
+  /* ===== Delivery date/time selects ===== */
+  const dDate = $("#dDate"), dHour = $("#dHour"), dMin = $("#dMin");
+  (function fillDates(){
+    const days = ["일","월","화","수","목","금","토"];
+    let html = `<option value="">날짜 선택</option>`;
+    const base = new Date(2026,5,16);
+    for(let i=0;i<14;i++){
+      const d = new Date(base); d.setDate(base.getDate()+i);
+      const label = `${d.getMonth()+1}월 ${d.getDate()}일 (${days[d.getDay()]})` + (i===0?" · 오늘":i===1?" · 내일":"");
+      html += `<option value="${d.getMonth()+1}-${d.getDate()}">${label}</option>`;
+    }
+    dDate.innerHTML = html;
+    dHour.innerHTML = `<option value="">시</option>` + Array.from({length:24},(_,h)=>`<option value="${h}">${String(h).padStart(2,"0")}시</option>`).join("");
+    dMin.innerHTML = `<option value="">분</option>` + [0,10,20,30,40,50].map(m=>`<option value="${m}">${String(m).padStart(2,"0")}분</option>`).join("");
+  })();
+  [dDate,dHour,dMin].forEach(sel=>sel.addEventListener("change", ()=>{
+    state.date=dDate.value; state.hour=dHour.value; state.min=dMin.value; update();
+  }));
+
+  /* ===== Immediate toggle ===== */
+  const nowToggle = $("#nowToggle"), nowSwitch = $("#nowSwitch"), nowMsg = $("#nowMsg");
+  nowToggle.addEventListener("click", ()=>{
+    state.immediate = !state.immediate;
+    nowToggle.classList.toggle("on", state.immediate);
+    nowSwitch.classList.toggle("on", state.immediate);
+    nowMsg.classList.toggle("show", state.immediate);
+    [dDate,dHour,dMin].forEach(s=>s.disabled = state.immediate);
+    [$("#wrapDate"),$("#wrapHour"),$("#wrapMin")].forEach(w=>w.classList.toggle("dis", state.immediate));
+    update();
+  });
+
+  /* ===== Ribbon chips + text ===== */
+  $("#ribbonChipGroups").innerHTML = RIBBONS.map(g=>`
+    <div class="chip-group-lbl">${g.g}</div>
+    <div class="chips">${g.items.map(it=>`<button class="chip" data-rb="${it}" type="button">${it}</button>`).join("")}</div>
+  `).join("");
+  const ribbonText = $("#ribbonText");
+  function syncRibbonChips(){
+    document.querySelectorAll("#ribbonChipGroups .chip").forEach(c=>c.classList.toggle("sel", c.dataset.rb===state.ribbon && state.ribbon!==""));
+  }
+  function renderRibbonPreview(){
+    const L = $("#ribbonPrevL"), R = $("#ribbonPrevR");
+    const senderLine = state.sender!=null ? SENDERS[state.sender].fixed : "";
+    if(state.ribbon){
+      R.textContent = state.ribbon; R.classList.remove("muted");
+    } else { R.textContent = "문구를 입력하세요"; R.classList.add("muted"); }
+    if(senderLine){ L.textContent = senderLine; L.classList.remove("muted"); }
+    else { L.textContent = "보내는 분"; L.classList.add("muted"); }
+  }
+  $("#ribbonChipGroups").addEventListener("click", e=>{
+    const c = e.target.closest(".chip"); if(!c) return;
+    state.ribbon = c.dataset.rb;
+    ribbonText.value = state.ribbon;
+    $("#ribbonCount").textContent = state.ribbon.length;
+    syncRibbonChips(); renderRibbonPreview(); update();
+  });
+  ribbonText.addEventListener("input", ()=>{
+    state.ribbon = ribbonText.value.trim();
+    $("#ribbonCount").textContent = ribbonText.value.length;
+    syncRibbonChips(); renderRibbonPreview(); update();
+  });
+
+  /* ===== Senders ===== */
+  const senderList = $("#senderList");
+  senderList.innerHTML = SENDERS.map((s,i)=>`
+    <button class="sender" data-sender="${i}" type="button">
+      <span class="sinfo"><b>${s.name}</b><span class="role">${s.role}</span><div class="fixed">${s.fixed}</div></span>
+      <span class="pradio"></span>
+    </button>`).join("");
+  senderList.addEventListener("click", e=>{
+    const b = e.target.closest(".sender"); if(!b) return;
+    state.sender = +b.dataset.sender;
+    [...senderList.children].forEach(c=>c.classList.toggle("sel", c===b));
+    renderRibbonPreview(); update();
+  });
+
+  /* ===== Notify switches ===== */
+  document.querySelectorAll(".switch[data-notify]").forEach(sw=>{
+    sw.addEventListener("click", ()=>sw.classList.toggle("on"));
+  });
+
+  /* ===== Field inputs + inline validation ===== */
+  const addr = $("#addr"), rname = $("#rname"), rtel = $("#rtel");
+  addr.addEventListener("input", ()=>{ state.addr=addr.value.trim(); update(); });
+  rname.addEventListener("input", ()=>{ state.rname=rname.value.trim(); update(); });
+  rtel.addEventListener("input", ()=>{
+    let v = rtel.value.replace(/[^0-9]/g,"").slice(0,11);
+    if(v.length>=8) v = v.replace(/(\d{3})(\d{4})(\d{1,4})/, "$1-$2-$3");
+    else if(v.length>=4) v = v.replace(/(\d{3})(\d{1,4})/, "$1-$2");
+    rtel.value = v; state.rtel = v; update();
+  });
+  function blurValidate(el, key, msgId){
+    el.addEventListener("blur", ()=>{
+      const bad = !state[key];
+      el.classList.toggle("invalid", bad);
+      if(msgId) $(msgId).style.display = bad ? "flex" : "none";
+    });
+  }
+  blurValidate(addr,"addr","#v-addr");
+  blurValidate(rname,"rname","#v-rname");
+  rtel.addEventListener("blur", ()=>{
+    const digits = state.rtel.replace(/[^0-9]/g,"");
+    const ok = digits.length>=10;
+    rtel.classList.toggle("invalid", !ok && digits.length>0);
+    $("#v-rtel").style.display = (!ok && digits.length>0) ? "flex":"none";
+    $("#vok-rtel").style.display = ok ? "flex":"none";
+  });
+
+  /* ===== Completeness / submit ===== */
+  function reqStatus(){
+    const telOk = state.rtel.replace(/[^0-9]/g,"").length>=10;
+    const timeOk = state.immediate || (state.date && state.hour!=="" && state.min!=="");
+    return {
+      "상품": state.product!=null,
+      "배송지": !!state.addr,
+      "받는분": !!state.rname,
+      "연락처": telOk,
+      "배송일시": timeOk,
+      "리본문구": !!state.ribbon,
+      "보내는분": state.sender!=null,
+    };
+  }
+  function update(){
+    const st = reqStatus();
+    const missing = Object.keys(st).filter(k=>!st[k]);
+    const allOk = missing.length===0;
+
+    /* section ok chips */
+    $("#ok-prod").classList.toggle("show", st["상품"]);
+    $("#req-prod").style.display = st["상품"] ? "none":"";
+    const delivOk = st["배송지"]&&st["받는분"]&&st["연락처"]&&st["배송일시"];
+    $("#ok-deliv").classList.toggle("show", delivOk);
+    $("#req-deliv").style.display = delivOk ? "none":"";
+    const ribbonOk = st["리본문구"]&&st["보내는분"];
+    $("#ok-ribbon").classList.toggle("show", ribbonOk);
+    $("#req-ribbon").style.display = ribbonOk ? "none":"";
+
+    /* total */
+    const abTotal = $("#abTotal");
+    if(state.product!=null){ abTotal.textContent = won(PRODUCTS[state.product].price); abTotal.classList.remove("empty"); }
+    else { abTotal.textContent = "상품 미선택"; abTotal.classList.add("empty"); }
+
+    /* action bar status */
+    const reqLine = $("#reqLine"), reqTxt = $("#reqTxt"), reqMiss = $("#reqMiss");
+    if(allOk){
+      reqLine.classList.add("done");
+      reqTxt.textContent = "모든 필수 항목이 입력되었어요";
+      reqMiss.textContent = "주문을 접수할 수 있습니다.";
+    } else {
+      reqLine.classList.remove("done");
+      reqTxt.textContent = "필수 항목을 모두 입력해 주세요";
+      reqMiss.textContent = "남은 항목: " + missing.join(" · ");
+    }
+    $("#submitBtn").disabled = !allOk;
+  }
+  update();
+
+  /* ===== Submit ===== */
+  $("#submitBtn").addEventListener("click", ()=>{
+    if($("#submitBtn").disabled) return;
+    const p = PRODUCTS[state.product];
+    $("#successDesc").textContent = `${state.rname}님께 ${p.name}을(를) 정성껏 전해 드리겠습니다.`;
+    $("#successOverlay").classList.add("show");
+  });
+  $("#successClose").addEventListener("click", ()=>$("#successOverlay").classList.remove("show"));
+
+  /* ===== Quick intake modal ===== */
+  const qmOverlay = $("#quickOverlay");
+  let qmKind = "부고";
+  const qmState = {sender:null};
+  function openQuick(kind){
+    qmKind = kind;
+    $("#qmTitle").textContent = kind==="부고" ? "부고 간편접수" : "청첩 간편접수";
+    $("#qmStep1Title").textContent = kind==="부고" ? "부고장 링크를 붙여넣어 주세요" : "모바일 청첩장 링크를 붙여넣어 주세요";
+    /* reset */
+    $("#qmUrl").value=""; $("#qmRtel").value="";
+    $("#qmSkel").classList.remove("show");
+    $("#qmAutofill").classList.remove("show");
+    $("#qmStep1Foot").style.display="none";
+    $("#qmStep1").classList.remove("hidden");
+    $("#qmStep2").classList.add("hidden");
+    $("#qmDone").classList.remove("show");
+    $("#qmSteps").style.display="flex";
+    $("#qmSteps").children[0].classList.add("on");
+    $("#qmSteps").children[1].classList.remove("on");
+    qmState.sender=null;
+    /* product-aware sample */
+    const sampleProd = kind==="부고" ? PRODUCTS[0] : PRODUCTS[3];
+    const sampleRecv = kind==="부고" ? "김○○ 상주" : "이○○ 신랑측";
+    $("#qmRname").textContent = sampleRecv;
+    $("#qmSumProd").textContent = sampleProd.name;
+    $("#qmSumRecv").textContent = sampleRecv;
+    $("#qmSumPrice").textContent = won(sampleProd.price);
+    /* sender radio */
+    $("#qmSenderList").innerHTML = SENDERS.map((s,i)=>`
+      <button class="mr" data-qsender="${i}" type="button">
+        <span class="pradio"></span>
+        <span class="mtx"><b>${s.name} · ${s.role}</b><span>${s.fixed}</span></span>
+      </button>`).join("");
+    qmOverlay.classList.add("show");
+  }
+  document.querySelectorAll("[data-quick]").forEach(b=>b.addEventListener("click", ()=>openQuick(b.dataset.quick)));
+  $("#qmClose").addEventListener("click", ()=>qmOverlay.classList.remove("show"));
+
+  /* fetch (1.8s) */
+  $("#qmFetch").addEventListener("click", ()=>{
+    const btn = $("#qmFetch");
+    if(!$("#qmUrl").value.trim()){ $("#qmUrl").focus(); $("#qmUrl").classList.add("invalid"); return; }
+    $("#qmUrl").classList.remove("invalid");
+    btn.disabled = true; btn.innerHTML = `<span class="spinner"></span>`;
+    $("#qmAutofill").classList.remove("show");
+    $("#qmStep1Foot").style.display="none";
+    $("#qmSkel").classList.add("show");
+    setTimeout(()=>{
+      $("#qmSkel").classList.remove("show");
+      $("#qmAutofill").classList.add("show");
+      $("#qmStep1Foot").style.display="flex";
+      btn.disabled=false; btn.textContent="다시 조회";
+    }, 1800);
+  });
+  $("#qmNext").addEventListener("click", ()=>{
+    $("#qmStep1").classList.add("hidden");
+    $("#qmStep2").classList.remove("hidden");
+    $("#qmSteps").children[1].classList.add("on");
+  });
+  $("#qmBack").addEventListener("click", ()=>{
+    $("#qmStep2").classList.add("hidden");
+    $("#qmStep1").classList.remove("hidden");
+    $("#qmSteps").children[1].classList.remove("on");
+  });
+  $("#qmSenderList").addEventListener("click", e=>{
+    const b = e.target.closest(".mr"); if(!b) return;
+    qmState.sender = +b.dataset.qsender;
+    [...$("#qmSenderList").children].forEach(c=>c.classList.toggle("sel", c===b));
+  });
+  $("#qmSubmit").addEventListener("click", ()=>{
+    if(qmState.sender==null){ alert("보내는 분을 선택해 주세요."); return; }
+    $("#qmStep2").classList.add("hidden");
+    $("#qmSteps").style.display="none";
+    $("#qmTitle").textContent="접수 완료";
+    $("#qmDone").classList.add("show");
+  });
+  $("#qmDoneClose").addEventListener("click", ()=>qmOverlay.classList.remove("show"));
+  qmOverlay.addEventListener("click", e=>{ if(e.target===qmOverlay) qmOverlay.classList.remove("show"); });
+  $("#successOverlay").addEventListener("click", e=>{ if(e.target===$("#successOverlay")) $("#successOverlay").classList.remove("show"); });
+
+  /* esc */
+  document.addEventListener("keydown", e=>{
+    if(e.key==="Escape"){ qmOverlay.classList.remove("show"); $("#successOverlay").classList.remove("show"); mgrSwitch.classList.remove("open"); }
+  });
+
+  renderRibbonPreview();
+})();
+</script>
+</body>
+</html>

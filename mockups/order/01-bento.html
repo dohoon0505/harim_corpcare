@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>경조상품 주문 · 벤토 그리드</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
+<style>
+  :root{
+    --c-orange:#f15a2a; --c-orange-ink:#d94000; --c-orange-soft:#fff1ec;
+    --c-blue:#4169e1; --c-blue-soft:#f0f3fd; --c-dark:#111118;
+    --c-bg:#f9f9f9; --c-surface:#fff; --c-surface-2:#f5f5f7; --c-surface-3:#f5f5f5;
+    --c-border:#e0e0e0; --c-border-strong:#d8d8d8; --c-divider:#e8e8e8;
+    --c-text:#222; --c-text-strong:#111; --c-text-2:#444; --c-text-3:#555;
+    --c-text-muted:#888; --c-text-faint:#aaa;
+    --c-success:#4caf50; --c-success-soft:#e8f5e9; --c-success-ink:#2e7d32;
+    --c-danger:#f44336; --c-danger-soft:#ffebee; --c-warn:#ff9800;
+    --r-sm:6px; --r-md:8px; --r-lg:10px; --r-tile:14px; --r-tile-lg:16px;
+    --sh-lift:0 6px 22px rgba(17,17,24,.07);
+    --sh-modal:0 24px 60px rgba(17,17,24,.22);
+    --sh-cta:0 6px 18px rgba(241,90,42,.30);
+    --hair:#ececec;
+    --ease:cubic-bezier(.22,.61,.36,1);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:"Pretendard",-apple-system,"Segoe UI",sans-serif;
+    background:var(--c-bg); color:var(--c-text);
+    font-size:13px; line-height:1.5; -webkit-font-smoothing:antialiased;
+    letter-spacing:-0.011em;
+  }
+  button{font-family:inherit; cursor:pointer; letter-spacing:-0.011em; border:none; background:none;}
+  input,select,textarea{font-family:inherit; letter-spacing:-0.011em;}
+  a{color:inherit;}
+  .num{font-variant-numeric:tabular-nums; font-feature-settings:"tnum";}
+  ::selection{background:var(--c-orange-soft);}
+  :focus-visible{outline:2px solid var(--c-blue); outline-offset:2px; border-radius:4px;}
+
+  /* ===== App shell ===== */
+  .app{display:flex; min-height:100vh;}
+  .sidebar{
+    width:216px; flex:0 0 216px; background:var(--c-surface);
+    border-right:1px solid var(--c-border); padding:16px 14px;
+    display:flex; flex-direction:column; gap:2px; position:sticky; top:0; height:100vh;
+  }
+  .sb-brand{display:flex; align-items:center; gap:9px; padding:6px 8px 18px;}
+  .sb-logo{width:30px; height:30px; border-radius:9px; background:var(--c-orange); display:grid; place-items:center; color:#fff; font-size:15px;}
+  .sb-brand b{font-size:14px; color:var(--c-text-strong); font-weight:700; display:block; line-height:1.2;}
+  .sb-brand span{font-size:10.5px; color:var(--c-text-muted); font-weight:500;}
+  .sb-sec{font-size:10px; color:var(--c-text-faint); font-weight:700; padding:14px 8px 6px; letter-spacing:.04em;}
+  .sb-item{display:flex; align-items:center; gap:10px; padding:8px 9px; border-radius:var(--r-md); color:var(--c-text-3); font-size:12.5px; font-weight:500; text-decoration:none; transition:background .12s;}
+  .sb-item:hover{background:var(--c-surface-2);}
+  .sb-item.active{background:var(--c-orange-soft); color:var(--c-orange-ink); font-weight:600;}
+  .sb-item .ic{width:16px; text-align:center; font-size:13px;}
+  .sb-spacer{flex:1;}
+  .sb-user{display:flex; align-items:center; gap:9px; padding:10px 8px 4px; border-top:1px solid var(--c-divider); margin-top:6px;}
+  .sb-user .av{width:28px; height:28px; border-radius:50%; background:var(--c-blue-soft); color:var(--c-blue); display:grid; place-items:center; font-weight:700; font-size:11px;}
+  .sb-user b{font-size:12px; color:var(--c-text-2); font-weight:600; display:block;}
+  .sb-user span{font-size:10.5px; color:var(--c-text-muted);}
+
+  .main{flex:1; min-width:0;}
+  .content{max-width:1160px; margin:0 auto; padding:24px 30px 60px;}
+
+  /* ===== Page head ===== */
+  .page-head{display:flex; align-items:flex-end; justify-content:space-between; gap:16px; margin-bottom:18px;}
+  .ph-l h1{font-size:24px; font-weight:700; color:var(--c-text-strong); margin:0; letter-spacing:-0.02em;}
+  .ph-l .crumb{font-size:11.5px; color:var(--c-text-faint); font-weight:500; margin-bottom:4px;}
+  .ph-l .crumb b{color:var(--c-text-muted); font-weight:600;}
+  .quick{display:flex; gap:8px;}
+  .quick-btn{
+    display:inline-flex; align-items:center; gap:8px; padding:9px 14px; border-radius:var(--r-lg);
+    background:var(--c-surface); border:1px solid var(--c-border-strong); color:var(--c-text-2);
+    font-size:12.5px; font-weight:600; transition:border-color .14s, transform .07s, box-shadow .14s;
+  }
+  .quick-btn .qi{font-size:14px;}
+  .quick-btn:hover{border-color:var(--c-blue); color:var(--c-blue); transform:translateY(-1px); box-shadow:var(--sh-lift);}
+  .quick-btn:active{transform:translateY(0);}
+  .quick-btn .kbd{font-size:10px; color:var(--c-text-faint); font-weight:600; padding:1px 5px; border:1px solid var(--c-border); border-radius:4px;}
+
+  /* ===== Bento grid ===== */
+  .bento{display:grid; grid-template-columns:repeat(12,1fr); gap:14px; align-items:start;}
+  .tile{
+    background:var(--c-surface); border:1px solid var(--hair); border-radius:var(--r-tile);
+    padding:16px 17px; position:relative; transition:transform .16s var(--ease), box-shadow .16s var(--ease), border-color .16s;
+  }
+  .tile.hoverable:hover{transform:translateY(-2px); box-shadow:var(--sh-lift); border-color:var(--c-border-strong);}
+  .span-3{grid-column:span 3;} .span-4{grid-column:span 4;} .span-5{grid-column:span 5;}
+  .span-6{grid-column:span 6;} .span-7{grid-column:span 7;} .span-8{grid-column:span 8;}
+  .span-12{grid-column:span 12;}
+
+  .tl-head{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:13px;}
+  .tl-title{display:flex; align-items:center; gap:8px; font-size:13px; font-weight:700; color:var(--c-text-strong); letter-spacing:-0.01em;}
+  .tl-title .req{color:var(--c-orange); font-weight:700; font-size:11px; transform:translateY(-2px);}
+  .tl-title .idx{font-size:10px; color:var(--c-text-faint); font-weight:700; font-variant-numeric:tabular-nums;}
+  .tl-link{font-size:11.5px; color:var(--c-blue); font-weight:600; text-decoration:none; cursor:pointer;}
+  .tl-link:hover{text-decoration:underline;}
+  .done-dot{width:7px; height:7px; border-radius:50%; background:var(--c-border-strong); transition:background .2s;}
+  .done-dot.on{background:var(--c-success);}
+
+  /* ===== Manager tile (inline) ===== */
+  .mgr-tile{display:flex; align-items:center; gap:14px;}
+  .mgr-id{display:flex; align-items:center; gap:12px; flex:1; min-width:0;}
+  .mgr-av{width:42px; height:42px; border-radius:12px; background:var(--c-orange-soft); color:var(--c-orange-ink); display:grid; place-items:center; font-weight:700; font-size:15px; flex:0 0 auto;}
+  .mgr-meta .nm{font-size:15px; font-weight:700; color:var(--c-text-strong); display:flex; align-items:center; gap:7px;}
+  .mgr-meta .nm .role{font-size:11px; font-weight:600; color:var(--c-text-muted); padding:2px 7px; background:var(--c-surface-2); border-radius:999px;}
+  .mgr-meta .ph{font-size:12px; color:var(--c-text-3); margin-top:3px; font-variant-numeric:tabular-nums;}
+  .mgr-meta .ph .lbl{color:var(--c-text-faint); margin-right:5px;}
+  .mgr-ctrl{display:flex; align-items:center; gap:8px;}
+  .mgr-select{position:relative;}
+  .mgr-trigger{
+    display:inline-flex; align-items:center; gap:9px; padding:9px 13px; border-radius:var(--r-lg);
+    background:var(--c-surface); border:1px solid var(--c-border-strong); color:var(--c-text-2);
+    font-size:12.5px; font-weight:600; transition:border-color .14s, background .14s;
+  }
+  .mgr-trigger:hover{border-color:var(--c-blue);}
+  .mgr-trigger .cv{font-size:9px; color:var(--c-text-muted); transition:transform .2s;}
+  .mgr-select.open .mgr-trigger{border-color:var(--c-blue); background:var(--c-blue-soft);}
+  .mgr-select.open .mgr-trigger .cv{transform:rotate(180deg);}
+  .mgr-pop{
+    position:absolute; top:calc(100% + 7px); right:0; width:268px; z-index:40;
+    background:var(--c-surface); border:1px solid var(--c-border); border-radius:var(--r-lg);
+    box-shadow:var(--sh-modal); padding:6px; opacity:0; visibility:hidden; transform:translateY(-6px);
+    transition:opacity .15s, transform .15s, visibility .15s;
+  }
+  .mgr-select.open .mgr-pop{opacity:1; visibility:visible; transform:translateY(0);}
+  .mgr-opt{display:flex; align-items:center; gap:11px; padding:9px 10px; border-radius:var(--r-md); cursor:pointer; width:100%; text-align:left; transition:background .1s;}
+  .mgr-opt:hover{background:var(--c-surface-2);}
+  .mgr-opt .oav{width:32px; height:32px; border-radius:9px; background:var(--c-surface-2); color:var(--c-text-3); display:grid; place-items:center; font-weight:700; font-size:12px; flex:0 0 auto;}
+  .mgr-opt.sel .oav{background:var(--c-orange-soft); color:var(--c-orange-ink);}
+  .mgr-opt .otx b{font-size:12.5px; font-weight:600; color:var(--c-text-strong); display:flex; gap:6px; align-items:center;}
+  .mgr-opt .otx b .or{font-size:10.5px; color:var(--c-text-muted); font-weight:500;}
+  .mgr-opt .otx span{font-size:11px; color:var(--c-text-muted); font-variant-numeric:tabular-nums;}
+  .mgr-opt .chk{margin-left:auto; color:var(--c-orange); font-size:13px; opacity:0;}
+  .mgr-opt.sel .chk{opacity:1;}
+  .mgr-pop .div{height:1px; background:var(--c-divider); margin:5px 4px;}
+  .mgr-add{display:flex; align-items:center; gap:8px; padding:9px 10px; border-radius:var(--r-md); width:100%; color:var(--c-blue); font-size:12px; font-weight:600; transition:background .1s;}
+  .mgr-add:hover{background:var(--c-blue-soft);}
+
+  /* ===== Product tile ===== */
+  .prod-grid{display:grid; grid-template-columns:1fr 1fr; gap:9px;}
+  .prod{
+    display:flex; align-items:center; gap:12px; padding:11px 13px; border-radius:var(--r-lg);
+    border:1px solid var(--c-border); background:var(--c-surface); cursor:pointer; text-align:left; width:100%;
+    transition:border-color .13s, background .13s, transform .07s;
+  }
+  .prod:hover{border-color:var(--c-border-strong); background:var(--c-surface-2); transform:translateY(-1px);}
+  .prod .pem{width:38px; height:38px; border-radius:10px; background:var(--c-surface-2); display:grid; place-items:center; font-size:19px; flex:0 0 auto; transition:background .13s;}
+  .prod .pinfo{flex:1; min-width:0;}
+  .prod .pinfo .pnm{font-size:13px; font-weight:600; color:var(--c-text-strong); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .prod .pinfo .pcat{font-size:11px; color:var(--c-text-muted); margin-top:2px;}
+  .prod .pprice{font-size:13px; font-weight:700; color:var(--c-text-2); font-variant-numeric:tabular-nums; flex:0 0 auto;}
+  .prod .pcheck{width:18px; height:18px; border-radius:50%; border:1.5px solid var(--c-border-strong); display:grid; place-items:center; flex:0 0 auto; transition:.13s;}
+  .prod .pcheck i{font-size:10px; color:#fff; opacity:0;}
+  .prod.sel{border-color:var(--c-orange); background:var(--c-orange-soft);}
+  .prod.sel .pem{background:#fff;}
+  .prod.sel .pprice{color:var(--c-orange-ink);}
+  .prod.sel .pcheck{background:var(--c-orange); border-color:var(--c-orange);}
+  .prod.sel .pcheck i{opacity:1;}
+  .prod-empty{display:flex; flex-direction:column; align-items:center; text-align:center; padding:26px 16px; border:1px dashed var(--c-border-strong); border-radius:var(--r-lg); background:var(--c-surface-3);}
+  .prod-empty .ee{font-size:24px; margin-bottom:8px; opacity:.5;}
+  .prod-empty p{font-size:12px; color:var(--c-text-muted); margin:0 0 12px;}
+
+  /* ===== Inputs ===== */
+  .fld{margin-bottom:12px;}
+  .fld:last-child{margin-bottom:0;}
+  .fld > label{display:block; font-size:11.5px; font-weight:600; color:var(--c-text-3); margin-bottom:6px;}
+  .fld > label .req{color:var(--c-orange); margin-left:2px;}
+  .inp{
+    width:100%; height:38px; padding:0 12px; border:1px solid var(--c-border); border-radius:var(--r-md);
+    background:var(--c-surface); font-size:13px; color:var(--c-text); transition:border-color .13s, box-shadow .13s;
+  }
+  textarea.inp{height:auto; padding:10px 12px; resize:none; line-height:1.55;}
+  .inp::placeholder{color:var(--c-text-faint);}
+  .inp:hover{border-color:var(--c-border-strong);}
+  .inp:focus{outline:none; border-color:var(--c-blue); box-shadow:0 0 0 3px var(--c-blue-soft);}
+  .inp.valid{border-color:var(--c-success);}
+  .row2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+
+  /* ===== Datetime ===== */
+  .dt-row{display:grid; grid-template-columns:1.3fr .9fr .9fr; gap:8px;}
+  select.inp{appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath d='M1 3l4 4 4-4' stroke='%23888' stroke-width='1.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 11px center; padding-right:28px;}
+  .now-toggle{display:flex; align-items:center; gap:8px; margin-bottom:11px; padding:9px 11px; border-radius:var(--r-md); background:var(--c-surface-2); cursor:pointer; user-select:none;}
+  .now-toggle .sw{position:relative; width:34px; height:20px; flex:0 0 auto;}
+  .now-toggle .sw input{display:none;}
+  .now-toggle .track{position:absolute; inset:0; background:var(--c-border-strong); border-radius:999px; transition:background .18s;}
+  .now-toggle .knob{position:absolute; top:2px; left:2px; width:16px; height:16px; background:#fff; border-radius:50%; transition:transform .18s var(--ease); box-shadow:0 1px 2px rgba(0,0,0,.2);}
+  .now-toggle .sw input:checked + .track{background:var(--c-orange);}
+  .now-toggle .sw input:checked + .track + .knob{transform:translateX(14px);}
+  .now-toggle b{font-size:12.5px; font-weight:600; color:var(--c-text-2);}
+  .now-toggle span{font-size:11px; color:var(--c-text-muted);}
+  .now-msg{display:none; align-items:center; gap:7px; margin-top:10px; padding:9px 12px; border-radius:var(--r-md); background:var(--c-orange-soft); color:var(--c-orange-ink); font-size:11.5px; font-weight:600;}
+  .now-msg.show{display:flex;}
+  .dt-wrap.disabled{opacity:.42; pointer-events:none;}
+
+  /* ===== Ribbon / sender mini-cards ===== */
+  .pick{
+    display:flex; align-items:center; justify-content:space-between; gap:10px; width:100%;
+    padding:12px 13px; border:1px solid var(--c-border); border-radius:var(--r-lg); background:var(--c-surface);
+    text-align:left; cursor:pointer; transition:border-color .13s, background .13s;
+  }
+  .pick:hover{border-color:var(--c-border-strong); background:var(--c-surface-2);}
+  .pick.filled{border-color:var(--c-blue); background:var(--c-blue-soft);}
+  .pick .pk-l{min-width:0;}
+  .pick .pk-l .pk-lbl{font-size:10.5px; color:var(--c-text-muted); font-weight:600; margin-bottom:3px;}
+  .pick .pk-l .pk-val{font-size:13px; color:var(--c-text-faint); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .pick.filled .pk-val{color:var(--c-text-strong);}
+  .pick .pk-go{font-size:11px; color:var(--c-blue); font-weight:700; flex:0 0 auto; display:flex; align-items:center; gap:3px;}
+
+  /* ===== Notify tile ===== */
+  .ntf-row{display:flex; align-items:center; justify-content:space-between; padding:10px 2px; border-bottom:1px solid var(--c-divider);}
+  .ntf-row:last-of-type{border-bottom:none;}
+  .ntf-row .nl b{font-size:12.5px; font-weight:600; color:var(--c-text-2);}
+  .ntf-row .nl span{display:block; font-size:11px; color:var(--c-text-muted); margin-top:1px; font-variant-numeric:tabular-nums;}
+  .sw{position:relative; width:38px; height:22px; flex:0 0 auto; cursor:pointer;}
+  .sw input{display:none;}
+  .sw .track{position:absolute; inset:0; background:var(--c-border-strong); border-radius:999px; transition:background .18s;}
+  .sw .knob{position:absolute; top:2px; left:2px; width:18px; height:18px; background:#fff; border-radius:50%; transition:transform .18s var(--ease); box-shadow:0 1px 2px rgba(0,0,0,.22);}
+  .sw input:checked + .track{background:var(--c-success);}
+  .sw input:checked + .track + .knob{transform:translateX(16px);}
+  .ntf-foot{display:flex; align-items:center; gap:6px; margin-top:11px; font-size:11px; color:var(--c-text-muted);}
+  .ntf-foot i{color:var(--c-success);}
+
+  /* ===== Notice tile ===== */
+  .notice-list{margin:0; padding:0; list-style:none; display:flex; flex-direction:column; gap:8px;}
+  .notice-list li{display:flex; gap:9px; font-size:11.5px; color:var(--c-text-3); line-height:1.5;}
+  .notice-list li .dt{width:4px; height:4px; border-radius:50%; background:var(--c-orange); margin-top:6px; flex:0 0 auto;}
+  .notice-list li b{color:var(--c-text-2); font-weight:600;}
+  .notice-foot{margin-top:13px; padding-top:11px; border-top:1px solid var(--c-divider); font-size:11.5px; color:var(--c-text-muted);}
+  .notice-foot b{color:var(--c-text-2); font-weight:700; font-variant-numeric:tabular-nums;}
+
+  /* ===== Summary + submit tile ===== */
+  .sum-tile{background:var(--c-dark); border-color:var(--c-dark); color:#fff; display:flex; flex-direction:column;}
+  .sum-tile .tl-title{color:#fff;}
+  .sum-tile .tl-title .idx{color:rgba(255,255,255,.4);}
+  .sum-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;}
+  .sum-head .h{font-size:13px; font-weight:700; color:#fff; display:flex; align-items:center; gap:8px;}
+  .sum-head .mgr-mini{font-size:11px; color:rgba(255,255,255,.5);}
+  .sum-rows{display:flex; flex-direction:column; gap:1px;}
+  .sum-r{display:flex; align-items:flex-start; justify-content:space-between; gap:12px; padding:9px 0; border-bottom:1px solid rgba(255,255,255,.08);}
+  .sum-r .k{font-size:11.5px; color:rgba(255,255,255,.55); font-weight:500; flex:0 0 auto;}
+  .sum-r .v{font-size:12.5px; color:#fff; font-weight:600; text-align:right; line-height:1.45;}
+  .sum-r .v.empty{color:rgba(255,255,255,.32); font-weight:500;}
+  .sum-r .v.num{font-variant-numeric:tabular-nums;}
+  .sum-total{display:flex; align-items:baseline; justify-content:space-between; margin:16px 0 14px; padding-top:14px; border-top:1px solid rgba(255,255,255,.16);}
+  .sum-total .tl{font-size:13px; color:rgba(255,255,255,.7); font-weight:600;}
+  .sum-total .amt{font-size:26px; font-weight:700; color:#fff; font-variant-numeric:tabular-nums; letter-spacing:-0.02em;}
+  .sum-total .amt small{font-size:14px; font-weight:600; margin-left:1px;}
+
+  .req-track{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px;}
+  .req-chip{display:inline-flex; align-items:center; gap:5px; padding:4px 9px; border-radius:999px; font-size:10.5px; font-weight:600; background:rgba(255,255,255,.07); color:rgba(255,255,255,.5); transition:background .2s, color .2s;}
+  .req-chip i{font-size:10px; opacity:0; width:0; transition:opacity .2s, width .2s;}
+  .req-chip.ok{background:rgba(76,175,80,.16); color:#9be0a0;}
+  .req-chip.ok i{opacity:1; width:auto;}
+
+  .submit-btn{
+    width:100%; height:50px; border-radius:var(--r-lg); font-size:15px; font-weight:700; letter-spacing:-0.01em;
+    background:var(--c-surface-2); color:var(--c-text-faint); cursor:not-allowed; transition:background .18s, color .18s, box-shadow .18s, transform .08s;
+  }
+  .submit-btn.ready{background:var(--c-orange); color:#fff; cursor:pointer; box-shadow:var(--sh-cta);}
+  .submit-btn.ready:hover{background:var(--c-orange-ink);}
+  .submit-btn.ready:active{transform:scale(.985);}
+  .submit-hint{text-align:center; font-size:11px; color:rgba(255,255,255,.45); margin-top:10px; min-height:14px;}
+  .submit-hint b{color:#ffb59c; font-weight:600;}
+
+  /* ===== Modal / popover overlay ===== */
+  .overlay{position:fixed; inset:0; background:rgba(17,17,24,.5); display:flex; align-items:center; justify-content:center; z-index:200; opacity:0; visibility:hidden; transition:opacity .2s, visibility .2s; padding:20px;}
+  .overlay.show{opacity:1; visibility:visible;}
+  .modal{width:480px; max-width:100%; max-height:90vh; overflow:auto; background:var(--c-surface); border-radius:var(--r-tile-lg); box-shadow:var(--sh-modal); transform:translateY(12px) scale(.98); transition:transform .22s var(--ease); display:flex; flex-direction:column;}
+  .overlay.show .modal{transform:none;}
+  .modal.wide{width:540px;}
+  .mhd{display:flex; align-items:center; justify-content:space-between; padding:18px 20px; border-bottom:1px solid var(--c-divider);}
+  .mhd .mt{font-size:15px; font-weight:700; color:var(--c-text-strong); display:flex; align-items:center; gap:9px;}
+  .mhd .mt .badge{font-size:10.5px; font-weight:700; padding:3px 8px; border-radius:999px; background:var(--c-blue-soft); color:var(--c-blue);}
+  .mhd .x{width:30px; height:30px; border-radius:8px; display:grid; place-items:center; color:var(--c-text-muted); font-size:16px; transition:background .12s;}
+  .mhd .x:hover{background:var(--c-surface-2);}
+  .mbd{padding:20px;}
+  .mft{display:flex; gap:10px; padding:16px 20px; border-top:1px solid var(--c-divider);}
+  .btn{height:44px; padding:0 18px; border-radius:var(--r-md); font-size:13.5px; font-weight:700; transition:background .14s, border-color .14s, transform .07s;}
+  .btn:active{transform:scale(.98);}
+  .btn-primary{background:var(--c-orange); color:#fff; box-shadow:var(--sh-cta);}
+  .btn-primary:hover{background:var(--c-orange-ink);}
+  .btn-primary:disabled{background:var(--c-surface-2); color:var(--c-text-faint); box-shadow:none; cursor:not-allowed;}
+  .btn-ghost{background:var(--c-surface); border:1px solid var(--c-border-strong); color:var(--c-text-2);}
+  .btn-ghost:hover{background:var(--c-surface-2);}
+  .btn-blue{background:var(--c-blue); color:#fff;}
+  .btn-blue:hover{filter:brightness(.94);}
+  .btn-blue:disabled{background:var(--c-surface-2); color:var(--c-text-faint); cursor:not-allowed;}
+  .flex1{flex:1;}
+
+  /* ===== Ribbon modal internals ===== */
+  .rb-grp{margin-bottom:15px;}
+  .rb-grp .gl{font-size:11px; font-weight:700; color:var(--c-text-muted); margin-bottom:8px; letter-spacing:.01em;}
+  .rb-chips{display:flex; flex-wrap:wrap; gap:7px;}
+  .rb-chip{padding:7px 12px; border-radius:999px; border:1px solid var(--c-border); background:var(--c-surface); font-size:12px; color:var(--c-text-2); font-weight:500; cursor:pointer; transition:.12s;}
+  .rb-chip:hover{border-color:var(--c-border-strong); background:var(--c-surface-2);}
+  .rb-chip.on{border-color:var(--c-orange); background:var(--c-orange-soft); color:var(--c-orange-ink); font-weight:600;}
+  .rb-count{display:flex; justify-content:flex-end; font-size:11px; color:var(--c-text-muted); margin-top:6px; font-variant-numeric:tabular-nums;}
+  .rb-preview{margin-top:14px; padding:16px; border-radius:var(--r-md); background:var(--c-surface-3); border:1px solid var(--c-divider); text-align:center;}
+  .rb-preview .pl{font-size:10.5px; color:var(--c-text-faint); font-weight:600; margin-bottom:8px;}
+  .rb-preview .pv{font-size:16px; font-weight:700; color:var(--c-text-strong); line-height:1.5; min-height:24px;}
+  .rb-preview .pv.empty{color:var(--c-text-faint); font-weight:500; font-size:13px;}
+
+  /* ===== Sender modal internals ===== */
+  .snd-opt{display:flex; align-items:center; gap:13px; padding:14px; border:1px solid var(--c-border); border-radius:var(--r-lg); cursor:pointer; margin-bottom:9px; transition:.13s;}
+  .snd-opt:hover{border-color:var(--c-border-strong); background:var(--c-surface-2);}
+  .snd-opt.on{border-color:var(--c-orange); background:var(--c-orange-soft);}
+  .snd-opt .radio{width:18px; height:18px; border-radius:50%; border:1.5px solid var(--c-border-strong); flex:0 0 auto; display:grid; place-items:center; transition:.13s;}
+  .snd-opt .radio::after{content:""; width:8px; height:8px; border-radius:50%; background:var(--c-orange); transform:scale(0); transition:.13s;}
+  .snd-opt.on .radio{border-color:var(--c-orange);}
+  .snd-opt.on .radio::after{transform:scale(1);}
+  .snd-opt .si b{font-size:13.5px; font-weight:700; color:var(--c-text-strong);}
+  .snd-opt .si b .r{font-size:11px; font-weight:500; color:var(--c-text-muted); margin-left:6px;}
+  .snd-opt .si .fixed{font-size:11.5px; color:var(--c-text-muted); margin-top:3px;}
+
+  /* ===== Quick (간편접수) modal ===== */
+  .qstep{display:none;}
+  .qstep.active{display:block;}
+  .q-url{display:flex; gap:8px;}
+  .q-url .inp{flex:1;}
+  .q-lookup{height:38px; padding:0 16px; border-radius:var(--r-md); background:var(--c-blue); color:#fff; font-size:12.5px; font-weight:700; flex:0 0 auto; transition:filter .14s;}
+  .q-lookup:hover{filter:brightness(.94);}
+  .q-lookup:disabled{background:var(--c-surface-2); color:var(--c-text-faint); cursor:not-allowed;}
+  .q-hint{font-size:11px; color:var(--c-text-muted); margin-top:8px; display:flex; align-items:center; gap:6px;}
+  .q-load{display:none; flex-direction:column; gap:10px; margin-top:16px;}
+  .q-load.show{display:flex;}
+  .sk{height:14px; border-radius:6px; background:linear-gradient(90deg,#eee 25%,#f5f5f5 50%,#eee 75%); background-size:200% 100%; animation:sk 1.2s infinite;}
+  @keyframes sk{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+  .q-spin{display:inline-block; width:14px; height:14px; border:2px solid var(--c-blue-soft); border-top-color:var(--c-blue); border-radius:50%; animation:spin .7s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .q-result{display:none; margin-top:16px;}
+  .q-result.show{display:block;}
+  .q-auto{padding:13px; border-radius:var(--r-md); background:var(--c-success-soft); border:1px solid #c8e6c9; margin-bottom:14px;}
+  .q-auto .ah{display:flex; align-items:center; gap:6px; font-size:11.5px; font-weight:700; color:var(--c-success-ink); margin-bottom:9px;}
+  .q-auto .ar{display:flex; justify-content:space-between; gap:10px; padding:4px 0; font-size:12px;}
+  .q-auto .ar .k{color:var(--c-text-3);}
+  .q-auto .ar .v{color:var(--c-text-strong); font-weight:600; text-align:right;}
+  .q-summary{padding:13px; border-radius:var(--r-md); background:var(--c-surface-3); border:1px solid var(--c-divider); margin-top:14px;}
+  .q-summary .sr{display:flex; justify-content:space-between; padding:4px 0; font-size:12px;}
+  .q-summary .sr .k{color:var(--c-text-muted);}
+  .q-summary .sr .v{color:var(--c-text-strong); font-weight:600; font-variant-numeric:tabular-nums;}
+
+  /* ===== Success state ===== */
+  .success{display:none; flex-direction:column; align-items:center; text-align:center; padding:40px 24px;}
+  .success.show{display:flex;}
+  .success .ring{width:64px; height:64px; border-radius:50%; background:var(--c-success-soft); display:grid; place-items:center; color:var(--c-success); font-size:30px; margin-bottom:18px; animation:pop .4s var(--ease);}
+  @keyframes pop{0%{transform:scale(.4); opacity:0;}60%{transform:scale(1.08);}100%{transform:scale(1); opacity:1;}}
+  .success h3{font-size:19px; font-weight:700; color:var(--c-text-strong); margin:0 0 8px;}
+  .success p{font-size:12.5px; color:var(--c-text-muted); margin:0 0 4px; line-height:1.6;}
+  .success .ono{font-size:12px; color:var(--c-text-3); font-weight:600; font-variant-numeric:tabular-nums; margin-top:10px; padding:6px 14px; background:var(--c-surface-2); border-radius:999px;}
+
+  /* toast */
+  .toast{position:fixed; bottom:26px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--c-dark); color:#fff; font-size:12.5px; font-weight:600; padding:11px 18px; border-radius:999px; box-shadow:var(--sh-modal); opacity:0; visibility:hidden; transition:.25s var(--ease); z-index:300; display:flex; align-items:center; gap:8px;}
+  .toast.show{opacity:1; visibility:visible; transform:translateX(-50%) translateY(0);}
+  .toast i{color:#9be0a0;}
+
+  @media (max-width:1080px){
+    .span-3,.span-4,.span-5{grid-column:span 6;}
+    .span-7,.span-8{grid-column:span 12;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- ===== Sidebar shell ===== -->
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <div class="sb-logo">花</div>
+      <div><b>올해의경조사</b><span>경조 화환 주문 콘솔</span></div>
+    </div>
+    <div class="sb-sec">주문</div>
+    <a class="sb-item active" href="#"><span class="ic">✿</span>경조상품 주문</a>
+    <a class="sb-item" href="#"><span class="ic">▤</span>주문 내역</a>
+    <a class="sb-item" href="#"><span class="ic">★</span>즐겨찾기 상품</a>
+    <div class="sb-sec">관리</div>
+    <a class="sb-item" href="#"><span class="ic">◰</span>상품 규격 안내</a>
+    <a class="sb-item" href="#"><span class="ic">⛁</span>정산 · 명세서</a>
+    <a class="sb-item" href="#"><span class="ic">⚙</span>설정</a>
+    <div class="sb-spacer"></div>
+    <div class="sb-user">
+      <div class="av">올</div>
+      <div><b>올해의경조사(주)</b><span>법인 · 기업회원</span></div>
+    </div>
+  </aside>
+
+  <!-- ===== Main ===== -->
+  <main class="main">
+    <div class="content">
+      <div class="page-head">
+        <div class="ph-l">
+          <div class="crumb">주문 <b>›</b> 경조상품 주문</div>
+          <h1>경조상품 주문</h1>
+        </div>
+        <div class="quick">
+          <button class="quick-btn" onclick="openQuick('부고')"><span class="qi">⚰</span>부고 간편접수</button>
+          <button class="quick-btn" onclick="openQuick('청첩')"><span class="qi">💌</span>청첩 간편접수</button>
+        </div>
+      </div>
+
+      <div class="bento">
+
+        <!-- Manager (inline, full width) -->
+        <section class="tile span-12 mgr-tile hoverable">
+          <div class="mgr-id">
+            <div class="mgr-av" id="mgrAv">할</div>
+            <div class="mgr-meta">
+              <div class="nm"><span id="mgrName">할다운</span><span class="role" id="mgrRole">비서</span></div>
+              <div class="ph"><span class="lbl">담당자 연락처</span><span id="mgrPhone" class="num">010-1111-2222</span></div>
+            </div>
+          </div>
+          <div class="mgr-ctrl">
+            <div class="mgr-select" id="mgrSelect">
+              <button class="mgr-trigger" onclick="toggleMgr(event)">담당자 전환<span class="cv">▼</span></button>
+              <div class="mgr-pop" id="mgrPop"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Product (wide) -->
+        <section class="tile span-8 hoverable">
+          <div class="tl-head">
+            <div class="tl-title"><span class="idx">01</span>상품 선택<span class="req">*</span></div>
+            <a class="tl-link" onclick="toast('즐겨찾기 관리 화면으로 이동')">즐겨찾기 관리 →</a>
+          </div>
+          <div class="prod-grid" id="prodGrid"></div>
+        </section>
+
+        <!-- Ribbon + sender (right column, stacked into one tile) -->
+        <section class="tile span-4 hoverable">
+          <div class="tl-head"><div class="tl-title"><span class="idx">02</span>리본 정보<span class="req">*</span></div></div>
+          <div class="fld">
+            <label>리본 문구 <span class="req">*</span></label>
+            <button class="pick" id="ribbonPick" onclick="openRibbon()">
+              <div class="pk-l"><div class="pk-lbl">리본 문구</div><div class="pk-val" id="ribbonVal">문구를 선택하세요</div></div>
+              <div class="pk-go">설정 ›</div>
+            </button>
+          </div>
+          <div class="fld" style="margin-bottom:0;">
+            <label>보내는분 <span class="req">*</span></label>
+            <button class="pick" id="senderPick" onclick="openSender()">
+              <div class="pk-l"><div class="pk-lbl">보내는분 프로필</div><div class="pk-val" id="senderVal">프로필을 선택하세요</div></div>
+              <div class="pk-go">선택 ›</div>
+            </button>
+          </div>
+        </section>
+
+        <!-- Delivery address (wide) -->
+        <section class="tile span-7 hoverable">
+          <div class="tl-head"><div class="tl-title"><span class="idx">03</span>배송지 정보<span class="req">*</span></div></div>
+          <div class="fld">
+            <label>배송지 주소 <span class="req">*</span></label>
+            <input class="inp" id="addr" placeholder="예) 서울 강남구 테헤란로 152 강남파이낸스센터 3층" oninput="recompute()" />
+          </div>
+          <div class="row2">
+            <div class="fld">
+              <label>받는분 성함 <span class="req">*</span></label>
+              <input class="inp" id="recvName" placeholder="예) 김○○ 상주" oninput="recompute()" />
+            </div>
+            <div class="fld">
+              <label>받는분 연락처 <span class="req">*</span></label>
+              <input class="inp num" id="recvPhone" placeholder="010-0000-0000" oninput="recompute()" />
+            </div>
+          </div>
+        </section>
+
+        <!-- Delivery datetime -->
+        <section class="tile span-5 hoverable">
+          <div class="tl-head"><div class="tl-title"><span class="idx">04</span>배송 요청 일시<span class="req">*</span></div></div>
+          <label class="now-toggle">
+            <span class="sw"><input type="checkbox" id="nowChk" onchange="toggleNow()" /><span class="track"></span><span class="knob"></span></span>
+            <div><b>즉시배송</b> <span>가능한 가장 빠른 시간에 배송</span></div>
+          </label>
+          <div class="dt-wrap" id="dtWrap">
+            <div class="dt-row">
+              <input class="inp" type="date" id="dDate" onchange="recompute()" />
+              <select class="inp" id="dHour" onchange="recompute()"><option value="">시</option></select>
+              <select class="inp" id="dMin" onchange="recompute()"><option value="">분</option></select>
+            </div>
+          </div>
+          <div class="now-msg" id="nowMsg">⚡ 약 <b class="num">3시간</b> 후 배송됩니다.</div>
+        </section>
+
+        <!-- Notify -->
+        <section class="tile span-4 hoverable">
+          <div class="tl-head"><div class="tl-title"><span class="idx">05</span>배송완료 알림 수신</div></div>
+          <div class="ntf-row">
+            <div class="nl"><b>받는분</b><span id="ntfRecv">- 미입력</span></div>
+            <label class="sw"><input type="checkbox" /><span class="track"></span><span class="knob"></span></label>
+          </div>
+          <div class="ntf-row">
+            <div class="nl"><b>보내는분</b><span id="ntfSend">- 미선택</span></div>
+            <label class="sw"><input type="checkbox" /><span class="track"></span><span class="knob"></span></label>
+          </div>
+          <div class="ntf-row">
+            <div class="nl"><b>담당자</b><span id="ntfMgr" class="num">010-1111-2222</span></div>
+            <label class="sw"><input type="checkbox" checked /><span class="track"></span><span class="knob"></span></label>
+          </div>
+          <div class="ntf-foot"><i>✓</i> ON 설정된 분께 배송완료 시 문자가 자동 발송됩니다.</div>
+        </section>
+
+        <!-- Notice -->
+        <section class="tile span-4 hoverable">
+          <div class="tl-head"><div class="tl-title"><span class="idx">06</span>주문 시 참고사항</div></div>
+          <ul class="notice-list">
+            <li><span class="dt"></span><div><b>당일 오전 11시 이전</b> 접수 건은 당일배송 가능합니다.</div></li>
+            <li><span class="dt"></span><div>주말·공휴일은 배송이 제한될 수 있습니다.</div></li>
+            <li><span class="dt"></span><div>이른 아침·저녁 배송은 사전 협의가 필요합니다.</div></li>
+            <li><span class="dt"></span><div>리본 문구는 <b>접수 후 수정이 불가</b>합니다.</div></li>
+          </ul>
+          <div class="notice-foot">배송 문의 <b class="num">02-0000-0000</b></div>
+        </section>
+
+        <!-- Summary + submit (emphasized dark tile) -->
+        <section class="tile sum-tile span-4">
+          <div class="tl-head"><div class="tl-title"><span class="idx">07</span>주문 요약</div></div>
+          <div class="sum-rows">
+            <div class="sum-r"><span class="k">상품</span><span class="v empty" id="sProd">선택 전</span></div>
+            <div class="sum-r"><span class="k">받는분</span><span class="v empty" id="sRecv">미입력</span></div>
+            <div class="sum-r"><span class="k">배송지</span><span class="v empty" id="sAddr">미입력</span></div>
+            <div class="sum-r"><span class="k">배송 일시</span><span class="v empty" id="sWhen">미설정</span></div>
+            <div class="sum-r"><span class="k">리본</span><span class="v empty" id="sRibbon">미설정</span></div>
+            <div class="sum-r"><span class="k">보내는분</span><span class="v empty" id="sSender">미선택</span></div>
+          </div>
+          <div class="sum-total">
+            <span class="tl">결제 예정 금액</span>
+            <span class="amt"><span class="num" id="sTotal">0</span><small>원</small></span>
+          </div>
+          <div class="req-track" id="reqTrack">
+            <span class="req-chip" data-r="prod"><i>✓</i>상품</span>
+            <span class="req-chip" data-r="addr"><i>✓</i>배송지</span>
+            <span class="req-chip" data-r="recvName"><i>✓</i>받는분</span>
+            <span class="req-chip" data-r="recvPhone"><i>✓</i>연락처</span>
+            <span class="req-chip" data-r="when"><i>✓</i>일시</span>
+            <span class="req-chip" data-r="ribbon"><i>✓</i>리본</span>
+            <span class="req-chip" data-r="sender"><i>✓</i>보내는분</span>
+          </div>
+          <button class="submit-btn" id="submitBtn" onclick="submitOrder()">필수 항목을 모두 입력해 주세요</button>
+          <div class="submit-hint" id="submitHint"></div>
+        </section>
+
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ===== Ribbon modal ===== -->
+<div class="overlay" id="ribbonOverlay">
+  <div class="modal">
+    <div class="mhd"><div class="mt">리본 문구</div><button class="x" onclick="closeOverlay('ribbonOverlay')">✕</button></div>
+    <div class="mbd">
+      <div id="ribbonGroups"></div>
+      <div class="fld" style="margin-top:4px;">
+        <label>직접 입력</label>
+        <textarea class="inp" id="ribbonText" rows="2" maxlength="40" placeholder="문구를 직접 입력하거나 위에서 선택하세요" oninput="onRibbonInput()"></textarea>
+        <div class="rb-count"><span class="num" id="ribbonCount">0</span>/40자</div>
+      </div>
+      <div class="rb-preview"><div class="pl">리본 미리보기</div><div class="pv empty" id="ribbonPreview">문구를 입력하세요</div></div>
+    </div>
+    <div class="mft">
+      <button class="btn btn-ghost" onclick="closeOverlay('ribbonOverlay')">취소</button>
+      <button class="btn btn-primary flex1" id="ribbonApply" onclick="applyRibbon()">이 문구로 설정</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Sender modal ===== -->
+<div class="overlay" id="senderOverlay">
+  <div class="modal">
+    <div class="mhd"><div class="mt">보내는분 선택</div><button class="x" onclick="closeOverlay('senderOverlay')">✕</button></div>
+    <div class="mbd" id="senderList"></div>
+    <div class="mft">
+      <button class="btn btn-ghost" onclick="closeOverlay('senderOverlay')">취소</button>
+      <button class="btn btn-primary flex1" id="senderApply" onclick="applySender()" disabled>선택 완료</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Quick (간편접수) modal ===== -->
+<div class="overlay" id="quickOverlay">
+  <div class="modal wide">
+    <div class="mhd">
+      <div class="mt"><span id="quickTitle">부고 간편접수</span><span class="badge" id="quickStepBadge">STEP 1 / 2</span></div>
+      <button class="x" onclick="closeOverlay('quickOverlay')">✕</button>
+    </div>
+
+    <!-- STEP 1 -->
+    <div class="qstep active" id="qstep1">
+      <div class="mbd">
+        <div class="fld">
+          <label id="quickUrlLabel">부고 URL</label>
+          <div class="q-url">
+            <input class="inp" id="quickUrl" placeholder="https://..." />
+            <button class="q-lookup" id="quickLookupBtn" onclick="quickLookup()">조회</button>
+          </div>
+          <div class="q-hint">🔗 부고/청첩 링크를 붙여넣으면 배송지·받는분 정보를 자동으로 불러옵니다.</div>
+        </div>
+        <div class="q-load" id="quickLoad">
+          <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--c-blue);font-weight:600;"><span class="q-spin"></span> 정보를 조회하는 중…</div>
+          <div class="sk" style="width:90%;"></div><div class="sk" style="width:70%;"></div><div class="sk" style="width:80%;"></div>
+        </div>
+        <div class="q-result" id="quickResult">
+          <div class="q-auto">
+            <div class="ah">✓ 자동으로 불러온 정보</div>
+            <div class="ar"><span class="k">배송지 주소</span><span class="v" id="qAutoAddr"></span></div>
+            <div class="ar"><span class="k">받는분 성함</span><span class="v" id="qAutoName"></span></div>
+          </div>
+          <div class="fld" style="margin-bottom:0;">
+            <label>받는분 연락처 <span class="req">*</span> <span style="color:var(--c-text-faint);font-weight:500;">(직접 입력)</span></label>
+            <input class="inp num" id="qRecvPhone" placeholder="010-0000-0000" oninput="quickValidateStep1()" />
+          </div>
+        </div>
+      </div>
+      <div class="mft">
+        <button class="btn btn-ghost" onclick="closeOverlay('quickOverlay')">취소</button>
+        <button class="btn btn-blue flex1" id="quickNext" onclick="quickNext()" disabled>다음 단계</button>
+      </div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="qstep" id="qstep2">
+      <div class="mbd">
+        <div class="rb-grp"><div class="gl">보내는분 선택 <span class="req" style="color:var(--c-orange)">*</span></div><div id="quickSenderList"></div></div>
+        <div class="q-summary">
+          <div class="sr"><span class="k">상품</span><span class="v" id="qSumProd">🌸 3단화환(기본형)</span></div>
+          <div class="sr"><span class="k">배송지</span><span class="v" id="qSumAddr">—</span></div>
+          <div class="sr"><span class="k">받는분</span><span class="v" id="qSumRecv">—</span></div>
+          <div class="sr"><span class="k">리본</span><span class="v" id="qSumRibbon">삼가 고인의 명복을 빕니다</span></div>
+          <div class="sr" style="border-top:1px solid var(--c-divider);margin-top:4px;padding-top:8px;"><span class="k">금액</span><span class="v"><span class="num">50,000</span>원</span></div>
+        </div>
+      </div>
+      <div class="mft">
+        <button class="btn btn-ghost" onclick="quickBack()">이전</button>
+        <button class="btn btn-primary flex1" id="quickSubmit" onclick="quickSubmit()" disabled>접수하기</button>
+      </div>
+    </div>
+
+    <!-- SUCCESS -->
+    <div class="success" id="quickSuccess">
+      <div class="ring">✓</div>
+      <h3>주문이 접수되었습니다!</h3>
+      <p>간편접수로 주문이 정상 접수되었습니다.<br>배송 현황은 주문 내역에서 확인하실 수 있습니다.</p>
+      <div class="ono">주문번호 <span class="num">OD-20260616-0418</span></div>
+      <button class="btn btn-ghost" style="margin-top:20px;" onclick="closeOverlay('quickOverlay')">확인</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Main success modal ===== -->
+<div class="overlay" id="successOverlay">
+  <div class="modal" style="width:420px;">
+    <div class="success show">
+      <div class="ring">✓</div>
+      <h3>주문이 접수되었습니다!</h3>
+      <p id="successMsg">주문이 정상적으로 접수되었습니다.<br>배송 현황은 주문 내역에서 확인하실 수 있습니다.</p>
+      <div class="ono">주문번호 <span class="num">OD-20260616-0417</span></div>
+      <button class="btn btn-primary" style="margin-top:22px;width:160px;" onclick="closeOverlay('successOverlay')">확인</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><i>✓</i><span id="toastMsg"></span></div>
+
+<script>
+  /* ===== Data ===== */
+  const MANAGERS = [
+    {name:"할다운", role:"비서", phone:"010-1111-2222", init:"할"},
+    {name:"오임찬", role:"재경부", phone:"010-3333-4444", init:"오"},
+    {name:"김현수", role:"경리", phone:"010-5555-6666", init:"김"},
+  ];
+  const SENDERS = [
+    {name:"홍길동", role:"대표이사", fixed:"(주)올해의경조사 대표이사 홍길동"},
+    {name:"정소빈", role:"대표변호사", fixed:"올해표현(유) 대표변호사 정소빈"},
+    {name:"임직원", role:"일동", fixed:"(주)올해의경조사 임직원 일동"},
+  ];
+  const PRODUCTS = [
+    {em:"🌸", name:"3단화환(기본형)", cat:"경조화환", price:50000},
+    {em:"🌸", name:"근조오브제(2단형)", cat:"경조화환", price:75000},
+    {em:"🏵️", name:"동양란(고급형)", cat:"동서양란", price:100000},
+    {em:"💐", name:"대형 꽃바구니", cat:"생화", price:120000},
+    {em:"🌿", name:"박상용 대형화분", cat:"관엽화분", price:100000},
+  ];
+  const RIBBON_GROUPS = [
+    {g:"부고 · 근조", items:["삼가 고인의 명복을 빕니다","근조(謹弔)","조의를 표합니다"]},
+    {g:"결혼 축하", items:["축 결혼(祝 結婚)","화혼을 진심으로 축하드립니다","행복한 새 출발을 축하합니다"]},
+    {g:"개업 · 취임", items:["축 개업(祝 開業)","축 취임(祝 就任)","번창하시길 기원합니다"]},
+    {g:"기타", items:["감사합니다","항상 건강하세요","축 승진(祝 昇進)"]},
+  ];
+  const won = n => n.toLocaleString("ko-KR");
+
+  /* ===== State ===== */
+  let state = { mgr:0, product:null, ribbon:"", sender:null, now:false };
+  let tmpRibbon = "", tmpSender = null;
+  let quickKind = "부고", quickSenderSel = null, quickAuto = null;
+
+  /* ===== Manager inline switch ===== */
+  function renderMgrPop(){
+    const pop = document.getElementById("mgrPop");
+    pop.innerHTML = MANAGERS.map((m,i)=>`
+      <button class="mgr-opt ${i===state.mgr?'sel':''}" onclick="pickMgr(${i})">
+        <div class="oav">${m.init}</div>
+        <div class="otx"><b>${m.name}<span class="or">${m.role}</span></b><span>${m.phone}</span></div>
+        <span class="chk">✓</span>
+      </button>`).join("")
+      + `<div class="div"></div><button class="mgr-add" onclick="addMgr()">＋ 새 담당자 등록</button>`;
+  }
+  function toggleMgr(e){ e.stopPropagation(); document.getElementById("mgrSelect").classList.toggle("open"); }
+  function pickMgr(i){
+    state.mgr = i; const m = MANAGERS[i];
+    document.getElementById("mgrAv").textContent = m.init;
+    document.getElementById("mgrName").textContent = m.name;
+    document.getElementById("mgrRole").textContent = m.role;
+    document.getElementById("mgrPhone").textContent = m.phone;
+    document.getElementById("ntfMgr").textContent = m.phone;
+    document.getElementById("mgrSelect").classList.remove("open");
+    renderMgrPop(); recompute();
+    toast(`담당자를 ${m.name}님으로 전환했습니다`);
+  }
+  function addMgr(){ document.getElementById("mgrSelect").classList.remove("open"); toast("새 담당자 등록 화면으로 이동"); }
+  document.addEventListener("click", e=>{ if(!e.target.closest("#mgrSelect")) document.getElementById("mgrSelect").classList.remove("open"); });
+
+  /* ===== Products ===== */
+  function renderProducts(){
+    const grid = document.getElementById("prodGrid");
+    if(PRODUCTS.length === 0){
+      grid.style.gridTemplateColumns="1fr";
+      grid.innerHTML = `<div class="prod-empty"><div class="ee">🌷</div><p>등록된 즐겨찾기 상품이 없습니다.<br>상품 규격 안내에서 즐겨찾기를 설정해 주세요.</p><button class="btn btn-ghost" onclick="toast('상품 규격 안내로 이동')">즐겨찾기 설정하기</button></div>`;
+      return;
+    }
+    grid.innerHTML = PRODUCTS.map((p,i)=>`
+      <button class="prod ${state.product===i?'sel':''}" onclick="pickProduct(${i})">
+        <div class="pem">${p.em}</div>
+        <div class="pinfo"><div class="pnm">${p.name}</div><div class="pcat">${p.cat}</div></div>
+        <div class="pprice">${won(p.price)}원</div>
+        <div class="pcheck"><i>✓</i></div>
+      </button>`).join("");
+  }
+  function pickProduct(i){ state.product = i; renderProducts(); recompute(); }
+
+  /* ===== Datetime selects ===== */
+  function fillDateTime(){
+    const h = document.getElementById("dHour");
+    for(let i=0;i<24;i++){ const o=document.createElement("option"); o.value=i; o.textContent=i+"시"; h.appendChild(o); }
+    const mm = document.getElementById("dMin");
+    for(let i=0;i<60;i+=10){ const o=document.createElement("option"); o.value=i; o.textContent=String(i).padStart(2,"0")+"분"; mm.appendChild(o); }
+    document.getElementById("dDate").value = "2026-06-16";
+  }
+  function toggleNow(){
+    state.now = document.getElementById("nowChk").checked;
+    document.getElementById("dtWrap").classList.toggle("disabled", state.now);
+    document.getElementById("nowMsg").classList.toggle("show", state.now);
+    recompute();
+  }
+
+  /* ===== Ribbon modal ===== */
+  function openRibbon(){
+    tmpRibbon = state.ribbon;
+    const wrap = document.getElementById("ribbonGroups");
+    wrap.innerHTML = RIBBON_GROUPS.map(grp=>`
+      <div class="rb-grp"><div class="gl">${grp.g}</div><div class="rb-chips">
+        ${grp.items.map(t=>`<button class="rb-chip ${t===tmpRibbon?'on':''}" onclick="selRibbonChip(this,'${t}')">${t}</button>`).join("")}
+      </div></div>`).join("");
+    document.getElementById("ribbonText").value = state.ribbon;
+    updateRibbonPreview(state.ribbon);
+    openOverlay("ribbonOverlay");
+  }
+  function selRibbonChip(el,t){
+    document.querySelectorAll(".rb-chip").forEach(c=>c.classList.remove("on"));
+    el.classList.add("on");
+    tmpRibbon = t;
+    document.getElementById("ribbonText").value = t;
+    updateRibbonPreview(t);
+  }
+  function onRibbonInput(){
+    const v = document.getElementById("ribbonText").value;
+    tmpRibbon = v;
+    document.querySelectorAll(".rb-chip").forEach(c=>c.classList.toggle("on", c.textContent===v));
+    updateRibbonPreview(v);
+  }
+  function updateRibbonPreview(v){
+    document.getElementById("ribbonCount").textContent = (v||"").length;
+    const pv = document.getElementById("ribbonPreview");
+    pv.textContent = v || "문구를 입력하세요";
+    pv.classList.toggle("empty", !v);
+    document.getElementById("ribbonApply").disabled = !v;
+  }
+  function applyRibbon(){
+    state.ribbon = tmpRibbon.trim();
+    const pick = document.getElementById("ribbonPick");
+    document.getElementById("ribbonVal").textContent = state.ribbon || "문구를 선택하세요";
+    pick.classList.toggle("filled", !!state.ribbon);
+    closeOverlay("ribbonOverlay"); recompute();
+  }
+
+  /* ===== Sender modal ===== */
+  function openSender(){
+    tmpSender = state.sender;
+    document.getElementById("senderList").innerHTML = SENDERS.map((s,i)=>`
+      <div class="snd-opt ${i===tmpSender?'on':''}" onclick="selSender(${i})">
+        <div class="radio"></div>
+        <div class="si"><b>${s.name}<span class="r">${s.role}</span></b><div class="fixed">"${s.fixed}"</div></div>
+      </div>`).join("");
+    document.getElementById("senderApply").disabled = tmpSender===null;
+    openOverlay("senderOverlay");
+  }
+  function selSender(i){
+    tmpSender = i;
+    document.querySelectorAll("#senderList .snd-opt").forEach((el,idx)=>el.classList.toggle("on", idx===i));
+    document.getElementById("senderApply").disabled = false;
+  }
+  function applySender(){
+    state.sender = tmpSender;
+    const s = SENDERS[state.sender];
+    document.getElementById("senderVal").textContent = `${s.name} · ${s.role}`;
+    document.getElementById("senderPick").classList.add("filled");
+    document.getElementById("ntfSend").textContent = s.name;
+    closeOverlay("senderOverlay"); recompute();
+  }
+
+  /* ===== Recompute summary + validity ===== */
+  function recompute(){
+    const addr = document.getElementById("addr").value.trim();
+    const recvName = document.getElementById("recvName").value.trim();
+    const recvPhone = document.getElementById("recvPhone").value.trim();
+    const dDate = document.getElementById("dDate").value;
+    const dHour = document.getElementById("dHour").value;
+    const dMin = document.getElementById("dMin").value;
+    const whenOk = state.now || (dDate && dHour!=="" && dMin!=="");
+
+    /* inline valid styling */
+    document.getElementById("addr").classList.toggle("valid", !!addr);
+    document.getElementById("recvName").classList.toggle("valid", !!recvName);
+    document.getElementById("recvPhone").classList.toggle("valid", !!recvPhone);
+
+    /* notify mirror */
+    document.getElementById("ntfRecv").textContent = recvName ? (recvPhone||recvName) : "- 미입력";
+
+    /* summary */
+    const p = state.product!==null ? PRODUCTS[state.product] : null;
+    setSum("sProd", p ? `${p.em} ${p.name}` : null, "선택 전");
+    setSum("sRecv", recvName ? (recvName + (recvPhone? " · "+recvPhone : "")) : null, "미입력");
+    setSum("sAddr", addr || null, "미입력");
+    let whenTxt = null;
+    if(state.now) whenTxt = "즉시배송 (약 3시간 후)";
+    else if(dDate && dHour!=="" && dMin!=="") whenTxt = `${dDate.slice(5).replace("-","/")} ${dHour}:${String(dMin).padStart(2,"0")}`;
+    setSum("sWhen", whenTxt, "미설정");
+    setSum("sRibbon", state.ribbon || null, "미설정");
+    setSum("sSender", state.sender!==null ? SENDERS[state.sender].name : null, "미선택");
+    document.getElementById("sTotal").textContent = p ? won(p.price) : "0";
+
+    /* requirement chips */
+    const req = {
+      prod: state.product!==null, addr:!!addr, recvName:!!recvName, recvPhone:!!recvPhone,
+      when: whenOk, ribbon:!!state.ribbon, sender: state.sender!==null
+    };
+    const labels = {prod:"상품", addr:"배송지", recvName:"받는분", recvPhone:"연락처", when:"일시", ribbon:"리본", sender:"보내는분"};
+    document.querySelectorAll(".req-chip").forEach(c=>{
+      c.classList.toggle("ok", req[c.dataset.r]);
+    });
+
+    /* dot indicators on tiles handled via chips; submit */
+    const missing = Object.keys(req).filter(k=>!req[k]);
+    const btn = document.getElementById("submitBtn");
+    const hint = document.getElementById("submitHint");
+    if(missing.length===0){
+      btn.classList.add("ready"); btn.textContent = "주문 접수하기";
+      hint.innerHTML = "모든 필수 항목이 입력되었습니다.";
+    }else{
+      btn.classList.remove("ready"); btn.textContent = "필수 항목을 모두 입력해 주세요";
+      hint.innerHTML = `남은 항목 <b>${missing.map(k=>labels[k]).join(", ")}</b>`;
+    }
+  }
+  function setSum(id, val, empty){
+    const el = document.getElementById(id);
+    el.textContent = val || empty;
+    el.classList.toggle("empty", !val);
+  }
+  function submitOrder(){
+    if(!document.getElementById("submitBtn").classList.contains("ready")) return;
+    openOverlay("successOverlay");
+  }
+
+  /* ===== Quick (간편접수) ===== */
+  function openQuick(kind){
+    quickKind = kind; quickSenderSel=null; quickAuto=null;
+    document.getElementById("quickTitle").textContent = kind+" 간편접수";
+    document.getElementById("quickUrlLabel").textContent = kind+" URL";
+    document.getElementById("quickUrl").value = "";
+    document.getElementById("qRecvPhone").value = "";
+    document.getElementById("quickLoad").classList.remove("show");
+    document.getElementById("quickResult").classList.remove("show");
+    document.getElementById("quickLookupBtn").disabled = false;
+    document.getElementById("quickNext").disabled = true;
+    showQStep(1);
+    document.getElementById("quickSuccess").classList.remove("show");
+    document.getElementById("qSumProd").textContent = kind==="부고" ? "🌸 3단화환(기본형)" : "💐 대형 꽃바구니";
+    document.getElementById("qSumRibbon").textContent = kind==="부고" ? "삼가 고인의 명복을 빕니다" : "축 결혼(祝 結婚)";
+    openOverlay("quickOverlay");
+  }
+  function showQStep(n){
+    document.getElementById("qstep1").classList.toggle("active", n===1);
+    document.getElementById("qstep2").classList.toggle("active", n===2);
+    document.getElementById("quickStepBadge").textContent = `STEP ${n} / 2`;
+    document.getElementById("quickStepBadge").style.display = "inline-block";
+  }
+  function quickLookup(){
+    const load = document.getElementById("quickLoad");
+    document.getElementById("quickResult").classList.remove("show");
+    document.getElementById("quickLookupBtn").disabled = true;
+    load.classList.add("show");
+    setTimeout(()=>{
+      load.classList.remove("show");
+      const addr = "서울 강남구 테헤란로 152 강남파이낸스센터 3층";
+      const name = quickKind==="부고" ? "김○○ 상주" : "이○○ 혼주";
+      quickAuto = {addr, name};
+      document.getElementById("qAutoAddr").textContent = addr;
+      document.getElementById("qAutoName").textContent = name;
+      document.getElementById("qSumAddr").textContent = addr;
+      document.getElementById("qSumRecv").textContent = name;
+      document.getElementById("quickResult").classList.add("show");
+      document.getElementById("quickLookupBtn").disabled = false;
+      quickValidateStep1();
+    }, 1800);
+  }
+  function quickValidateStep1(){
+    const ok = quickAuto && document.getElementById("qRecvPhone").value.trim().length>=9;
+    document.getElementById("quickNext").disabled = !ok;
+  }
+  function quickNext(){
+    showQStep(2);
+    document.getElementById("quickSenderList").innerHTML = SENDERS.map((s,i)=>`
+      <div class="snd-opt ${i===quickSenderSel?'on':''}" onclick="quickSelSender(${i})">
+        <div class="radio"></div>
+        <div class="si"><b>${s.name}<span class="r">${s.role}</span></b><div class="fixed">"${s.fixed}"</div></div>
+      </div>`).join("");
+    document.getElementById("quickSubmit").disabled = quickSenderSel===null;
+  }
+  function quickSelSender(i){
+    quickSenderSel = i;
+    document.querySelectorAll("#quickSenderList .snd-opt").forEach((el,idx)=>el.classList.toggle("on", idx===i));
+    document.getElementById("quickSubmit").disabled = false;
+  }
+  function quickBack(){ showQStep(1); }
+  function quickSubmit(){
+    document.getElementById("qstep2").classList.remove("active");
+    document.getElementById("quickStepBadge").style.display = "none";
+    document.getElementById("quickSuccess").classList.add("show");
+  }
+
+  /* ===== Overlay helpers ===== */
+  function openOverlay(id){ document.getElementById(id).classList.add("show"); }
+  function closeOverlay(id){ document.getElementById(id).classList.remove("show"); }
+  document.querySelectorAll(".overlay").forEach(o=>o.addEventListener("click", e=>{ if(e.target===o) o.classList.remove("show"); }));
+  document.addEventListener("keydown", e=>{ if(e.key==="Escape") document.querySelectorAll(".overlay.show").forEach(o=>o.classList.remove("show")); });
+
+  /* ===== Toast ===== */
+  let toastT;
+  function toast(msg){
+    const t = document.getElementById("toast");
+    document.getElementById("toastMsg").textContent = msg;
+    t.classList.add("show"); clearTimeout(toastT);
+    toastT = setTimeout(()=>t.classList.remove("show"), 2200);
+  }
+
+  /* ===== Init ===== */
+  renderMgrPop(); renderProducts(); fillDateTime(); recompute();
+</script>
+</body>
+</html>
