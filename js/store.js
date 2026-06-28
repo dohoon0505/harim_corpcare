@@ -1,5 +1,5 @@
 /* ============================================================
-   store.js — global state (profiles / contacts / favorites)
+   store.js — global state (profiles / contacts / clients)
    pub/sub + localStorage persistence. Ports AppContext.tsx.
    ============================================================ */
 import { INITIAL_CLIENTS } from "./data/admin-mock.js";
@@ -51,7 +51,6 @@ const subs = new Set();
 let state = {
   profiles: INITIAL_PROFILES.map((p) => ({ ...p })),
   contacts: INITIAL_CONTACTS.map((c) => ({ ...c })),
-  favorites: new Set(),
   clients: INITIAL_CLIENTS.map((c) => ({ ...c })),
   clientPrices: {}, // { [clientId]: { [productKey]: number } } — per-client price overrides
 };
@@ -63,7 +62,6 @@ function persist() {
       JSON.stringify({
         profiles: state.profiles,
         contacts: state.contacts,
-        favorites: [...state.favorites], // Set → array
         clients: state.clients,
         clientPrices: state.clientPrices,
       })
@@ -81,7 +79,6 @@ function hydrate() {
     state = {
       profiles: Array.isArray(data.profiles) ? data.profiles : state.profiles,
       contacts: Array.isArray(data.contacts) ? data.contacts.map((c) => ({ isBilling: false, ...c })) : state.contacts,
-      favorites: new Set(Array.isArray(data.favorites) ? data.favorites : []),
       clients: Array.isArray(data.clients) ? data.clients : state.clients,
       clientPrices: data.clientPrices && typeof data.clientPrices === "object" ? data.clientPrices : state.clientPrices,
     };
@@ -131,18 +128,6 @@ export const store = {
   /** The contact who receives settlement/billing 알림톡, or null. */
   getBillingContact() {
     return state.contacts.find((c) => c.isBilling) || null;
-  },
-  setFavorites(next) {
-    state = { ...state, favorites: resolve(next, state.favorites) };
-    persist();
-    emit();
-  },
-  toggleFavorite(key) {
-    const f = new Set(state.favorites);
-    f.has(key) ? f.delete(key) : f.add(key);
-    state = { ...state, favorites: f };
-    persist();
-    emit();
   },
   // ── 거래처 (admin) ──────────────────────────────────────
   setClients(next) {

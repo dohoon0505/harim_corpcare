@@ -38,11 +38,9 @@ export function mount(root, { nav }) {
   let activeModal = null;
   let quickTimer = null;
 
-  const favProducts = () =>
-    ALL_PRODUCTS.filter((p) => store.get().favorites.has(productKey(p)));
   const selectedItem = () =>
     state.selectedProduct
-      ? favProducts().find((p) => productKey(p) === state.selectedProduct) ?? null
+      ? ALL_PRODUCTS.find((p) => productKey(p) === state.selectedProduct) ?? null
       : null;
   const totalAmount = () => {
     const it = selectedItem();
@@ -194,7 +192,7 @@ export function mount(root, { nav }) {
   }
 
   function renderForm() {
-    const favs = favProducts();
+    const products = ALL_PRODUCTS;
     const it = selectedItem();
     setHTML(
       root,
@@ -251,48 +249,32 @@ export function mount(root, { nav }) {
                   <div class="section-card">
                     <div class="section-card__head">
                       <div class="section-card__title">${icon("package", { size: 16, cls: "tint-blue" })}상품 선택</div>
-                      ${favs.length
-                        ? html`<button class="section-card__link" data-action="goto-products">즐겨찾기 관리</button>`
-                        : ""}
                     </div>
                     <div class="section-card__body">
-                      ${favs.length === 0
-                        ? html`
-                            <div class="oprod__empty">
-                              ${icon("star", { size: 24 })}
-                              <div>
-                                <p class="oprod__empty-t">즐겨찾기 상품이 없습니다</p>
-                                <p class="oprod__empty-d">상품 규격 안내 페이지에서 즐겨찾기를 설정해 주세요.</p>
+                      <div class="oprod__list">
+                        ${products.map((p) => {
+                          const key = productKey(p);
+                          const sel = state.selectedProduct === key;
+                          return html`
+                            <label class="oprod__item ${sel ? "is-sel" : ""}">
+                              <input type="radio" name="product" value="${key}" ${sel ? "checked" : ""} />
+                              <span class="oprod__emoji">${p.icon}</span>
+                              <div class="oprod__meta">
+                                <p class="oprod__name">${p.product}</p>
+                                <p class="oprod__cat">${p.category}</p>
                               </div>
-                              <button class="btn btn-primary" data-action="goto-products">상품 규격 안내 보기</button>
-                            </div>
-                          `
-                        : html`
-                            <div class="oprod__list">
-                              ${favs.map((p) => {
-                                const key = productKey(p);
-                                const sel = state.selectedProduct === key;
-                                return html`
-                                  <label class="oprod__item ${sel ? "is-sel" : ""}">
-                                    <input type="radio" name="product" value="${key}" ${sel ? "checked" : ""} />
-                                    <span class="oprod__emoji">${p.icon}</span>
-                                    <div class="oprod__meta">
-                                      <p class="oprod__name">${p.product}</p>
-                                      <p class="oprod__cat">${p.category}</p>
-                                    </div>
-                                    <span class="oprod__price ${sel ? "is-sel" : ""}">${p.price}</span>
-                                    ${sel ? icon("check-circle", { size: 15, cls: "tint-blue" }) : ""}
-                                  </label>
-                                `;
-                              })}
-                              ${it
-                                ? html`<div class="oprod__selected">
-                                    <span>선택 상품: ${it.product}</span>
-                                    <span class="oprod__selected-amt">${won(totalAmount())}</span>
-                                  </div>`
-                                : ""}
-                            </div>
-                          `}
+                              <span class="oprod__price ${sel ? "is-sel" : ""}">${p.price}</span>
+                              ${sel ? icon("check-circle", { size: 15, cls: "tint-blue" }) : ""}
+                            </label>
+                          `;
+                        })}
+                        ${it
+                          ? html`<div class="oprod__selected">
+                              <span>선택 상품: ${it.product}</span>
+                              <span class="oprod__selected-amt">${won(totalAmount())}</span>
+                            </div>`
+                          : ""}
+                      </div>
                     </div>
                   </div>
 
@@ -745,7 +727,6 @@ export function mount(root, { nav }) {
     const a = t.dataset.action;
     switch (a) {
       case "goto-profile": return nav("#/app/profile");
-      case "goto-products": return nav("#/app/products");
       case "select-contact": {
         const c = store.get().contacts.find((x) => x.no === t.dataset.no);
         if (c) { state.contact = c; render(); }
