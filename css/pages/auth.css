@@ -26,6 +26,13 @@
   filter: brightness(0) invert(1);
   opacity: 0.85;
 }
+.auth__brand-logo-text {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: #fff;
+  opacity: 0.92;
+}
 .auth__brand-body {
   flex: 1;
   display: flex;
@@ -111,6 +118,13 @@
 .auth__topbar-logo {
   height: 24px;
   object-fit: contain;
+}
+.auth__topbar-logo-text {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--c-text);
+  white-space: nowrap;
 }
 .auth__topbar-link {
   display: inline-flex;
@@ -325,6 +339,7 @@
     display: flex;
   }
   .auth__topbar-logo,
+  .auth__topbar-logo-text,
   .auth__topbar-link {
     display: none;
   }

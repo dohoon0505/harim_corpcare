@@ -311,7 +311,7 @@ export function mount(root, { nav }) {
       <div class="auth register">
         <aside class="auth__brand">
           <div class="auth__brand-logo">
-            <img src="./assets/logo.png" alt="올해의경조사" />
+            <span class="auth__brand-logo-text">하림그룹 경조화환 플랫폼</span>
           </div>
           <div class="auth__brand-body">
             <p class="auth__eyebrow">Enterprise Service</p>
@@ -336,7 +336,7 @@ export function mount(root, { nav }) {
         <div class="auth__panel">
           <div class="auth__panel-inner">
             <div class="auth__topbar register__topbar">
-              <img class="auth__topbar-logo" src="./assets/logo.png" alt="올해의경조사" />
+              <span class="auth__topbar-logo-text">하림그룹 경조화환 플랫폼</span>
               <button type="button" class="auth__topbar-link" data-action="to-login">
                 ${icon("chevron-left", { size: 13 })} 로그인으로 돌아가기
               </button>

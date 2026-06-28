@@ -60,7 +60,7 @@ function buildShell(variant = "enterprise") {
     html`
       <header class="shell__header">
         <div class="shell__brand">
-          <img class="shell__logo" src="./assets/logo.png" alt="올해의경조사" />
+          <span class="shell__logo-text">하림그룹 경조화환 플랫폼</span>
           <span class="shell__sep"></span>
           <div class="badge badge--company">
             <img src="./assets/company.png" alt="" />
