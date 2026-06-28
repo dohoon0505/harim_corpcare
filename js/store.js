@@ -11,16 +11,16 @@ import { INITIAL_CLIENTS } from "./data/admin-mock.js";
 
 /* ── Static product catalog (immutable) ─────────────────── */
 export const ALL_PRODUCTS = [
-  { category: "축하화환",   product: "축하 3단 화환 (기본)", price: "75,000원",  description: "100% 신품 생화(국화) 60송이 + 기본 데코", icon: "🌸" },
-  { category: "축하화환",   product: "축하 3단 화환 (고급)", price: "90,000원",  description: "100% 신품 생화(국화) 80송이 + 프리미엄 데코", icon: "🌸" },
-  { category: "근조화환",   product: "근조 3단 화환 (기본)", price: "75,000원",  description: "100% 신품 생화(국화) 60송이 + 기본 데코", icon: "🏵️" },
-  { category: "근조화환",   product: "근조 3단 화환 (고급)", price: "90,000원",  description: "100% 신품 생화(국화) 80송이 + 프리미엄 데코", icon: "🏵️" },
+  { category: "축하화환",   product: "축하 3단화환 (기본)", price: "75,000원",  description: "100% 신품 생화(국화) 60송이 + 기본 데코", icon: "🌸" },
+  { category: "축하화환",   product: "축하 3단화환 (고급)", price: "90,000원",  description: "100% 신품 생화(국화) 80송이 + 프리미엄 데코", icon: "🌸" },
+  { category: "근조화환",   product: "근조 3단화환 (기본)", price: "75,000원",  description: "100% 신품 생화(국화) 60송이 + 기본 데코", icon: "🏵️" },
+  { category: "근조화환",   product: "근조 3단화환 (고급)", price: "90,000원",  description: "100% 신품 생화(국화) 80송이 + 프리미엄 데코", icon: "🏵️" },
   { category: "특수화환",   product: "특수 화환 (오브제)",   price: "75,000원",  description: "100% 신품 생화 40송이~50송이 + 기본 데코", icon: "🌺" },
   { category: "특수화환",   product: "특수 화환 (스탠드)",   price: "75,000원",  description: "100% 신품 생화 40송이~50송이 + 기본 데코", icon: "🌺" },
   { category: "근조바구니", product: "근조바구니(기본)",     price: "70,000원",  description: "100% 신품 생화로 제작한 빈소용 근조 꽃바구니 (기본형)", icon: "🧺" },
   { category: "근조바구니", product: "근조바구니(고급)",     price: "85,000원",  description: "100% 신품 생화로 제작한 빈소용 근조 꽃바구니 (고급형)", icon: "🧺" },
-  { category: "쌀화환",     product: "근조쌀화환(10kg)",     price: "90,000원",  description: "3단 화환 형태에 쌀 10kg을 더한 근조 쌀화환", icon: "🌾" },
-  { category: "쌀화환",     product: "근조쌀화환(20kg)",     price: "130,000원", description: "3단 화환 형태에 쌀 20kg을 더한 근조 쌀화환", icon: "🌾" },
+  { category: "쌀화환",     product: "근조쌀화환(10kg)",     price: "90,000원",  description: "3단화환 형태에 쌀 10kg을 더한 근조 쌀화환", icon: "🌾" },
+  { category: "쌀화환",     product: "근조쌀화환(20kg)",     price: "130,000원", description: "3단화환 형태에 쌀 20kg을 더한 근조 쌀화환", icon: "🌾" },
 ];
 
 export const productKey = (r) => `${r.category}__${r.product}`;
