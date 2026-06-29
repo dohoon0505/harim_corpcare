@@ -51,7 +51,7 @@ function buildShell(variant = "enterprise") {
   const brand =
     variant === "admin"
       ? { company: "관리자 콘솔" }
-      : { company: "(주)진양코퍼레이션" };
+      : { company: "계열사)하림지주" };
 
   const wrap = document.createElement("div");
   wrap.className = "shell";
