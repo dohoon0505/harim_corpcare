@@ -192,7 +192,8 @@ export function mount(root, { nav }) {
   }
 
   function renderForm() {
-    const products = ALL_PRODUCTS;
+    // 경조화환 주문은 3단화환(축하/근조 · 기본/고급) 4종만 주문 가능 (상품 규격 안내는 전체 노출)
+    const products = ALL_PRODUCTS.filter((p) => p.product.includes("3단화환"));
     const it = selectedItem();
     setHTML(
       root,
