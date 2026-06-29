@@ -34,7 +34,6 @@ export function mount(root, { nav }) {
   };
 
   const columns = [
-    { label: "구분", width: "90px", render: (r) => r.category },
     { label: "상세상품", width: "170px", render: (r) => r.product },
     { label: "상품금액", width: "120px", align: "right", render: (r) => html`<span class="prod-price">${priceFor(r)}</span>` },
     { label: "상품설명 및 비고(규격)", width: "1fr", render: (r) => r.description },
