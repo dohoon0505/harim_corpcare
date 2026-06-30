@@ -28,7 +28,7 @@ const orderData = [
   { id: 14, manager: "이대리", date: "2026/05/20 10:30", address: "충북 청주시 흥덕구 1순환로 776 청주성모병원 장례식장 5호실", sender: "이대리", profile: "주식회사 싱크플로 영업1팀 이대리", product: "근조바구니(고급)", amount: "85,000원", status: "배송완료", statusColor: "#4caf50", hasPhoto: false },
   { id: 15, manager: "박사원", date: "2026/05/13 16:20", address: "강원 춘천시 백령로 156 강원대학교병원 장례식장 특실", sender: "김현수", profile: "주식회사 싱크플로 인사팀 김현수", product: "근조쌀화환(20kg)", amount: "130,000원", status: "배송완료", statusColor: "#4caf50", hasPhoto: true },
   { id: 16, manager: "김총무", date: "2026/05/06 09:00", address: "제주 제주시 첨단로 242 제주첨단과학기술단지 컨벤션홀", sender: "경영지원팀", profile: "주식회사 싱크플로 경영지원팀", product: "축하 3단화환 (기본)", amount: "75,000원", status: "배송완료", statusColor: "#4caf50", hasPhoto: false },
-];
+].map((o) => (o.status === "배송완료" ? { ...o, hasPhoto: true } : o)); // 배송완료 주문은 항상 사진 보유
 
 // 주문현황 정렬 우선순위(상단→하단): 접수대기 → 주문접수 → 배송완료
 const STATUS_RANK = { "접수대기": 0, "주문접수": 1, "배송완료": 2 };
