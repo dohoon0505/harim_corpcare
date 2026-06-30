@@ -182,7 +182,7 @@ export function mount(root, { nav }) {
         <h2 class="rdone__title">가입이 완료되었습니다</h2>
         <p class="rdone__sub">
           ${f.companyName ? html`<strong>${f.companyName}</strong> ` : ""}계열사
-          담당자 등록이 완료되었습니다.<br />담당자 검토 후 승인 안내를 드립니다.
+          담당자 등록이 완료되었습니다.<br />등록하신 계정으로 바로 로그인하실 수 있습니다.
         </p>
         <div class="rdone__card">
           <div class="rdone__card-head"><h4>가입 정보</h4></div>
@@ -264,7 +264,7 @@ export function mount(root, { nav }) {
     if (state.step === 1 && check({ userId: "아이디를 입력해주세요", password: "비밀번호를 입력해주세요", passwordConfirm: "비밀번호를 확인해주세요" })) state.step = 2;
     else if (state.step === 2 && check({ managerName: "담당자명을 입력해주세요", department: "부서·직위를 입력해주세요", contact: "연락처를 입력해주세요" })) state.step = 3;
     else if (state.step === 3 && check({ bizNumber: "사업자번호를 입력해주세요", companyName: "회사명을 입력해주세요", ceoName: "대표자명을 입력해주세요", address: "소재지를 입력해주세요", email: "이메일을 입력해주세요" })) {
-      registerClient(); // 신규 가입 → 계열사 '승인대기'로 등록 (어드민 승인 대상)
+      registerClient(); // 신규 가입 → 계열사 '활성'으로 등록 (승인제도 없음)
       state.step = "done";
     }
     renderWizard();
@@ -281,7 +281,7 @@ export function mount(root, { nav }) {
       id, accountId: f.userId, password: f.password,
       companyName: f.companyName, bizNumber: f.bizNumber, ceoName: f.ceoName,
       managerName: f.managerName, department: f.department, contact: f.contact,
-      email: f.email, address: f.address, status: "승인대기", joinDate,
+      email: f.email, address: f.address, status: "활성", joinDate,
     });
     // 최초 정산·회계 담당자 = 회원가입 시 작성한 담당자 (담당자 저장공간에 등록 후 지정)
     const contacts = store.get().contacts;
