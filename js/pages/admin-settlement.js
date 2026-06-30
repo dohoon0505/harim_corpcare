@@ -1,7 +1,7 @@
 /* ============================================================
    admin-settlement.js — 계열사 분리정산
-   상단 필터: 년/월 + 정산 상태(전체/미완료/정산완료) + 거래처 검색.
-   거래처별 정산 종합(거래명세서 동의 / 계산서 발급 / 입금) 조회 (읽기전용).
+   상단 필터: 년/월 + 정산 상태(전체/미완료/정산완료) + 계열사 검색.
+   계열사별 정산 종합(거래명세서 동의 / 계산서 발급 / 입금) 조회 (읽기전용).
    ============================================================ */
 import { html, setHTML, on, qs, won } from "../dom.js";
 import { icon } from "../icons.js";
@@ -12,7 +12,7 @@ import { issueLink, publicInvoiceUrl, SUPPLIER, ACCOUNT } from "../data/invoice-
 import { invoiceDoc, printInvoiceDoc } from "../invoice-doc.js";
 
 const COL = "minmax(180px,1fr) 110px 110px 110px 110px 116px 128px";
-const HEADERS = ["거래처", "청구금액", "거래명세서", "계산서 발급", "거래대금", "공개 링크", "명세서 다운로드"];
+const HEADERS = ["계열사", "청구금액", "거래명세서", "계산서 발급", "거래대금", "공개 링크", "명세서 다운로드"];
 const STATUS_TABS = [
   { value: "all", label: "전체" },
   { value: "pending", label: "미완료" },
@@ -94,10 +94,10 @@ export function mount(root, { nav }) {
   function summaryBody() {
     const rows = visibleRows();
     const done = rows.filter(({ rec }) => isDone(rec)).length;
-    return html`총 <strong>${rows.length}</strong>개 거래처 · 정산완료 <strong>${done}</strong>건`;
+    return html`총 <strong>${rows.length}</strong>개 계열사 · 정산완료 <strong>${done}</strong>건`;
   }
 
-  // 조회 기간(선택한 년/월) 전체 거래처의 정산액 종합 — 상태탭/검색과 무관.
+  // 조회 기간(선택한 년/월) 전체 계열사의 정산액 종합 — 상태탭/검색과 무관.
   function periodStats() {
     let total = 0, paid = 0, unpaid = 0;
     rowsForPeriod().forEach(({ rec }) => {
@@ -160,8 +160,8 @@ export function mount(root, { nav }) {
               </div>
               <div class="orders-frow orders-frow--3">
                 <div class="orders-search">
-                  <div class="orders-search__lbl">${icon("search", { size: 12, cls: "tint-muted" })}<span>거래처 검색</span></div>
-                  <input type="text" data-search value="${state.search}" placeholder="거래처명 검색" />
+                  <div class="orders-search__lbl">${icon("search", { size: 12, cls: "tint-muted" })}<span>계열사 검색</span></div>
+                  <input type="text" data-search value="${state.search}" placeholder="계열사명 검색" />
                 </div>
               </div>
             </div>

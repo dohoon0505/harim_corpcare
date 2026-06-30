@@ -1,5 +1,5 @@
 /* ============================================================
-   admin.css — ADMIN console pages (거래처 관리/정산/주문)
+   admin.css — ADMIN console pages (계열사 관리/정산/주문)
    Reuses the enterprise design system; only admin-specific bits here.
    ============================================================ */
 .page-admin {
@@ -304,7 +304,7 @@
   flex-shrink: 0;
 }
 
-/* ── 정산회계 표: 거래처(첫 열) 제외 전 열 가운데 정렬 ───── */
+/* ── 정산회계 표: 계열사(첫 열) 제외 전 열 가운데 정렬 ───── */
 .page-admin .settle-thead .settle-th:not(:first-child),
 .page-admin .settle-trow .settle-td:not(:first-child) {
   justify-content: center;

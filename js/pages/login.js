@@ -201,7 +201,7 @@ export function mount(root, { nav }) {
     clearError();
     const role = resolveRole(id, pw); // "admin" | "enterprise" (DEMO gate)
     setRole(role);
-    // Map an enterprise login to its 거래처 when the credentials match a
+    // Map an enterprise login to its 계열사 when the credentials match a
     // client account → drives per-client pricing in 상품 규격 안내.
     if (role === "enterprise") {
       const c = store.get().clients.find((x) => x.accountId === id && x.password === pw);

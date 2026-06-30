@@ -45,7 +45,7 @@ const INITIAL_CONTACTS = [
 ];
 
 /* ── Reactive store ─────────────────────────────────────── */
-const KEY = "yeop.store.v2"; // v2: 거래처 시드 교체(실제 거래처 20곳)로 재시드
+const KEY = "yeop.store.v3"; // v3: 계열사 시드 교체(하림그룹 8개사)로 재시드
 const subs = new Set();
 
 let state = {
@@ -126,7 +126,7 @@ export const store = {
   getBillingContact() {
     return state.contacts.find((c) => c.isBilling) || null;
   },
-  // ── 거래처 (admin) ──────────────────────────────────────
+  // ── 계열사 (admin) ──────────────────────────────────────
   setClients(next) {
     state = { ...state, clients: resolve(next, state.clients) };
     persist();

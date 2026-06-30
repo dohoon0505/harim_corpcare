@@ -264,7 +264,7 @@ export function mount(root, { nav }) {
     if (state.step === 1 && check({ userId: "아이디를 입력해주세요", password: "비밀번호를 입력해주세요", passwordConfirm: "비밀번호를 확인해주세요" })) state.step = 2;
     else if (state.step === 2 && check({ managerName: "담당자명을 입력해주세요", department: "부서·직위를 입력해주세요", contact: "연락처를 입력해주세요" })) state.step = 3;
     else if (state.step === 3 && check({ bizNumber: "사업자번호를 입력해주세요", companyName: "회사명을 입력해주세요", ceoName: "대표자명을 입력해주세요", address: "소재지를 입력해주세요", email: "이메일을 입력해주세요" })) {
-      registerClient(); // 신규 가입 → 거래처 '승인대기'로 등록 (어드민 승인 대상)
+      registerClient(); // 신규 가입 → 계열사 '승인대기'로 등록 (어드민 승인 대상)
       state.step = "done";
     }
     renderWizard();

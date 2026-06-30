@@ -103,11 +103,11 @@ export function mount(root, { nav }) {
 
   function tableBody() {
     const rows = filtered();
-    if (rows.length === 0) return html`<div class="admin-empty">조건에 맞는 거래처가 없습니다.</div>`;
+    if (rows.length === 0) return html`<div class="admin-empty">조건에 맞는 계열사가 없습니다.</div>`;
     return tableGrid({ columns, rows, rowKey: (r) => r.id, compact: true });
   }
   function summaryBody() {
-    return html`조회 <strong>${filtered().length}</strong>개 거래처`;
+    return html`조회 <strong>${filtered().length}</strong>개 계열사`;
   }
   function tabsBody() {
     const clients = store.get().clients;
@@ -128,18 +128,18 @@ export function mount(root, { nav }) {
             ${pageTitle({
               imgSrc: "./assets/nav-profile.png",
               title: "계열사 접속관리",
-              action: html`<button class="btn btn-secondary" data-action="new">${icon("user-plus", { size: 14 })} 신규 거래처 등록</button>`,
+              action: html`<button class="btn btn-secondary" data-action="new">${icon("user-plus", { size: 14 })} 신규 계열사 등록</button>`,
             })}
             <div class="orders-filters">
               <div class="orders-frow orders-frow--1">
                 <div class="orders-fgroup">
-                  <span class="orders-flabel">거래처 상태</span>
+                  <span class="orders-flabel">계열사 상태</span>
                   <div class="orders-chips" data-slot="tabs">${tabsBody()}</div>
                 </div>
               </div>
               <div class="orders-frow orders-frow--3">
                 <div class="orders-search">
-                  <div class="orders-search__lbl">${icon("search", { size: 12, cls: "tint-muted" })}<span>거래처 검색</span></div>
+                  <div class="orders-search__lbl">${icon("search", { size: 12, cls: "tint-muted" })}<span>계열사 검색</span></div>
                   <input type="text" data-search value="${state.search}" placeholder="회사명·사업자번호·담당자 검색" />
                 </div>
               </div>
@@ -211,8 +211,8 @@ export function mount(root, { nav }) {
         <div class="cedit__head">
           <div class="cedit__head-icon">${icon(isEdit ? "building2" : "user-plus", { size: 18 })}</div>
           <div>
-            <h2>${isEdit ? "거래처 정보 수정" : "신규 거래처 등록"}</h2>
-            <p>${isEdit ? "거래처 계정·회사·담당자 정보를 수정합니다." : "신규 거래처 계정과 정보를 등록합니다."}</p>
+            <h2>${isEdit ? "계열사 정보 수정" : "신규 계열사 등록"}</h2>
+            <p>${isEdit ? "계열사 계정·회사·담당자 정보를 수정합니다." : "신규 계열사 계정과 정보를 등록합니다."}</p>
           </div>
         </div>
         ${isEdit && form.status === "반려" && form.rejectReason
@@ -252,14 +252,14 @@ export function mount(root, { nav }) {
   function approve(client) {
     store.updateClient({ ...client, status: "활성", rejectReason: undefined });
     refreshList();
-    toast(`${client.companyName} 거래처를 승인했습니다 · 환영 알림이 발송되었습니다`, "ok");
+    toast(`${client.companyName} 계열사를 승인했습니다 · 환영 알림이 발송되었습니다`, "ok");
   }
 
   function openReject(client) {
     closeModal();
     const body = html`
       <div class="areject">
-        <p class="areject__msg"><strong>${client.companyName}</strong> 거래처의 가입을 거부합니다.</p>
+        <p class="areject__msg"><strong>${client.companyName}</strong> 계열사의 가입을 거부합니다.</p>
         <div class="ofield">
           <label class="ofield__lbl">거부 사유<span class="req">*</span></label>
           <textarea class="textarea" data-reason rows="3" placeholder="거부 사유를 입력하세요. 담당자에게 통보됩니다."></textarea>
@@ -289,7 +289,7 @@ export function mount(root, { nav }) {
     const body = html`
       <div class="pdel">
         <div class="pdel__msg">
-          <p><strong>${client.companyName}</strong> 거래처를 삭제하시겠습니까?</p>
+          <p><strong>${client.companyName}</strong> 계열사를 삭제하시겠습니까?</p>
           <p class="pdel__sub">계정(아이디·비밀번호)·정산·주문 정보가 모두 삭제되며 복구할 수 없습니다.</p>
         </div>
         <div class="pdel__foot">
@@ -298,12 +298,12 @@ export function mount(root, { nav }) {
         </div>
       </div>
     `;
-    activeModal = simpleModal({ title: "거래처 삭제", body, onClose: () => {} });
+    activeModal = simpleModal({ title: "계열사 삭제", body, onClose: () => {} });
     on(activeModal.panel, "click", "[data-action='do-del']", () => {
       store.removeClient(client.id);
       closeModal();
       refreshList();
-      toast(`${client.companyName} 거래처를 삭제했습니다`, "warn");
+      toast(`${client.companyName} 계열사를 삭제했습니다`, "warn");
     });
   }
 

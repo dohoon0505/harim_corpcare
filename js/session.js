@@ -15,7 +15,7 @@
    ephemeral (cleared on tab close and on logout).
    ============================================================ */
 const KEY = "yeop.session.v1";
-const CKEY = "yeop.session.client.v1"; // which 거래처 the enterprise user is (drives per-client pricing)
+const CKEY = "yeop.session.client.v1"; // which 계열사 the enterprise user is (drives per-client pricing)
 const VALID = new Set(["admin", "enterprise"]);
 
 // DEMO credential — replace with a server authentication call in production.
@@ -39,7 +39,7 @@ export function isAuthed() {
   return getRole() !== null;
 }
 
-/** The 거래처(client) id the logged-in enterprise user maps to, or null. */
+/** The 계열사(client) id the logged-in enterprise user maps to, or null. */
 export function getClientId() {
   return sessionStorage.getItem(CKEY) || null;
 }

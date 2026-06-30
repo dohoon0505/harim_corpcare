@@ -1,6 +1,6 @@
 /* ============================================================
    admin-mock.js — ADMIN console mock datasets.
-   - INITIAL_CLIENTS: 거래처(client companies) — persisted/editable via store.
+   - INITIAL_CLIENTS: 계열사(group affiliates) — persisted/editable via store.
    - CLIENT_SETTLEMENTS: static read-only mock, keyed by client id.
    Dates are generated RELATIVE TO NOW so the date / year-month filters
    always have current data regardless of when the demo is viewed.
@@ -17,30 +17,18 @@ const ymLabel = (monthsAgo) => {
 };
 const fmtDot = (d) => `${d.getFullYear()}. ${pad(d.getMonth() + 1)}. ${pad(d.getDate())}`;
 
-/* ── 거래처 (client companies) ──────────────────────────────
-   회사명은 실제 거래처. 사업자번호·연락처·이메일·주소·담당자 등 세부값은
-   데모용 플레이스홀더(실제 정보 아님). */
+/* ── 계열사 (group affiliates) ──────────────────────────────
+   회사명은 실제 하림그룹 계열사. 사업자번호·연락처·이메일·주소·담당자 등
+   세부값은 데모용 플레이스홀더(실제 정보 아님). */
 export const INITIAL_CLIENTS = [
-  { id: "C001", accountId: "sodamchae",  password: "sd1234!",  companyName: "소담채(주)",            bizNumber: "144-81-20356", ceoName: "김소담", managerName: "정수민", department: "총무팀",   contact: "010-3641-2050", email: "chong@sodamchae.co.kr",  address: "서울 송파구 법원로 11 문정역테라타워 8층",          status: "활성",    joinDate: "2023-04-18" },
-  { id: "C002", accountId: "taewonsci",  password: "tw2024@",  companyName: "태원과학(주)",          bizNumber: "220-87-55013", ceoName: "이태원", managerName: "한지훈", department: "구매팀",   contact: "010-2847-9931", email: "sales@taewonsci.com",    address: "경기 안양시 동안구 시민대로 327 안양무역센터 12층", status: "활성",    joinDate: "2022-09-05" },
-  { id: "C003", accountId: "jinyang",    password: "jy1234!",  companyName: "(주)진양코퍼레이션",     bizNumber: "123-45-67890", ceoName: "김진양", managerName: "김사원", department: "총무팀",   contact: "010-1234-5678", email: "chong@jinyang.co.kr",    address: "서울 강남구 테헤란로 152 강남파이낸스센터 18층",   status: "활성",    joinDate: "2024-03-12" },
-  { id: "C004", accountId: "ksanit",     password: "kh#3030",  companyName: "대한위생사협회",         bizNumber: "209-82-00417", ceoName: "정문수", managerName: "오현경", department: "사무국",   contact: "010-7720-4416", email: "office@ksanitation.or.kr", address: "서울 영등포구 국회대로76길 22 기계회관 신관 5층",  status: "활성",    joinDate: "2023-11-22" },
-  { id: "C005", accountId: "bluesea",    password: "bs@9090",  companyName: "(주)늘푸른바다",         bizNumber: "615-81-33920", ceoName: "한바다", managerName: "문선호", department: "영업팀",   contact: "010-9043-2271", email: "order@bluesea-f.co.kr",  address: "부산 서구 충무대로 380 부산공동어시장 3층",        status: "활성",    joinDate: "2024-01-30" },
-  { id: "C006", accountId: "ilpumchae",  password: "ip$5050",  companyName: "(주)일품채",            bizNumber: "128-86-44102", ceoName: "윤일품", managerName: "배수진", department: "운영팀",   contact: "010-5521-8870", email: "mgr@ilpumchae.kr",       address: "경기 광주시 곤지암읍 경충대로 33 일품물류센터",    status: "활성",    joinDate: "2024-08-14" },
-  { id: "C007", accountId: "goifuneral", password: "gi^2424",  companyName: "고이장례연구소",         bizNumber: "305-81-77231", ceoName: "고영진", managerName: "임가람", department: "관리부",   contact: "010-2240-6638", email: "info@goi.re.kr",         address: "서울 서초구 효령로 304 국제전자센터 12층",         status: "활성",    joinDate: "2023-06-09" },
-  { id: "C008", accountId: "sejong-kds", password: "sj!7788",  companyName: "법무법인 세종(김동선)",   bizNumber: "101-85-62019", ceoName: "김동선", managerName: "류현우", department: "송무팀",   contact: "010-8810-3352", email: "kds@sejonglaw.com",      address: "서울 종로구 사직로8길 39 세양빌딩",               status: "활성",    joinDate: "2022-05-17" },
-  { id: "C009", accountId: "ongiflower",password: "og2025@",  companyName: "온기꽃배달",             bizNumber: "119-04-88273", ceoName: "오온기", managerName: "신보라", department: "운영팀",   contact: "010-3326-7740", email: "hello@ongiflower.com",   address: "서울 마포구 양화로 45 메세나폴리스 1층",           status: "활성",    joinDate: "2025-02-11" },
-  { id: "C010", accountId: "wholefresh", password: "wf#1212",  companyName: "(주)홀프레쉬",          bizNumber: "220-88-19035", ceoName: "신선우", managerName: "강민재", department: "구매팀",   contact: "010-4419-7763", email: "md@wholefresh.co.kr",    address: "경기 용인시 기흥구 흥덕중앙로 120 흥덕IT밸리",     status: "활성",    joinDate: "2024-10-03" },
-  { id: "C011", accountId: "knmetal",    password: "kn@3434",  companyName: "(주)한국비철",          bizNumber: "134-81-29688", ceoName: "강철민", managerName: "조성광", department: "자재팀",   contact: "010-6627-1108", email: "biz@knmetal.co.kr",      address: "인천 서구 백범로 707 한국비철 인천공장",          status: "활성",    joinDate: "2022-12-01" },
-  { id: "C012", accountId: "nutree",     password: "nt$6767",  companyName: "(주)뉴트리",            bizNumber: "312-86-51470", ceoName: "남보영", managerName: "한가은", department: "마케팅팀", contact: "010-3380-9924", email: "cs@nutree.co.kr",        address: "충북 청주시 흥덕구 오송읍 오송생명1로 194",        status: "활성",    joinDate: "2023-03-27" },
-  { id: "C013", accountId: "peellaw",    password: "pl!9988",  companyName: "법무법인 필",            bizNumber: "211-85-90388", ceoName: "황필립", managerName: "정다해", department: "사무국",   contact: "010-7714-2206", email: "office@peellaw.kr",      address: "서울 서초구 서초중앙로 160 법조타워 8층",         status: "활성",    joinDate: "2024-04-22" },
-  { id: "C014", accountId: "daehyang",   password: "dh@5151",  companyName: "(주)대향유통",          bizNumber: "408-81-13256", ceoName: "조대향", managerName: "윤석진", department: "물류팀",   contact: "010-2937-6614", email: "sales@daehyang.co.kr",   address: "광주 광산구 하남산단6번로 107",                  status: "활성",    joinDate: "2023-08-19" },
-  { id: "C015", accountId: "jobis",      password: "jb#7788",  companyName: "(주)자비스앤빌런즈",     bizNumber: "144-88-00714", ceoName: "김범섭", managerName: "이서연", department: "경영지원", contact: "010-5048-1193", email: "partner@jobis.co",       address: "서울 강남구 테헤란로 131 한국타이어빌딩 16층",     status: "활성",    joinDate: "2025-05-08" },
-  { id: "C016", accountId: "sejong-lbh", password: "sj!7799",  companyName: "법무법인 세종(이병한)",   bizNumber: "101-85-62020", ceoName: "이병한", managerName: "박준영", department: "자문팀",   contact: "010-8810-4421", email: "lbh@sejonglaw.com",      address: "서울 종로구 사직로8길 39 세양빌딩",               status: "활성",    joinDate: "2024-02-14" },
-  { id: "C017", accountId: "overlay",    password: "ov2026@",  companyName: "주식회사 오버레이",       bizNumber: "765-87-01239", ceoName: "정현우", managerName: "김태희", department: "운영팀",   contact: "010-4471-9920", email: "contact@overlay.team",   address: "서울 성동구 아차산로7길 18 성수SK V1 1동",         status: "승인대기", joinDate: "2026-06-09" },
-  { id: "C018", accountId: "homepack",   password: "hp#2323",  companyName: "(주)홈팩",              bizNumber: "137-81-44521", ceoName: "한정수", managerName: "서지원", department: "구매팀",   contact: "010-3329-8845", email: "order@homepack.co.kr",   address: "경기 김포시 양촌읍 황금로 124 홈팩물류센터",       status: "활성",    joinDate: "2023-10-11" },
-  { id: "C019", accountId: "comverse",   password: "cv@4545",  companyName: "(주)컴버스테크",        bizNumber: "220-81-62107", ceoName: "이상헌", managerName: "노태경", department: "경영지원", contact: "010-6612-3098", email: "admin@comverse.co.kr",   address: "서울 금천구 가산디지털1로 168 우림라이온스밸리 A동", status: "활성",   joinDate: "2022-07-26" },
-  { id: "C020", accountId: "ccbros",     password: "cc2026@",  companyName: "주식회사 청춘브라더스",   bizNumber: "119-86-30945", ceoName: "박지훈", managerName: "최유진", department: "마케팅팀", contact: "010-2208-7741", email: "hello@ccbros.kr",        address: "서울 마포구 와우산로29길 18",                    status: "승인대기", joinDate: "2026-06-15" },
+  { id: "C001", accountId: "panocean", password: "po1234!", companyName: "팬오션",   bizNumber: "180-81-00133", ceoName: "안중호", managerName: "김해운", department: "총무팀",   contact: "010-2201-3360", email: "gm@panocean.com",          address: "서울 종로구 새문안로 76 콘코디언빌딩",        status: "활성",    joinDate: "2022-06-14" },
+  { id: "C002", accountId: "cheilfeed", password: "cf2024@", companyName: "제일사료", bizNumber: "131-81-07013", ceoName: "이재면", managerName: "박사료", department: "구매팀",   contact: "010-3380-7742", email: "buy@cheilfeed.co.kr",      address: "충남 천안시 서북구 직산읍 4산단3로 25",       status: "활성",    joinDate: "2023-02-09" },
+  { id: "C003", accountId: "harim",    password: "hr1234!", companyName: "(주)하림",  bizNumber: "402-81-34229", ceoName: "정호석", managerName: "한지훈", department: "경영지원팀", contact: "010-5521-8870", email: "ir@harim.com",            address: "전북 익산시 망성면 망성로 92",              status: "활성",    joinDate: "2022-09-01" },
+  { id: "C004", accountId: "sunjin",   password: "sj#3030", companyName: "선진",     bizNumber: "126-81-45063", ceoName: "이범권", managerName: "오축산", department: "운영팀",   contact: "010-7720-4416", email: "office@sunjin.co.kr",      address: "서울 동작구 노량진로 10 쇼레이트빌딩",        status: "활성",    joinDate: "2023-11-22" },
+  { id: "C005", accountId: "farmsco",  password: "fs$5050", companyName: "팜스코",   bizNumber: "134-81-28774", ceoName: "정민화", managerName: "배수진", department: "자재팀",   contact: "010-4419-7763", email: "md@farmsco.com",           address: "경기 안성시 미양면 제2공단길 30",            status: "승인대기", joinDate: "2026-06-12" },
+  { id: "C006", accountId: "nsmall",   password: "ns2025@", companyName: "NS홈쇼핑", bizNumber: "215-87-61040", ceoName: "조항목", managerName: "신보라", department: "마케팅팀", contact: "010-3326-7740", email: "cs@nsmall.com",            address: "경기 성남시 분당구 서현로180번길 30",        status: "활성",    joinDate: "2024-03-12" },
+  { id: "C007", accountId: "harimind", password: "hi#1212", companyName: "하림산업", bizNumber: "405-88-00921", ceoName: "민동기", managerName: "강민재", department: "구매팀",   contact: "010-6627-1108", email: "biz@harim.com",            address: "전북 익산시 함라면 천남로 100",             status: "승인대기", joinDate: "2026-06-15" },
+  { id: "C008", accountId: "harimhd",  password: "hd@3434", companyName: "하림지주", bizNumber: "598-87-00488", ceoName: "김홍국", managerName: "김사원", department: "총무팀",   contact: "010-1234-5678", email: "chong@harim-holdings.com", address: "서울 강남구 영동대로 521 파르나스타워",       status: "활성",    joinDate: "2024-01-30" },
 ];
 
 /* ── per-client SETTLEMENTS (settlement.js fields + 3 checks) ── */
@@ -55,7 +43,7 @@ function settlementsFor(client, ci) {
       id: `${client.id}-${ymLabel(m).replace(/[년월\s]/g, "")}`,
       발행일: fmtDot(issueD),
       정산기한: fmtDot(dueD),
-      청구내역: `${ymLabel(m)} 꽃배달 이용금 청구`,
+      청구내역: `${ymLabel(m)} 경조화환 이용금 청구`,
       청구년월: ymLabel(m),
       정산금액: won(amount),
       입금자: client.companyName,

@@ -33,7 +33,7 @@ const MENU = [
 // Admin console menu — single category, reuses existing nav PNG icons.
 const ADMIN_MENU = [
   {
-    group: "거래처 관리",
+    group: "계열사 관리",
     items: [
       { label: "계열사 접속관리", hash: "#/admin", icon: "nav-profile.png" },
       { label: "계열사 분리정산", hash: "#/admin/settlement", icon: "nav-accounting.png" },
