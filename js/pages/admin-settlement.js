@@ -1,5 +1,5 @@
 /* ============================================================
-   admin-settlement.js — 거래처 정산회계
+   admin-settlement.js — 계열사 분리정산
    상단 필터: 년/월 + 정산 상태(전체/미완료/정산완료) + 거래처 검색.
    거래처별 정산 종합(거래명세서 동의 / 계산서 발급 / 입금) 조회 (읽기전용).
    ============================================================ */
@@ -134,7 +134,7 @@ export function mount(root, { nav }) {
       html`
         <div class="page-admin">
           <div class="admin-inner">
-            ${pageTitle({ imgSrc: "./assets/nav-accounting.png", title: "거래처 정산회계" })}
+            ${pageTitle({ imgSrc: "./assets/nav-accounting.png", title: "계열사 분리정산" })}
             <div class="orders-filters">
               <div class="orders-frow orders-frow--1">
                 <div class="orders-fgroup">

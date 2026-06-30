@@ -52,7 +52,6 @@ let state = {
   profiles: INITIAL_PROFILES.map((p) => ({ ...p })),
   contacts: INITIAL_CONTACTS.map((c) => ({ ...c })),
   clients: INITIAL_CLIENTS.map((c) => ({ ...c })),
-  clientPrices: {}, // { [clientId]: { [productKey]: number } } — per-client price overrides
 };
 
 function persist() {
@@ -63,7 +62,6 @@ function persist() {
         profiles: state.profiles,
         contacts: state.contacts,
         clients: state.clients,
-        clientPrices: state.clientPrices,
       })
     );
   } catch {
@@ -80,7 +78,6 @@ function hydrate() {
       profiles: Array.isArray(data.profiles) ? data.profiles : state.profiles,
       contacts: Array.isArray(data.contacts) ? data.contacts.map((c) => ({ isBilling: false, ...c })) : state.contacts,
       clients: Array.isArray(data.clients) ? data.clients : state.clients,
-      clientPrices: data.clientPrices && typeof data.clientPrices === "object" ? data.clientPrices : state.clientPrices,
     };
     // 불변식 보정: 로드된 담당자 중 정산담당이 없으면 첫 담당자로 지정
     if (state.contacts.length > 0 && !state.contacts.some((c) => c.isBilling)) {
@@ -143,21 +140,5 @@ export const store = {
   },
   removeClient(id) {
     this.setClients((prev) => prev.filter((x) => x.id !== id));
-    if (state.clientPrices[id]) {
-      const cp = { ...state.clientPrices };
-      delete cp[id];
-      state = { ...state, clientPrices: cp };
-      persist();
-      emit();
-    }
-  },
-  // ── 기업별 상품단가 (admin) ─────────────────────────────
-  setClientPrices(clientId, map) {
-    state = { ...state, clientPrices: { ...state.clientPrices, [clientId]: { ...map } } };
-    persist();
-    emit();
-  },
-  clientPriceFor(clientId, key) {
-    return state.clientPrices?.[clientId]?.[key];
   },
 };

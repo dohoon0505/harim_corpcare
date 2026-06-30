@@ -1,5 +1,5 @@
 /* ============================================================
-   admin-clients.js — 거래처 정보관리
+   admin-clients.js — 계열사 접속관리
    상단 필터(상태 탭 + 검색) · 가입 승인/거부 워크플로 · 상세/수정/생성/삭제.
    store.clients(영속). settlement cedit/.ofield + profile CRUD 패턴 재사용.
    ============================================================ */
@@ -127,7 +127,7 @@ export function mount(root, { nav }) {
           <div class="admin-inner">
             ${pageTitle({
               imgSrc: "./assets/nav-profile.png",
-              title: "거래처 정보관리",
+              title: "계열사 접속관리",
               action: html`<button class="btn btn-secondary" data-action="new">${icon("user-plus", { size: 14 })} 신규 거래처 등록</button>`,
             })}
             <div class="orders-filters">
