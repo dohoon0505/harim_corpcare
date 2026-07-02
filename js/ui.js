@@ -2,7 +2,7 @@
    ui.js — shared UI factories
    pageTitle() · openModal() (focus-trapped) · tableGrid() (DataTable)
    ============================================================ */
-import { html, raw, setHTML, qsa } from "./dom.js";
+import { html, raw, setHTML, qs, qsa } from "./dom.js";
 import { icon } from "./icons.js";
 
 /* ── PageTitle (ports PageTitle.tsx) ────────────────────── */
@@ -139,4 +139,70 @@ export function simpleModal({ title, body, panelClass = "", onClose } = {}) {
     if (e.target.closest("[data-action='close']")) m.close();
   });
   return m;
+}
+
+/* ── Custom dropdown (harim mob 스타일) ───────────────────────
+ * 필드형 트리거 + 위로 뜨는 패널. 한 번에 하나만 열리고 바깥 클릭·ESC로 닫힘.
+ * markup: <div class="dd"><button class="dd-trigger" aria-haspopup="listbox"
+ *   aria-expanded="false"></button><div class="dd-panel" role="listbox"></div></div>
+ * makeDropdown(rootEl, { unit, options, get, set }) → { renderTrigger, renderOpts, close, destroy }
+ *   - options(): 현재 옵션 문자열 배열 · get(): 현재값 · set(v): 선택 반영
+ *   - destroy(): 등록한 document 리스너 해제 (페이지 cleanup에서 호출) */
+export function makeDropdown(root, { unit = "", options, get, set } = {}) {
+  const trigger = qs(root, ".dd-trigger");
+  const panel = qs(root, ".dd-panel");
+
+  function renderOpts() {
+    const cur = get();
+    setHTML(
+      panel,
+      options().map(
+        (v) => html`<button type="button" class="dd-opt ${v === cur ? "sel" : ""}"
+          role="option" aria-selected="${String(v === cur)}" data-v="${v}">${v}${unit}</button>`
+      )
+    );
+  }
+  function renderTrigger() {
+    trigger.textContent = get() + unit;
+  }
+  function close() {
+    root.classList.remove("open");
+    trigger.setAttribute("aria-expanded", "false");
+  }
+  function open() {
+    qsa(document, ".dd.open").forEach((d) => d !== root && d.classList.remove("open"));
+    renderOpts();
+    root.classList.add("open");
+    trigger.setAttribute("aria-expanded", "true");
+    const sel = qs(panel, ".dd-opt.sel");
+    if (sel) panel.scrollTop = sel.offsetTop - panel.clientHeight / 2 + sel.offsetHeight / 2;
+  }
+  const onTrigger = () => (root.classList.contains("open") ? close() : open());
+  const onPanel = (e) => {
+    const o = e.target.closest("[data-v]");
+    if (!o) return;
+    set(o.dataset.v);
+    renderTrigger();
+    close();
+  };
+  const onDocClick = (e) => { if (!root.contains(e.target)) close(); };
+  const onKey = (e) => { if (e.key === "Escape") close(); };
+
+  trigger.addEventListener("click", onTrigger);
+  panel.addEventListener("click", onPanel);
+  document.addEventListener("click", onDocClick);
+  document.addEventListener("keydown", onKey);
+  renderTrigger();
+
+  return {
+    renderTrigger,
+    renderOpts,
+    close,
+    destroy() {
+      trigger.removeEventListener("click", onTrigger);
+      panel.removeEventListener("click", onPanel);
+      document.removeEventListener("click", onDocClick);
+      document.removeEventListener("keydown", onKey);
+    },
+  };
 }

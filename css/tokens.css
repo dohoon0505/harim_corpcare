@@ -120,4 +120,31 @@
   /* ── Font ──────────────────────────────────────────────── */
   --font-sans: "Pretendard", -apple-system, BlinkMacSystemFont, "Segoe UI",
     sans-serif;
+
+  /* ── 경조상품 간편주문 (order.js — Toss 무드 팔레트) ────────
+     이 그룹은 간편주문 페이지 전용. order.css는 var()로만 참조. */
+  --c-order-blue: #3182f6;
+  --c-order-blue-dark: #1b64da;
+  --c-order-blue-soft: #e8f3ff;
+  --c-order-blue-soft-2: #f0f7ff;
+  --c-order-ink: #191f28;
+  --c-order-g700: #333d4b;
+  --c-order-g600: #4e5968;
+  --c-order-g500: #6b7684;
+  --c-order-g400: #8b95a1;
+  --c-order-g300: #b0b8c1;
+  --c-order-g200: #d1d6db;
+  --c-order-g100: #e5e8eb;
+  --c-order-g50: #f2f4f6;
+  --c-order-g25: #f9fafb;
+  --c-order-red: #f04452;
+  --c-order-red-soft: #fdeef0;
+  --c-order-green: #03b26c;
+  --c-order-green-soft: #e6f6ef;
+  --c-order-coral: #ff8078;
+  --c-order-coral-2: #f96d64;
+  --r-order-md: 12px;
+  --r-order-lg: 16px;
+  --sh-order-panel: 0 8px 24px rgba(25, 31, 40, 0.12);
+  --sh-order-seg: 0 1px 4px rgba(25, 31, 40, 0.1);
 }
