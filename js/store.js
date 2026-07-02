@@ -11,16 +11,15 @@ import { INITIAL_CLIENTS } from "./data/admin-mock.js";
 
 /* ── Static product catalog (immutable) ─────────────────── */
 export const ALL_PRODUCTS = [
-  { category: "축하화환",   product: "축하 3단화환 (기본)", price: "75,000원",  description: "100% 신품 생화(국화) 60송이 + 기본 데코", icon: "🌸" },
-  { category: "축하화환",   product: "축하 3단화환 (고급)", price: "90,000원",  description: "100% 신품 생화(국화) 80송이 + 프리미엄 데코", icon: "🌸" },
-  { category: "근조화환",   product: "근조 3단화환 (기본)", price: "75,000원",  description: "100% 신품 생화(국화) 60송이 + 기본 데코", icon: "🏵️" },
-  { category: "근조화환",   product: "근조 3단화환 (고급)", price: "90,000원",  description: "100% 신품 생화(국화) 80송이 + 프리미엄 데코", icon: "🏵️" },
-  { category: "특수화환",   product: "특수 화환 (오브제)",   price: "75,000원",  description: "100% 신품 생화 40송이~50송이 + 기본 데코", icon: "🌺" },
-  { category: "특수화환",   product: "특수 화환 (스탠드)",   price: "75,000원",  description: "100% 신품 생화 40송이~50송이 + 기본 데코", icon: "🌺" },
-  { category: "근조바구니", product: "근조바구니(기본)",     price: "70,000원",  description: "100% 신품 생화로 제작한 빈소용 근조 꽃바구니 (기본형)", icon: "🧺" },
-  { category: "근조바구니", product: "근조바구니(고급)",     price: "85,000원",  description: "100% 신품 생화로 제작한 빈소용 근조 꽃바구니 (고급형)", icon: "🧺" },
-  { category: "쌀화환",     product: "근조쌀화환(10kg)",     price: "90,000원",  description: "3단화환 형태에 쌀 10kg을 더한 근조 쌀화환", icon: "🌾" },
-  { category: "쌀화환",     product: "근조쌀화환(20kg)",     price: "130,000원", description: "3단화환 형태에 쌀 20kg을 더한 근조 쌀화환", icon: "🌾" },
+  { category: "축하화환",   product: "축하 3단화환 (기본)",    price: "70,000원",  description: "거베라(조화) 70송이 이상 + 다품종 생화(소국, 안개꽃 등) 전체 비율의 5% 이상 + 하단 백합(조화)", icon: "🌸" },
+  { category: "축하화환",   product: "축하 3단화환 (고급)",    price: "100,000원", description: "거베라(조화) 80송이 이상 + 다품종 생화(소국, 안개꽃 등) 전체 비율의 10% 이상 + 하단 백합(조화)", icon: "🌸" },
+  { category: "근조화환",   product: "근조 3단화환 (기본)",    price: "70,000원",  description: "100% 신품 국화(생화) 70송이 이상 + 하단 백합(조화) + 와네끼, 도시루 등 부소재 데코", icon: "🏵️" },
+  { category: "근조화환",   product: "근조 3단화환 (고급)",    price: "100,000원", description: "100% 신품 국화(생화) 80송이 이상 + 하단 및 사이드 백합(조화) + 와네끼, 도시루 등 부소재 데코", icon: "🏵️" },
+  { category: "특수화환",   product: "특수화환 (오브제)",       price: "70,000원",  description: "철제 받침 • 반입 가능한 형태 + 100% 신품 국화(생화) 30송이 이상 + 백합 조화 또는 도시루 등 부소재 데코", icon: "🌺" },
+  { category: "특수화환",   product: "특수화환 (스탠드)",       price: "70,000원",  description: "플라스틱 받침 • 반입 가능한 형태 + 100% 신품 국화(생화) 40송이 이상 + 백합 조화 또는 도시루 등 부소재 데코", icon: "🌺" },
+  { category: "특수화환",   product: "특수화환 (10KG 쌀화환)",  price: "90,000원",  description: "3단 • 반입 가능한 형태 + 쌀 10KG 동반배송", icon: "🌾" },
+  { category: "근조바구니", product: "근조바구니",              price: "65,000원",  description: "나무 바구니 • 반입 가능한 형태 + 100% 신품 국화(생화) 40송이 이상 + 백합 조화 또는 도시루 등 부소재 데코", icon: "🧺" },
+  { category: "꽃바구니",   product: "꽃바구니",                price: "80,000원",  description: "100% 신품 생화(다품종) 20송이 이상 + 부소재 데코", icon: "💐" },
 ];
 
 export const productKey = (r) => `${r.category}__${r.product}`;

@@ -17,7 +17,7 @@ const sampleImages = {
   근조화환: SAMPLE_IMG.funeral,
   특수화환: SAMPLE_IMG.orchid,
   근조바구니: SAMPLE_IMG.funeral,
-  쌀화환: SAMPLE_IMG.funeral,
+  꽃바구니: SAMPLE_IMG.bouquet,
 };
 
 export function mount(root, { nav }) {
