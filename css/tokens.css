@@ -7,10 +7,13 @@
   --c-orange: #f15a2a;        /* primary CTA */
   --c-orange-ink: #d94000;    /* active text on light pink */
   --c-orange-soft: #fff1ec;   /* faint orange wash */
+  --c-orange-hover: #d94e24;  /* primary CTA hover (order 08-brand) */
   --c-blue: #4169e1;          /* secondary / links / toggles */
   --c-blue-soft: #f0f3fd;     /* selected row wash */
   --c-blue-soft-2: #eef1fd;
+  --c-blue-sel: #f8f9ff;      /* selected list-row wash (order/invoice) */
   --c-dark: #111118;          /* login/register panel + strong text */
+  --c-dark-hover: #2b2b33;    /* dark secondary button hover */
 
   /* ── Surfaces & lines ──────────────────────────────────── */
   --c-bg: #f9f9f9;            /* app main content background */
@@ -101,6 +104,7 @@
   --sh-card: 0 1px 6px rgba(0, 0, 0, 0.04);
   --sh-btn: 0 2px 8px rgba(241, 90, 42, 0.28);
   --sh-modal: 0 10px 40px rgba(0, 0, 0, 0.18);
+  --sh-pop: 0 8px 28px rgba(17, 17, 24, 0.14); /* dropdown/calendar popover (order 08-brand) */
   --ring: 0 0 0 3px rgba(241, 90, 42, 0.09);
   --ring-blue: 0 0 0 3px rgba(65, 105, 225, 0.12);
   --ring-error: 0 0 0 3px rgba(244, 67, 54, 0.1);
