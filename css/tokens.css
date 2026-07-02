@@ -147,4 +147,5 @@
   --r-order-lg: 16px;
   --sh-order-panel: 0 8px 24px rgba(25, 31, 40, 0.12);
   --sh-order-seg: 0 1px 4px rgba(25, 31, 40, 0.1);
+  --sh-order-doc: 0 6px 24px rgba(25, 31, 40, 0.08); /* 거래명세서 A4 프레임 */
 }
