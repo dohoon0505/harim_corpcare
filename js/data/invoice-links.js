@@ -7,7 +7,7 @@
    실서비스에서는 link 토큰 자체를 충분히 긴 무작위 비밀값(capability URL)으로
    발급하고, 서버에서 토큰↔명세서 매핑·만료·접근로그를 관리해야 합니다.
    ============================================================ */
-export const SUPPLIER = { company: "메이플라워", bizNumber: "515-95-38474", ceo: "박주은", email: "mayflower@outlook.kr", fax: "053-715-2699" };
+export const SUPPLIER = { company: "메이플라워", bizNumber: "515-95-38474", ceo: "박주은", location: "대구광역시 달서구 장기동 666-1 2층 메이플라워", fax: "053-715-2699" };
 export const ACCOUNT = "NH농협은행 352-2284-9916-83 예금주 박주은(메이플라워)";
 
 export const INVOICE_LINKS = {

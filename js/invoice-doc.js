@@ -69,7 +69,7 @@ export function invoiceDoc(d, assetBase = "./assets/") {
 
       ${infoTable("공급자", [
         [{ label: "회사명", value: d.supplier.company }, { label: "사업자번호", value: d.supplier.bizNumber }, { label: "대표자명", value: d.supplier.ceo }],
-        [{ label: "E-MAIL", value: d.supplier.email, valueColSpan: 3 }, { label: "FAX", value: d.supplier.fax }],
+        [{ label: "소재지", value: d.supplier.location, valueColSpan: 3 }, { label: "FAX", value: d.supplier.fax }],
       ])}
 
       <div style="flex:1;min-height:0;margin-bottom:22px">
