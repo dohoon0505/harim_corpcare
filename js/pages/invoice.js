@@ -98,12 +98,12 @@ function markup() {
             </div>
           </div>
 
-          <!-- 다운로드 · 공개 링크 (조회 리모컨 아래) -->
+          <!-- 다운로드 · 공개 링크 (조회 리모컨 아래) · 3버튼 한 줄, 아이콘은 유지 -->
           <div class="iv-dl-row">
-            <button class="iv-btn iv-btn--primary" data-pdf>${icon("download", { size: 16 })}PDF 다운로드</button>
-            <button class="iv-btn iv-btn--excel" data-excel>${icon("download", { size: 16 })}EXCEL 다운로드</button>
+            <button class="iv-btn iv-btn--primary" data-pdf>${icon("download", { size: 16 })}PDF</button>
+            <button class="iv-btn iv-btn--excel" data-excel>${icon("download", { size: 16 })}EXCEL</button>
+            <button class="iv-btn iv-btn--secondary" data-link>${icon("external-link", { size: 16 })}COPY</button>
           </div>
-          <button class="iv-btn iv-btn--secondary" data-link>${icon("external-link", { size: 16 })}공개 링크 복사 <span class="iv-btn__sub">· 로그인 없이 열람</span></button>
 
           <div class="iv-card agree-wrap" data-agree-wrap>
             <div class="iv-card__body">
