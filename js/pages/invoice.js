@@ -14,7 +14,7 @@ import { pageTitle, simpleModal } from "../ui.js";
 const INVOICE_DATA = {
   title: "26년 04월 거래명세서",
   period: "2026년 04월 귀속",
-  buyer: { address: "서울 중구 퇴계로 100 스테이트타워 남산 3층 (주)하림지주", company: "(주)하림지주", bizNumber: "680-87-02988", ceo: "홍길동", summary: "꽃배달 이용료 청구", issueDate: "2026년 05월 01일", invoiceNote: "명세서 조회 후 발급" },
+  buyer: { address: "전라북도 익산시 중앙로 121 (주)하림지주", company: "(주)하림지주", bizNumber: "306-81-03054", ceo: "김홍국", summary: "꽃배달 이용료 청구", issueDate: "2026년 05월 01일", invoiceNote: "명세서 조회 후 발급" },
   supplier: { company: "메이플라워", bizNumber: "515-95-38474", ceo: "박주은", email: "mayflower@outlook.kr", fax: "053-715-2699" },
   items: [
     { date: "2026년 04월 28일", sender: "홍길동", address: "서울 관악구 신림동 산 56-1 65동 서울대학교 교수회관", product: "근조 3단화환 (기본)", amount: "70,000원" },
