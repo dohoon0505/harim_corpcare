@@ -14,8 +14,8 @@ import { pageTitle, simpleModal } from "../ui.js";
 const INVOICE_DATA = {
   title: "26년 04월 거래명세서",
   period: "2026년 04월 귀속",
-  buyer: { address: "서울 중구 퇴계로 100 스테이트타워 남산 3층 주식회사 싱크플로", company: "주식회사 싱크플로", bizNumber: "680-87-02988", ceo: "홍길동", summary: "꽃배달 이용료 청구", issueDate: "2026년 05월 01일", invoiceNote: "명세서 조회 후 발급" },
-  supplier: { company: "도랑플라워", bizNumber: "321-99-01778", ceo: "김도훈", email: "ehgns335@naver.com", fax: "053-715-2699" },
+  buyer: { address: "서울 중구 퇴계로 100 스테이트타워 남산 3층 (주)하림지주", company: "(주)하림지주", bizNumber: "680-87-02988", ceo: "홍길동", summary: "꽃배달 이용료 청구", issueDate: "2026년 05월 01일", invoiceNote: "명세서 조회 후 발급" },
+  supplier: { company: "메이플라워", bizNumber: "515-95-38474", ceo: "박주은", email: "mayflower@outlook.kr", fax: "053-715-2699" },
   items: [
     { date: "2026년 04월 28일", sender: "홍길동", address: "서울 관악구 신림동 산 56-1 65동 서울대학교 교수회관", product: "근조 3단화환 (기본)", amount: "70,000원" },
     { date: "2026년 04월 25일", sender: "김태권", address: "서울 동산구 아에린로29 신정기념관내 로얄마크컨벤션 3층 포장홀", product: "축하 3단화환 (기본)", amount: "70,000원" },
@@ -26,7 +26,7 @@ const INVOICE_DATA = {
     { date: "2026년 04월 07일", sender: "홍길동", address: "서울 관악구 신림동 산 56-1 65동 서울대학교 교수회관", product: "근조바구니", amount: "65,000원" },
     { date: "2026년 04월 03일", sender: "김태권", address: "서울 동산구 아에린로29 신정기념관내 로얄마크컨벤션 3층 포장홀", product: "축하 3단화환 (기본)", amount: "70,000원" },
   ],
-  account: "NH농협은행 352-2284-9916-83 예금주 김도훈(도랑플라워)",
+  account: "NH농협은행 352-2284-9916-83 예금주 박주은(메이플라워)",
   total: "585,000원",
 };
 

@@ -6,13 +6,13 @@ import { icon } from "../icons.js";
 import { pageTitle, openModal } from "../ui.js";
 
 const DEFAULT_COMPANY = {
-  회사명: "주식회사 싱크플로",
+  회사명: "(주)하림지주",
   사업자번호: "680-87-02988",
   대표자명: "홍길동",
   계산서이메일: "admin@thinkflow.info",
   담당자명: "홍길동",
   담당자연락처: "010-7615-2699",
-  사업장주소: "서울 중구 퇴계로 100 스테이트타워 남산 3층 주식회사 싱크플로",
+  사업장주소: "서울 중구 퇴계로 100 스테이트타워 남산 3층 (주)하림지주",
 };
 
 const settlementData = [
@@ -37,7 +37,7 @@ const settleBadge = (t) =>
 
 const EDIT_FIELDS = [
   { section: "회사 기본정보" },
-  { key: "회사명", label: "회사명", placeholder: "예) 주식회사 싱크플로", icon: "building2", grid: true },
+  { key: "회사명", label: "회사명", placeholder: "예) (주)하림지주", icon: "building2", grid: true },
   { key: "사업자번호", label: "사업자번호", placeholder: "예) 000-00-00000", icon: "hash", grid: true },
   { key: "대표자명", label: "대표자명", placeholder: "예) 홍길동", icon: "user" },
   { section: "계산서 및 담당자 정보" },

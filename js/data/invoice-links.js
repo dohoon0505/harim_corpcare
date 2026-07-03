@@ -7,17 +7,17 @@
    실서비스에서는 link 토큰 자체를 충분히 긴 무작위 비밀값(capability URL)으로
    발급하고, 서버에서 토큰↔명세서 매핑·만료·접근로그를 관리해야 합니다.
    ============================================================ */
-export const SUPPLIER = { company: "도랑플라워", bizNumber: "321-99-01778", ceo: "김도훈", email: "ehgns335@naver.com", fax: "053-715-2699" };
-export const ACCOUNT = "NH농협은행 352-2284-9916-83 예금주 김도훈(도랑플라워)";
+export const SUPPLIER = { company: "메이플라워", bizNumber: "515-95-38474", ceo: "박주은", email: "mayflower@outlook.kr", fax: "053-715-2699" };
+export const ACCOUNT = "NH농협은행 352-2284-9916-83 예금주 박주은(메이플라워)";
 
 export const INVOICE_LINKS = {
-  // (주)싱크플로 · 2026년 04월
+  // (주)하림지주 · 2026년 04월
   FP9S0QA8YA: {
     bizNumber: "680-87-02988",
     doc: {
       title: "26년 04월 거래명세서",
       period: "2026년 04월 귀속",
-      buyer: { address: "서울 중구 퇴계로 100 스테이트타워 남산 3층 주식회사 싱크플로", company: "주식회사 싱크플로", bizNumber: "680-87-02988", ceo: "홍길동", summary: "꽃배달 이용료 청구", issueDate: "2026년 05월 01일", invoiceNote: "명세서 조회 후 발급" },
+      buyer: { address: "서울 중구 퇴계로 100 스테이트타워 남산 3층 (주)하림지주", company: "(주)하림지주", bizNumber: "680-87-02988", ceo: "홍길동", summary: "꽃배달 이용료 청구", issueDate: "2026년 05월 01일", invoiceNote: "명세서 조회 후 발급" },
       supplier: SUPPLIER,
       items: [
         { date: "2026년 04월 28일", sender: "홍길동", address: "서울 관악구 관악로 1 서울대학교 행정관", product: "근조 3단화환 (기본)", amount: "70,000원" },
@@ -28,13 +28,13 @@ export const INVOICE_LINKS = {
       total: "240,000원",
     },
   },
-  // (주)싱크플로 · 2026년 03월 (동일 기업, 다른 귀속월 → 별도 링크)
+  // (주)하림지주 · 2026년 03월 (동일 기업, 다른 귀속월 → 별도 링크)
   KM3X7BQ2LP: {
     bizNumber: "680-87-02988",
     doc: {
       title: "26년 03월 거래명세서",
       period: "2026년 03월 귀속",
-      buyer: { address: "서울 중구 퇴계로 100 스테이트타워 남산 3층 주식회사 싱크플로", company: "주식회사 싱크플로", bizNumber: "680-87-02988", ceo: "홍길동", summary: "꽃배달 이용료 청구", issueDate: "2026년 04월 01일", invoiceNote: "발급완료" },
+      buyer: { address: "서울 중구 퇴계로 100 스테이트타워 남산 3층 (주)하림지주", company: "(주)하림지주", bizNumber: "680-87-02988", ceo: "홍길동", summary: "꽃배달 이용료 청구", issueDate: "2026년 04월 01일", invoiceNote: "발급완료" },
       supplier: SUPPLIER,
       items: [
         { date: "2026년 03월 30일", sender: "홍길동", address: "서울 강남구 테헤란로 152 강남파이낸스센터", product: "축하 3단화환 (고급)", amount: "100,000원" },
