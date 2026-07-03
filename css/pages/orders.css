@@ -250,6 +250,28 @@
   max-width: 440px;
   overflow: hidden;
 }
+/* 사진 보유 주문: 좌(2:3 사진 320px) + 우(정보) 2단 → 760px */
+.modal-panel--detail-photo {
+  max-width: 760px;
+}
+.modal-panel--detail-photo .odetail__head {
+  padding: 16px 18px;
+}
+.modal-panel--detail-photo .odetail__row-l {
+  width: 104px;
+  padding: 10px 14px;
+}
+.modal-panel--detail-photo .odetail__row-v {
+  padding: 10px 14px;
+}
+.modal-panel--detail-photo .odetail__foot {
+  margin-top: auto;
+}
+@media (max-width: 760px) {
+  .modal-panel--detail-photo {
+    max-width: 440px;
+  }
+}
 .odetail__head {
   display: flex;
   align-items: center;
@@ -281,25 +303,6 @@
   border-radius: 4px;
   font-size: var(--fs-12);
   font-weight: var(--fw-semibold);
-}
-.odetail__photo {
-  width: 100%;
-  height: 160px;
-  background: var(--c-surface-3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-bottom: 1px solid var(--c-border);
-}
-.odetail__photo-in {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  color: #ccc;
-}
-.odetail__photo-in span {
-  font-size: var(--fs-13);
 }
 .odetail__nophoto {
   width: 100%;

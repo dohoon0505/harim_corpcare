@@ -5,12 +5,13 @@
 import { html, setHTML, on } from "../dom.js";
 import { icon } from "../icons.js";
 import { ALL_PRODUCTS, productKey } from "../store.js";
-import { pageTitle, tableGrid, openModal } from "../ui.js";
+import { pageTitle, tableGrid, openModal, openLightbox } from "../ui.js";
 
+/* 상품 샘플 사진은 2:3 세로형 규격으로 관리한다. */
 const SAMPLE_IMG = {
-  funeral: "https://images.unsplash.com/photo-1728080568516-28156ceae0ea?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxmdW5lcmFsJTIwZmxvd2VyJTIwS29yZWElMjBjZXJlbW9ueXxlbnwxfHx8fDE3NzU2Mzk0ODd8MA&ixlib=rb-4.1.0&q=80&w=1080",
-  orchid: "https://images.unsplash.com/photo-1577378978713-9bebf3db8312?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3aGl0ZSUyMHBoYWxhZW5vcHNpcyUyMG9yY2hpZCUyMGVsZWdhbnR8ZW58MXx8fHwxNzc1NjM5NDg3fDA&ixlib=rb-4.1.0&q=80&w=1080",
-  bouquet: "https://images.unsplash.com/photo-1641430262389-93bbbd2dd754?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxmcmVzaCUyMGZsb3dlciUyMGJvdXF1ZXQlMjBjb2xvcmZ1bCUyMGJsb29tfGVufDF8fHx8MTc3NTYzOTQ4N3ww&ixlib=rb-4.1.0&q=80&w=1080",
+  funeral: "https://images.unsplash.com/photo-1728080568516-28156ceae0ea?auto=format&fit=crop&w=720&h=1080&q=80",
+  orchid: "https://images.unsplash.com/photo-1577378978713-9bebf3db8312?auto=format&fit=crop&w=720&h=1080&q=80",
+  bouquet: "https://images.unsplash.com/photo-1641430262389-93bbbd2dd754?auto=format&fit=crop&w=720&h=1080&q=80",
 };
 const sampleImages = {
   축하화환: SAMPLE_IMG.bouquet,
@@ -53,23 +54,33 @@ export function mount(root, { nav }) {
   function openSample(product) {
     closeModal();
     const imgUrl = sampleImages[product.category];
+    /* 세로형(2:3) 샘플 사진을 좌측 고정 배치, 상품 정보는 우측 —
+       사진을 자르지 않고 보여주면서 모달 세로 길이를 사진 높이로 고정한다. */
     const body = html`
-      <div class="psample">
-        <div class="psample__head">
-          <div><p class="psample__cat">${product.category}</p><h3>${product.product}</h3></div>
-          <button class="modal-close" data-action="close" aria-label="닫기">${icon("x", { size: 18 })}</button>
+      <div class="psample msplit">
+        <button class="msplit__media msplit__media--btn" data-action="zoom" aria-label="샘플 사진 크게 보기">
+          <img src="${imgUrl}" alt="${product.product} 샘플 사진" />
+          <span class="msplit__zoomhint">${icon("search", { size: 12 })}크게 보기</span>
+        </button>
+        <div class="msplit__body">
+          <div class="psample__head">
+            <div><p class="psample__cat">${product.category}</p><h3>${product.product}</h3></div>
+            <button class="modal-close" data-action="close" aria-label="닫기">${icon("x", { size: 18 })}</button>
+          </div>
+          <div class="psample__body msplit__scroll">
+            <div class="psample__price-row"><span>상품금액</span><span class="psample__price">${product.price}</span></div>
+            <p class="psample__desc">${product.description}</p>
+            <div class="psample__note"><p>※ 실제 상품은 사진과 다를 수 있으며, 계절 및 산지 사정에 따라 품종이 변경될 수 있습니다.</p></div>
+          </div>
+          <div class="psample__foot"><button class="psample__close-btn" data-action="close">닫기</button></div>
         </div>
-        <div class="psample__imgwrap"><img src="${imgUrl}" alt="${product.product}" /></div>
-        <div class="psample__body">
-          <div class="psample__price-row"><span>상품금액</span><span class="psample__price">${product.price}</span></div>
-          <p class="psample__desc">${product.description}</p>
-          <div class="psample__note"><p>※ 실제 상품은 사진과 다를 수 있으며, 계절 및 산지 사정에 따라 품종이 변경될 수 있습니다.</p></div>
-        </div>
-        <div class="psample__foot"><button class="psample__close-btn" data-action="close">닫기</button></div>
       </div>
     `;
     activeModal = openModal({ panelClass: "modal-panel--sample", body, onClose: () => {} });
     on(activeModal.panel, "click", "[data-action='close']", () => closeModal());
+    on(activeModal.panel, "click", "[data-action='zoom']", () =>
+      openLightbox({ src: imgUrl, alt: `${product.product} 샘플 사진`, caption: `${product.product} — ${product.price}` })
+    );
   }
 
   render();

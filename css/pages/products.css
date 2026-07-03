@@ -35,10 +35,15 @@
   color: var(--c-orange);
 }
 
-/* ── Sample modal ───────────────────────────────────────── */
+/* ── Sample modal: 좌(2:3 세로 사진) + 우(상품 정보) ─────── */
 .modal-panel--sample {
-  max-width: 460px;
+  max-width: 760px;
   overflow: hidden;
+}
+@media (max-width: 760px) {
+  .modal-panel--sample {
+    max-width: 460px;
+  }
 }
 .psample__head {
   display: flex;
@@ -57,21 +62,11 @@
   font-weight: var(--fw-bold);
   color: var(--c-text);
 }
-.psample__imgwrap {
-  position: relative;
-  width: 100%;
-  padding-bottom: 70%;
-  background: var(--c-surface-3);
-}
-.psample__imgwrap img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
 .psample__body {
   padding: 20px;
+}
+.psample__foot {
+  margin-top: auto;
 }
 .psample__price-row {
   display: flex;

@@ -89,6 +89,7 @@ export function openModal({ panelClass = "", body, labelledBy, onClose } = {}) {
     (f[0] || panel).focus();
   }
   function onKey(e) {
+    if (document.querySelector(".lightbox")) return; /* 라이트박스 우선 */
     if (e.key === "Escape") {
       e.preventDefault();
       close();
@@ -120,6 +121,59 @@ export function openModal({ panelClass = "", body, labelledBy, onClose } = {}) {
       focusFirst();
     },
   };
+}
+
+/** openLightbox({ src, alt, caption }) — 이미지 원본 비율 확대 보기.
+ *  세로형(2:3) 사진을 화면 높이에 맞춰 크게 보여준다. ESC/클릭으로 닫힘. */
+export function openLightbox({ src, alt = "", caption = "" } = {}) {
+  const prevFocus = document.activeElement;
+  const el = document.createElement("div");
+  el.className = "lightbox";
+  el.setAttribute("role", "dialog");
+  el.setAttribute("aria-modal", "true");
+  el.setAttribute("aria-label", caption || alt || "이미지 크게 보기");
+
+  const img = document.createElement("img");
+  img.src = src;
+  img.alt = alt;
+  el.appendChild(img);
+
+  const btn = document.createElement("button");
+  btn.className = "lightbox__close";
+  btn.setAttribute("aria-label", "닫기");
+  btn.innerHTML = icon("x", { size: 20 });
+  el.appendChild(btn);
+
+  if (caption) {
+    const cap = document.createElement("p");
+    cap.className = "lightbox__cap";
+    cap.textContent = caption;
+    el.appendChild(cap);
+  }
+
+  let closed = false;
+  function close() {
+    if (closed) return;
+    closed = true;
+    document.removeEventListener("keydown", onKey, true);
+    el.remove();
+    if (prevFocus && prevFocus.focus) prevFocus.focus();
+  }
+  function onKey(e) {
+    if (e.key === "Escape") {
+      e.preventDefault();
+      e.stopPropagation(); /* 아래 모달의 ESC 핸들러보다 먼저 소비 */
+      close();
+    }
+  }
+  el.addEventListener("click", (e) => {
+    if (e.target === el || e.target.closest(".lightbox__close")) close();
+  });
+  document.addEventListener("keydown", onKey, true);
+  document.body.appendChild(el);
+  btn.focus();
+
+  return { close };
 }
 
 /** Standard titled modal (ports Modal.tsx chrome): title bar + X + body slot.

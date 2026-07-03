@@ -268,6 +268,153 @@
   border-top: 1px solid var(--c-border);
 }
 
+/* ── Split modal: 세로형(2:3) 이미지 + 정보 2단 배치 ─────────
+   세로 사진을 그대로 세로 비율로 보여주되, 정보를 우측에 배치해
+   모달 전체 높이가 사진 높이(≈480px) 이상 늘어나지 않게 한다. */
+.msplit {
+  display: flex;
+  align-items: stretch;
+  min-height: 0;
+  /* 미디어(320×480, 2:3) 높이로 고정 → 정보가 길어도 모달은 안 늘고 우측 본문만 스크롤 */
+  max-height: 480px;
+}
+.msplit__media {
+  position: relative;
+  flex: 0 0 320px;
+  aspect-ratio: 2 / 3; /* 320 × 480 */
+  align-self: flex-start;
+  background: var(--c-surface-3);
+  border-right: 1px solid var(--c-border);
+  border-radius: var(--r-lg) 0 0 var(--r-lg);
+  overflow: hidden;
+}
+.msplit__media img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.msplit__media--btn {
+  cursor: zoom-in;
+  padding: 0;
+  border: 0;
+}
+.msplit__media--btn img {
+  transition: transform 0.25s ease;
+}
+.msplit__media--btn:hover img {
+  transform: scale(1.025);
+}
+.msplit__zoomhint {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgba(17, 17, 17, 0.55);
+  color: #fff;
+  font-size: var(--fs-12);
+  opacity: 0;
+  transition: opacity 0.15s;
+  pointer-events: none;
+}
+.msplit__media--btn:hover .msplit__zoomhint,
+.msplit__media--btn:focus-visible .msplit__zoomhint {
+  opacity: 1;
+}
+.msplit__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.msplit__scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+/* 좁은 화면: 세로 스택 + 이미지 높이 캡(잘림 없이 contain) */
+@media (max-width: 760px) {
+  .msplit {
+    flex-direction: column;
+    max-height: none; /* 세로 스택에선 높이 캡 해제(모달 패널 자체 스크롤) */
+  }
+  .msplit__media {
+    flex: none;
+    align-self: stretch;
+    aspect-ratio: auto;
+    height: min(46vh, 380px);
+    border-right: 0;
+    border-bottom: 1px solid var(--c-border);
+    border-radius: var(--r-lg) var(--r-lg) 0 0;
+    background: #1c1e22;
+  }
+  .msplit__media img {
+    object-fit: contain;
+  }
+}
+
+/* ── Lightbox: 이미지 원본 비율 확대 보기 ────────────────── */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--z-modal) + 5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(12, 13, 16, 0.84);
+  cursor: zoom-out;
+  animation: lightbox-in 0.16s ease-out;
+}
+@keyframes lightbox-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.lightbox img {
+  max-width: min(92vw, 860px);
+  max-height: 90vh;
+  object-fit: contain;
+  border-radius: var(--r-md);
+  box-shadow: var(--sh-modal);
+  cursor: default;
+}
+.lightbox__close {
+  position: fixed;
+  top: 18px;
+  right: 18px;
+  display: inline-flex;
+  padding: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  transition: background 0.15s;
+}
+.lightbox__close:hover {
+  background: rgba(255, 255, 255, 0.24);
+}
+.lightbox__cap {
+  position: fixed;
+  left: 50%;
+  bottom: 20px;
+  transform: translateX(-50%);
+  max-width: 80vw;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(17, 17, 17, 0.6);
+  color: rgba(255, 255, 255, 0.92);
+  font-size: var(--fs-13);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* ── DataTable grid (ports DataTable.tsx) ───────────────── */
 .table-grid {
   background: var(--c-surface);
