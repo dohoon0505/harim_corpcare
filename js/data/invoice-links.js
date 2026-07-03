@@ -17,7 +17,7 @@ export const INVOICE_LINKS = {
     doc: {
       title: "26년 04월 거래명세서",
       period: "2026년 04월 귀속",
-      buyer: { address: "전라북도 익산시 중앙로 121 (주)하림지주", company: "(주)하림지주", bizNumber: "306-81-03054", ceo: "김홍국", summary: "꽃배달 이용료 청구", issueDate: "2026년 05월 01일", invoiceNote: "명세서 조회 후 발급" },
+      buyer: { address: "전라북도 익산시 중앙로 121 (주)하림지주", company: "(주)하림지주", bizNumber: "306-81-03054", ceo: "김홍국", summary: "경조화환 이용대금 청구", issueDate: "2026년 05월 01일", invoiceNote: "명세서 조회 후 발급" },
       supplier: SUPPLIER,
       items: [
         { date: "2026년 04월 28일", sender: "홍길동", address: "서울 관악구 관악로 1 서울대학교 행정관", product: "근조 3단화환 (기본)", amount: "70,000원" },
@@ -34,7 +34,7 @@ export const INVOICE_LINKS = {
     doc: {
       title: "26년 03월 거래명세서",
       period: "2026년 03월 귀속",
-      buyer: { address: "전라북도 익산시 중앙로 121 (주)하림지주", company: "(주)하림지주", bizNumber: "306-81-03054", ceo: "김홍국", summary: "꽃배달 이용료 청구", issueDate: "2026년 04월 01일", invoiceNote: "발급완료" },
+      buyer: { address: "전라북도 익산시 중앙로 121 (주)하림지주", company: "(주)하림지주", bizNumber: "306-81-03054", ceo: "김홍국", summary: "경조화환 이용대금 청구", issueDate: "2026년 04월 01일", invoiceNote: "발급완료" },
       supplier: SUPPLIER,
       items: [
         { date: "2026년 03월 30일", sender: "홍길동", address: "서울 강남구 테헤란로 152 강남파이낸스센터", product: "축하 3단화환 (고급)", amount: "100,000원" },
@@ -52,7 +52,7 @@ export const INVOICE_LINKS = {
     doc: {
       title: "26년 04월 거래명세서",
       period: "2026년 04월 귀속",
-      buyer: { address: "서울 강남구 테헤란로 152 강남파이낸스센터 18층 (주)진양코퍼레이션", company: "(주)진양코퍼레이션", bizNumber: "123-45-67890", ceo: "김진양", summary: "꽃배달 이용료 청구", issueDate: "2026년 05월 01일", invoiceNote: "명세서 조회 후 발급" },
+      buyer: { address: "서울 강남구 테헤란로 152 강남파이낸스센터 18층 (주)진양코퍼레이션", company: "(주)진양코퍼레이션", bizNumber: "123-45-67890", ceo: "김진양", summary: "경조화환 이용대금 청구", issueDate: "2026년 05월 01일", invoiceNote: "명세서 조회 후 발급" },
       supplier: SUPPLIER,
       items: [
         { date: "2026년 04월 26일", sender: "김사원", address: "서울 서초구 서초대로 396 강남빌딩", product: "축하 3단화환 (고급)", amount: "100,000원" },
