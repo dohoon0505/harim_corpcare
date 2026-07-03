@@ -31,10 +31,17 @@ jobs:
         uses: actions/checkout@v4
       - name: Setup Pages
         uses: actions/configure-pages@v5
-      - name: Upload site artifact (repo root)
+      # 앱 런타임 파일만 _site로 복사 → 공개 배포.
+      # 제외: mockups·screenshot·guidelines·제안서 PDF·PROMPT/PLAN 문서·serve.mjs·README 등 개발 산출물.
+      # 포함(필수): CNAME(커스텀 도메인)·.nojekyll·invoice/(공개 거래명세서 뷰어).
+      - name: Stage site (앱 파일만)
+        run: |
+          mkdir -p _site
+          cp -r index.html CNAME .nojekyll assets css js invoice _site/
+      - name: Upload site artifact (_site)
         uses: actions/upload-pages-artifact@v3
         with:
-          path: "."
+          path: "_site"
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
