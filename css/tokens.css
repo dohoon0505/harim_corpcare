@@ -6,6 +6,7 @@
   /* ── Brand ─────────────────────────────────────────────── */
   --c-orange: #f15a2a;        /* primary CTA */
   --c-orange-ink: #d94000;    /* active text on light pink */
+  --c-orange-ink-strong: #c93a00; /* AA-safe ink on soft/white (거래명세서 다운로드 버튼) */
   --c-orange-soft: #fff1ec;   /* faint orange wash */
   --c-orange-hover: #d94e24;  /* primary CTA hover (order 08-brand) */
   --c-blue: #4169e1;          /* secondary / links / toggles */

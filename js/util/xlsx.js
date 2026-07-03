@@ -27,8 +27,13 @@ function crc32(bytes) {
 }
 
 const enc = (s) => new TextEncoder().encode(s);
+/* XML 1.0 이 금지하는 제어문자(U+0000–08, 0B, 0C, 0E–1F)를 먼저 제거한 뒤 엔티티 이스케이프.
+   자유 입력값에 섞인 제어문자 하나가 sheet1.xml 을 깨뜨려 엑셀 '복구' 경고가 뜨는 것을 방지한다.
+   (허용 공백 U+0009 tab · U+000A LF · U+000D CR 은 유지) */
 const xesc = (s) =>
-  String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  String(s)
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, "")
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
 const DEF_COLOR = "FF111111";
 const FONT_NAME = "맑은 고딕";

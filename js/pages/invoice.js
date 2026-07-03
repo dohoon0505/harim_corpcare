@@ -109,7 +109,7 @@ function markup() {
             <div class="iv-card__body">
               <p class="agree-desc">명세서 내용을 확인한 뒤 동의하면 위 금액으로 세금계산서가 발급됩니다. 동의 후에는 내용을 변경할 수 없습니다.</p>
               <button class="iv-btn iv-btn--agree" data-agree>해당 내용으로 계산서 발급에 동의합니다</button>
-              <div class="agree-done"><span class="ck">✓</span><div><b>계산서 발급 동의 완료</b><span data-agree-date></span></div></div>
+              <div class="agree-done" tabindex="-1"><span class="ck">✓</span><div><b>계산서 발급 동의 완료</b><span data-agree-date></span></div></div>
             </div>
           </div>
         </aside>
@@ -293,7 +293,13 @@ export function mount(root, { nav }) {
       onClose: () => { confirmModal = null; },
     });
     confirmModal.panel.addEventListener("click", (e) => {
-      if (e.target.closest("[data-confirm]")) { applyAgree(); confirmModal.close(); }
+      if (!e.target.closest("[data-confirm]")) return;
+      applyAgree();
+      confirmModal.close();
+      /* close()가 (이미 숨겨진) 동의 버튼으로 포커스를 되돌려 body 로 흘리므로,
+         드러난 '동의 완료' 블록으로 포커스를 옮겨 키보드·스크린리더 맥락을 유지한다. */
+      const done = el(".agree-done");
+      if (done) done.focus();
     });
   }
 
