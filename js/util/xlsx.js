@@ -1,8 +1,13 @@
 /* ============================================================
-   xlsx.js — 의존성 없는 최소 XLSX 생성기 (store-only ZIP + inline strings).
-   aoaToXlsx(sheetName, rows) → Uint8Array (진짜 .xlsx 바이트).
-   rows: 2차원 배열. 각 셀은 string | number (number → 숫자셀, 엑셀에서 합계 가능).
-   외부 라이브러리 없이 OOXML 패키지(zip)를 직접 조립한다. TextEncoder만 사용(브라우저·Node 공통).
+   xlsx.js — 의존성 없는 XLSX 생성기 (store-only ZIP + inline strings + 스타일).
+   sheetToXlsx({ sheetName, rows, cols, merges, rowHeights }) → Uint8Array
+     rows      : 2차원 배열. 셀 = string | number | { v, s } (s = 스타일 스펙 객체)
+     cols      : [폭(문자 단위), …] 열 너비
+     merges    : ["A1:E1", …] 병합 범위
+     rowHeights: { 1: 30, … } 1-based 행 높이(pt)
+   스타일 스펙 s: { bold, size, color(ARGB), fill(ARGB), align, valign, wrap, border, numFmt }
+   aoaToXlsx(sheetName, rows) : 스타일 없는 단순 버전(하위호환).
+   외부 라이브러리 없이 OOXML 패키지(zip)를 직접 조립. TextEncoder만 사용(브라우저·Node 공통).
    ============================================================ */
 
 /* CRC-32 (ZIP 무결성) */
@@ -25,6 +30,10 @@ const enc = (s) => new TextEncoder().encode(s);
 const xesc = (s) =>
   String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
+const DEF_COLOR = "FF111111";
+const FONT_NAME = "맑은 고딕";
+const BORDER_COLOR = "FFD4D4D4";
+
 /* 0-based 열 인덱스 → A, B, …, Z, AA … */
 function colRef(n) {
   let s = "";
@@ -33,22 +42,141 @@ function colRef(n) {
   return s;
 }
 
-function sheetXml(rows) {
+/* 스타일 스펙 → cellXfs 인덱스 매핑기 (fonts/fills/borders/numFmts/cellXfs 누적) */
+function makeStyler() {
+  const fonts = [`<font><sz val="11"/><color rgb="${DEF_COLOR}"/><name val="${FONT_NAME}"/></font>`];
+  const fontKey = new Map([[`11|${DEF_COLOR}|0`, 0]]);
+  const fills = [
+    `<fill><patternFill patternType="none"/></fill>`,
+    `<fill><patternFill patternType="gray125"/></fill>`,
+  ];
+  const fillKey = new Map();
+  const borders = [`<border><left/><right/><top/><bottom/><diagonal/></border>`];
+  let thinBorderId = -1;
+  const numFmts = [];
+  const numFmtKey = new Map();
+  let numFmtNext = 164;
+  const xfs = [`<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>`];
+  const xfKey = new Map();
+
+  const fontId = (bold, size, color) => {
+    const k = `${size}|${color}|${bold ? 1 : 0}`;
+    if (fontKey.has(k)) return fontKey.get(k);
+    const id = fonts.length;
+    fonts.push(`<font><sz val="${size}"/><color rgb="${color}"/><name val="${FONT_NAME}"/>${bold ? "<b/>" : ""}</font>`);
+    fontKey.set(k, id);
+    return id;
+  };
+  const fillId = (argb) => {
+    if (!argb) return 0;
+    if (fillKey.has(argb)) return fillKey.get(argb);
+    const id = fills.length;
+    fills.push(`<fill><patternFill patternType="solid"><fgColor rgb="${argb}"/></patternFill></fill>`);
+    fillKey.set(argb, id);
+    return id;
+  };
+  const borderId = (on) => {
+    if (!on) return 0;
+    if (thinBorderId >= 0) return thinBorderId;
+    thinBorderId = borders.length;
+    borders.push(
+      `<border>` +
+        `<left style="thin"><color rgb="${BORDER_COLOR}"/></left>` +
+        `<right style="thin"><color rgb="${BORDER_COLOR}"/></right>` +
+        `<top style="thin"><color rgb="${BORDER_COLOR}"/></top>` +
+        `<bottom style="thin"><color rgb="${BORDER_COLOR}"/></bottom>` +
+        `<diagonal/></border>`
+    );
+    return thinBorderId;
+  };
+  const numFmtId = (code) => {
+    if (!code) return 0;
+    if (numFmtKey.has(code)) return numFmtKey.get(code);
+    const id = numFmtNext++;
+    numFmts.push(`<numFmt numFmtId="${id}" formatCode="${xesc(code)}"/>`);
+    numFmtKey.set(code, id);
+    return id;
+  };
+
+  function xfIndexFor(s) {
+    if (!s) return 0;
+    const size = s.size || 11;
+    const color = s.color || DEF_COLOR;
+    const fId = fontId(s.bold, size, color);
+    const flId = fillId(s.fill);
+    const bId = borderId(s.border);
+    const nId = numFmtId(s.numFmt);
+    const hasAlign = s.align || s.valign || s.wrap;
+    const alignXml = hasAlign
+      ? `<alignment${s.align ? ` horizontal="${s.align}"` : ""}${s.valign ? ` vertical="${s.valign}"` : ""}${s.wrap ? ` wrapText="1"` : ""}/>`
+      : "";
+    const key = `${nId}|${fId}|${flId}|${bId}|${alignXml}`;
+    if (xfKey.has(key)) return xfKey.get(key);
+    const id = xfs.length;
+    const attrs =
+      `numFmtId="${nId}" fontId="${fId}" fillId="${flId}" borderId="${bId}" xfId="0"` +
+      `${nId ? ' applyNumberFormat="1"' : ""}${fId ? ' applyFont="1"' : ""}` +
+      `${flId ? ' applyFill="1"' : ""}${bId ? ' applyBorder="1"' : ""}${hasAlign ? ' applyAlignment="1"' : ""}`;
+    xfs.push(alignXml ? `<xf ${attrs}>${alignXml}</xf>` : `<xf ${attrs}/>`);
+    xfKey.set(key, id);
+    return id;
+  }
+
+  function buildXml() {
+    const numFmtsXml = numFmts.length ? `<numFmts count="${numFmts.length}">${numFmts.join("")}</numFmts>` : "";
+    return (
+      `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+      `<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">` +
+      numFmtsXml +
+      `<fonts count="${fonts.length}">${fonts.join("")}</fonts>` +
+      `<fills count="${fills.length}">${fills.join("")}</fills>` +
+      `<borders count="${borders.length}">${borders.join("")}</borders>` +
+      `<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>` +
+      `<cellXfs count="${xfs.length}">${xfs.join("")}</cellXfs>` +
+      `<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>` +
+      `</styleSheet>`
+    );
+  }
+  return { xfIndexFor, buildXml };
+}
+
+function sheetXml(rows, styler, cols, merges, rowHeights) {
+  const colsXml =
+    cols && cols.length
+      ? `<cols>${cols.map((w, i) => `<col min="${i + 1}" max="${i + 1}" width="${w}" customWidth="1"/>`).join("")}</cols>`
+      : "";
   const body = rows
     .map((row, r) => {
       const cells = (row || [])
-        .map((val, c) => {
+        .map((cell, c) => {
           const ref = colRef(c) + (r + 1);
-          if (typeof val === "number" && isFinite(val)) return `<c r="${ref}"><v>${val}</v></c>`;
-          const text = val == null ? "" : String(val);
-          if (text === "") return `<c r="${ref}"/>`;
-          return `<c r="${ref}" t="inlineStr"><is><t xml:space="preserve">${xesc(text)}</t></is></c>`;
+          let v = cell;
+          let s = null;
+          if (cell !== null && typeof cell === "object") { v = cell.v; s = cell.s; }
+          const sAttr = s ? ` s="${styler.xfIndexFor(s)}"` : "";
+          if (typeof v === "number" && isFinite(v)) return `<c r="${ref}"${sAttr}><v>${v}</v></c>`;
+          const text = v == null ? "" : String(v);
+          if (text === "") return `<c r="${ref}"${sAttr}/>`;
+          return `<c r="${ref}"${sAttr} t="inlineStr"><is><t xml:space="preserve">${xesc(text)}</t></is></c>`;
         })
         .join("");
-      return `<row r="${r + 1}">${cells}</row>`;
+      const ht = rowHeights && rowHeights[r + 1];
+      const rowAttr = ht ? ` ht="${ht}" customHeight="1"` : "";
+      return `<row r="${r + 1}"${rowAttr}>${cells}</row>`;
     })
     .join("");
-  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>${body}</sheetData></worksheet>`;
+  const mergeXml =
+    merges && merges.length
+      ? `<mergeCells count="${merges.length}">${merges.map((m) => `<mergeCell ref="${m}"/>`).join("")}</mergeCells>`
+      : "";
+  return (
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n` +
+    `<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">` +
+    colsXml +
+    `<sheetData>${body}</sheetData>` +
+    mergeXml +
+    `</worksheet>`
+  );
 }
 
 function concat(arrays) {
@@ -97,15 +225,23 @@ function zipStore(files) {
   return concat(out);
 }
 
-/* 2차원 배열 → .xlsx 바이트 (단일 시트) */
-export function aoaToXlsx(sheetName, rows) {
+/* 스타일·병합·열너비를 지원하는 단일 시트 .xlsx 생성 */
+export function sheetToXlsx({ sheetName, rows, cols, merges, rowHeights } = {}) {
   const name = xesc(String(sheetName || "Sheet1").replace(/[\\/?*[\]:]/g, " ").slice(0, 31));
+  const styler = makeStyler();
+  const sheet = sheetXml(rows || [], styler, cols, merges, rowHeights); // cellXfs 인덱스가 여기서 누적됨
   const parts = [
-    { name: "[Content_Types].xml", data: enc(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>`) },
+    { name: "[Content_Types].xml", data: enc(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>`) },
     { name: "_rels/.rels", data: enc(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`) },
     { name: "xl/workbook.xml", data: enc(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="${name}" sheetId="1" r:id="rId1"/></sheets></workbook>`) },
-    { name: "xl/_rels/workbook.xml.rels", data: enc(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/></Relationships>`) },
-    { name: "xl/worksheets/sheet1.xml", data: enc(sheetXml(rows)) },
+    { name: "xl/_rels/workbook.xml.rels", data: enc(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`) },
+    { name: "xl/styles.xml", data: enc(styler.buildXml()) },
+    { name: "xl/worksheets/sheet1.xml", data: enc(sheet) },
   ];
   return zipStore(parts);
+}
+
+/* 하위호환: 스타일 없는 2차원 배열 → .xlsx */
+export function aoaToXlsx(sheetName, rows) {
+  return sheetToXlsx({ sheetName, rows });
 }

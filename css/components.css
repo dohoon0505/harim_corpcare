@@ -268,6 +268,53 @@
   border-top: 1px solid var(--c-border);
 }
 
+/* ── Confirm dialog: 되돌릴 수 없는 동작 재확인용 소형 모달 ──────
+   simpleModal(panelClass:"modal-panel--confirm") 본문에 사용. */
+.modal-panel--confirm {
+  max-width: 25rem;
+}
+.modal-panel--confirm .modal-body {
+  padding: 20px var(--sp-7) var(--sp-7);
+}
+.confirm-dialog__msg {
+  font-size: var(--fs-14);
+  line-height: 1.7;
+  color: var(--c-text-3);
+}
+.confirm-dialog__msg b {
+  color: var(--c-orange-ink);
+  font-weight: var(--fw-bold);
+}
+.confirm-dialog__actions {
+  display: flex;
+  gap: var(--sp-3);
+  margin-top: 22px;
+}
+.confirm-dialog__btn {
+  flex: 1;
+  height: 46px;
+  border-radius: var(--r-lg);
+  font-size: var(--fs-14);
+  font-weight: var(--fw-semibold);
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.confirm-dialog__btn--ghost {
+  background: var(--c-surface);
+  border: 1px solid var(--c-border-strong);
+  color: var(--c-text-3);
+}
+.confirm-dialog__btn--ghost:hover {
+  background: var(--c-bg);
+  border-color: var(--c-text-muted);
+}
+.confirm-dialog__btn--primary {
+  background: var(--c-orange);
+  color: var(--c-surface);
+}
+.confirm-dialog__btn--primary:hover {
+  background: var(--c-orange-hover);
+}
+
 /* ── Split modal: 세로형(2:3) 이미지 + 정보 2단 배치 ─────────
    세로 사진을 그대로 세로 비율로 보여주되, 정보를 우측에 배치해
    모달 전체 높이가 사진 높이(≈480px) 이상 늘어나지 않게 한다. */

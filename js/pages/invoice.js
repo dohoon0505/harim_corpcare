@@ -9,8 +9,8 @@ import { setHTML, on, qs, html } from "../dom.js";
 import { icon } from "../icons.js";
 import { invoiceDoc, printInvoiceDoc } from "../invoice-doc.js";
 import { issueLink, publicInvoiceUrl, SUPPLIER, ACCOUNT } from "../data/invoice-links.js";
-import { pageTitle, makeDropdown } from "../ui.js";
-import { aoaToXlsx } from "../util/xlsx.js";
+import { pageTitle, makeDropdown, simpleModal } from "../ui.js";
+import { sheetToXlsx } from "../util/xlsx.js";
 
 /* ── 월별 거래명세서 목데이터 (데모: 2026-03·04) ─────────────
    rows: [배송요청일시, 발송인, 배송지, 주문상품, 결제금액(숫자)] */
@@ -47,6 +47,32 @@ const MONTHS = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11"
 const won = (n) => Number(n).toLocaleString("ko-KR") + "원";
 const pad2 = (n) => String(n).padStart(2, "0");
 
+/* ── 엑셀 스타일 팔레트(ARGB) · tokens.css 브랜드값 미러링 ────────
+   워크시트 색상은 CSS 토큰을 참조할 수 없어 브랜드 hex 를 ARGB(FF+hex)로 옮겨 둔다. */
+const XA = {
+  orange: "FFF15A2A", orangeSoft: "FFFFF1EC", orangeInk: "FFD94000",
+  white: "FFFFFFFF", ink: "FF111111", text2: "FF444444", muted: "FF888888",
+  label: "FFF5F5F5", zebra: "FFFAFBFC", total: "FFFFF6EF",
+};
+const MONEY_FMT = '#,##0"원"';
+const XS = {
+  title:   { bold: true, size: 18, color: XA.orangeInk, fill: XA.orangeSoft, align: "center", valign: "center" },
+  sub:     { size: 10.5, color: XA.muted, align: "center", valign: "center" },
+  section: { bold: true, size: 11.5, color: XA.ink, fill: XA.label, align: "left", valign: "center" },
+  mlabel:  { bold: true, size: 10.5, color: XA.text2, fill: XA.label, align: "right", valign: "center", border: true },
+  mvalue:  { size: 10.5, color: XA.ink, align: "left", valign: "center", wrap: true, border: true },
+  th:      { bold: true, size: 11, color: XA.white, fill: XA.orange, align: "center", valign: "center", border: true },
+  tlabel:  { bold: true, size: 11, color: XA.ink, fill: XA.total, align: "right", valign: "center", border: true },
+  tmoney:  { bold: true, size: 12, color: XA.orangeInk, fill: XA.total, align: "right", valign: "center", border: true, numFmt: MONEY_FMT },
+  flabel:  { bold: true, size: 10.5, color: XA.text2, fill: XA.label, align: "right", valign: "center", border: true },
+  fvalue:  { size: 10.5, color: XA.ink, align: "left", valign: "center", wrap: true, border: true },
+  empty:   { size: 11, color: XA.muted, align: "center", valign: "center", border: true },
+};
+/* 거래내역 데이터 셀 (짝수 행 얼룩(zebra) 배경) */
+const xCenter = (z) => ({ size: 10.5, color: XA.text2, align: "center", valign: "center", border: true, ...(z ? { fill: XA.zebra } : {}) });
+const xLeft   = (z) => ({ size: 10.5, color: XA.ink, align: "left", valign: "center", wrap: true, border: true, ...(z ? { fill: XA.zebra } : {}) });
+const xMoney  = (z) => ({ size: 10.5, color: XA.ink, align: "right", valign: "center", border: true, numFmt: MONEY_FMT, ...(z ? { fill: XA.zebra } : {}) });
+
 function markup() {
   return html`
     <div class="page-invoice">
@@ -55,14 +81,8 @@ function markup() {
         <!-- 좌: A4 문서 미리보기 (invoice-doc.js 렌더) -->
         <div class="doc"><div class="a4-frame" data-doc-host></div></div>
 
-        <!-- 우: 다운로드 · 공개링크 · 조회 · 동의 -->
+        <!-- 우: 조회(리모컨) · 다운로드 · 공개링크 · 동의 -->
         <aside class="rail">
-          <div class="iv-dl-row">
-            <button class="iv-btn iv-btn--primary" data-pdf>${icon("download", { size: 16 })}PDF 다운로드</button>
-            <button class="iv-btn iv-btn--excel" data-excel>${icon("download", { size: 16 })}EXCEL 다운로드</button>
-          </div>
-          <button class="iv-btn iv-btn--secondary" data-link>${icon("external-link", { size: 16 })}공개 링크 복사 <span class="iv-btn__sub">· 로그인 없이 열람</span></button>
-
           <div class="iv-card">
             <div class="iv-card__head"><b>거래명세서 조회</b></div>
             <div class="iv-card__body">
@@ -77,6 +97,13 @@ function markup() {
               </div>
             </div>
           </div>
+
+          <!-- 다운로드 · 공개 링크 (조회 리모컨 아래) -->
+          <div class="iv-dl-row">
+            <button class="iv-btn iv-btn--primary" data-pdf>${icon("download", { size: 16 })}PDF 다운로드</button>
+            <button class="iv-btn iv-btn--excel" data-excel>${icon("download", { size: 16 })}EXCEL 다운로드</button>
+          </div>
+          <button class="iv-btn iv-btn--secondary" data-link>${icon("external-link", { size: 16 })}공개 링크 복사 <span class="iv-btn__sub">· 로그인 없이 열람</span></button>
 
           <div class="iv-card agree-wrap" data-agree-wrap>
             <div class="iv-card__body">
@@ -128,37 +155,66 @@ export function mount(root, { nav }) {
     el("[data-sum-due]").textContent = d._due;
   }
 
-  /* 현재 선택 월 거래명세서를 .xlsx 파일로 내려받는다 (의존성 없는 xlsx.js 사용).
-     결제금액·합계는 숫자셀로 기록되어 엑셀에서 그대로 합계/편집이 가능하다. */
+  /* 현재 선택 월 거래명세서를 서식이 정리된 .xlsx 로 내려받는다 (의존성 없는 xlsx.js).
+     제목 밴드 · 공급자/공급받는자 정보표 · 색상 헤더의 거래내역 표(얼룩 배경) · 합계 · 입금 안내로
+     구성하고, 결제금액/합계는 숫자셀(₩ 서식)로 기록해 엑셀에서 바로 합계·편집이 가능하다. */
   function downloadExcel() {
     const data = DB[`${state.year}-${state.month}`];
     const label = `${state.year}년 ${state.month}월`;
     const total = data ? data.rows.reduce((a, r) => a + r[4], 0) : 0;
-    const rows = [
-      [`거래명세서   ${label} 귀속`],
-      [BUYER.summary],
-      [],
-      ["■ 공급받는자"],
-      ["회사명", BUYER.company, "사업자번호", BUYER.bizNumber, "대표자명", BUYER.ceo],
-      ["소재지", BUYER.address],
-      [],
-      ["■ 공급자"],
-      ["회사명", SUPPLIER.company, "사업자번호", SUPPLIER.bizNumber, "대표자명", SUPPLIER.ceo],
-      ["소재지", SUPPLIER.location, "FAX", SUPPLIER.fax],
-      [],
-      ["■ 거래 내역"],
-      ["배송요청일시", "발송인", "배송지", "주문상품", "결제금액"],
-    ];
+
+    const rows = [];
+    const merges = [];
+    const rowHeights = {};
+    let R = 0;
+    const push = (cells) => { rows.push(cells); R += 1; return R; };
+    const mr = (a, z) => merges.push(`${a}${R}:${z}${R}`);
+    const bl = (s) => ({ v: "", s }); /* 병합 범위를 채우는 서식 있는 빈 셀 */
+    const band = (t) => { push([{ v: t, s: XS.section }, bl(XS.section), bl(XS.section), bl(XS.section), bl(XS.section)]); mr("A", "E"); };
+    const meta = (l, v) => { push([{ v: l, s: XS.mlabel }, { v, s: XS.mvalue }, bl(XS.mvalue), bl(XS.mvalue), bl(XS.mvalue)]); mr("B", "E"); };
+    const foot = (l, v) => { push([{ v: l, s: XS.flabel }, { v, s: XS.fvalue }, bl(XS.fvalue), bl(XS.fvalue), bl(XS.fvalue)]); mr("B", "E"); };
+
+    /* 제목 · 부제 */
+    push([{ v: "거래명세서", s: XS.title }, bl(XS.title), bl(XS.title), bl(XS.title), bl(XS.title)]); mr("A", "E"); rowHeights[R] = 34;
+    push([{ v: `${label} 귀속 · ${BUYER.summary}`, s: XS.sub }, bl(XS.sub), bl(XS.sub), bl(XS.sub), bl(XS.sub)]); mr("A", "E"); rowHeights[R] = 18;
+    push([]);
+    /* 공급받는자 */
+    band("■ 공급받는자");
+    meta("회사명", BUYER.company);
+    meta("사업자등록번호", BUYER.bizNumber);
+    meta("대표자", BUYER.ceo);
+    meta("소재지", BUYER.address);
+    meta("청구 항목", BUYER.summary);
+    push([]);
+    /* 공급자 */
+    band("■ 공급자");
+    meta("회사명", SUPPLIER.company);
+    meta("사업자등록번호", SUPPLIER.bizNumber);
+    meta("대표자", SUPPLIER.ceo);
+    meta("소재지", SUPPLIER.location);
+    meta("FAX", SUPPLIER.fax);
+    push([]);
+    /* 거래 내역 */
+    band("■ 거래 내역");
+    push([{ v: "배송요청일시", s: XS.th }, { v: "발송인", s: XS.th }, { v: "배송지", s: XS.th }, { v: "주문상품", s: XS.th }, { v: "결제금액", s: XS.th }]); rowHeights[R] = 24;
     if (data) {
-      data.rows.forEach((r) => rows.push([r[0], r[1], r[2], r[3], r[4]]));
-      rows.push(["합계", "", "", "", total]);
+      data.rows.forEach((r, i) => {
+        const z = i % 2 === 1;
+        push([{ v: r[0], s: xCenter(z) }, { v: r[1], s: xCenter(z) }, { v: r[2], s: xLeft(z) }, { v: r[3], s: xLeft(z) }, { v: r[4], s: xMoney(z) }]);
+      });
+      push([{ v: "합계", s: XS.tlabel }, bl(XS.tlabel), bl(XS.tlabel), bl(XS.tlabel), { v: total, s: XS.tmoney }]); mr("A", "D");
     } else {
-      rows.push(["해당 월의 거래 내역이 없습니다", "", "", "", ""]);
+      push([{ v: "해당 월의 거래 내역이 없습니다", s: XS.empty }, bl(XS.empty), bl(XS.empty), bl(XS.empty), bl(XS.empty)]); mr("A", "E");
     }
-    rows.push([], ["입금계좌", ACCOUNT], ["결제 · 정산 대금기한", data ? data.due : "—"]);
+    push([]);
+    /* 입금 · 기한 */
+    foot("입금 계좌", ACCOUNT);
+    foot("결제 · 정산 대금기한", data ? data.due : "—");
+
+    const cols = [18, 11, 46, 20, 14];
 
     try {
-      const bytes = aoaToXlsx(label, rows);
+      const bytes = sheetToXlsx({ sheetName: label, rows, cols, merges, rowHeights });
       const blob = new Blob([bytes], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
@@ -202,6 +258,45 @@ export function mount(root, { nav }) {
     return { title: d.title, period: d.period, buyer: d.buyer, supplier: d.supplier, items: d.items, account: d.account, total: d.total };
   }
 
+  /* 계산서 발급 동의 적용 (재확인 모달에서 '동의하고 발급' 클릭 시 실행) */
+  function applyAgree() {
+    if (state.agreed) return;
+    state.agreed = true;
+    el("[data-agree-wrap]").classList.add("done");
+    const tax = el("[data-sum-tax]");
+    tax.textContent = "동의 완료";
+    tax.className = "iv-badge iv-badge--ok";
+    const dt = new Date();
+    el("[data-agree-date]").textContent = `${dt.getFullYear()}. ${pad2(dt.getMonth() + 1)}. ${pad2(dt.getDate())} 동의`;
+    toast("계산서 발급에 동의했습니다");
+  }
+
+  /* 계산서 발급 재확인 모달 — 되돌릴 수 없는 동작이라 한 번 더 확인받는다. */
+  let confirmModal = null;
+  function openAgreeConfirm() {
+    if (state.agreed || confirmModal) return;
+    const d = docData();
+    const body = html`
+      <p class="confirm-dialog__msg">
+        <b class="num">${d._label} · ${d.total}</b> 기준으로 세금계산서를 발급합니다.<br />
+        동의 후에는 명세서 내용을 변경할 수 없습니다. 계속하시겠습니까?
+      </p>
+      <div class="confirm-dialog__actions">
+        <button class="confirm-dialog__btn confirm-dialog__btn--ghost" data-action="close">취소</button>
+        <button class="confirm-dialog__btn confirm-dialog__btn--primary" data-confirm>동의하고 발급</button>
+      </div>
+    `;
+    confirmModal = simpleModal({
+      title: "세금계산서 발급 동의",
+      panelClass: "modal-panel--confirm",
+      body,
+      onClose: () => { confirmModal = null; },
+    });
+    confirmModal.panel.addEventListener("click", (e) => {
+      if (e.target.closest("[data-confirm]")) { applyAgree(); confirmModal.close(); }
+    });
+  }
+
   const offs = [
     on(root, "click", "[data-pdf]", () => {
       const docEl = el(".invoice-doc");
@@ -216,17 +311,7 @@ export function mount(root, { nav }) {
       if (navigator.clipboard?.writeText) navigator.clipboard.writeText(url).then(ok).catch(() => window.prompt("공개 링크 (복사하세요)", url));
       else window.prompt("공개 링크 (복사하세요)", url);
     }),
-    on(root, "click", "[data-agree]", () => {
-      if (state.agreed) return;
-      state.agreed = true;
-      el("[data-agree-wrap]").classList.add("done");
-      const tax = el("[data-sum-tax]");
-      tax.textContent = "동의 완료";
-      tax.className = "iv-badge iv-badge--ok";
-      const dt = new Date();
-      el("[data-agree-date]").textContent = `${dt.getFullYear()}. ${pad2(dt.getMonth() + 1)}. ${pad2(dt.getDate())} 동의`;
-      toast("계산서 발급에 동의했습니다");
-    }),
+    on(root, "click", "[data-agree]", openAgreeConfirm),
   ];
 
   render();
@@ -236,5 +321,6 @@ export function mount(root, { nav }) {
     ddYear.destroy();
     ddMonth.destroy();
     clearTimeout(toastTimer);
+    if (confirmModal) confirmModal.close();
   };
 }
