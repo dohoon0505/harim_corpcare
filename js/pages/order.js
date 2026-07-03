@@ -53,7 +53,7 @@ const DONE_SVG = `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path 
 function markup() {
   return html`
     <div class="page-order">
-      ${pageTitle({ icon: "🌸", title: "경조화환 주문" })}
+      ${pageTitle({ imgSrc: "./assets/nav-order.png", title: "경조화환 주문" })}
       <div class="sheet">
         <div class="sheet-head">
           <b>경조상품 간편주문</b>

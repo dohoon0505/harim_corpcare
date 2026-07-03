@@ -49,7 +49,7 @@ const pad2 = (n) => String(n).padStart(2, "0");
 function markup() {
   return html`
     <div class="page-invoice">
-      ${pageTitle({ icon: "📄", title: "거래명세서 조회" })}
+      ${pageTitle({ imgSrc: "./assets/nav-invoice.png", title: "거래명세서 조회" })}
       <div class="cols">
         <!-- 좌: A4 문서 미리보기 (invoice-doc.js 렌더) -->
         <div class="doc"><div class="a4-frame" data-doc-host></div></div>
