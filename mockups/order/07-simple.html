@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>경조상품 간편주문</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
+<style>
+  /* ============================================================
+     시안 7 — 경조상품 간편주문 (Toss/TossPayments 무드)
+     언더라인 탭 스테퍼 · 필드는 보더 대신 라인/필 · 단일 블루 액센트
+     ============================================================ */
+  :root{
+    --blue:#3182f6; --blue-dark:#1b64da; --blue-soft:#e8f3ff; --blue-soft-2:#f0f7ff;
+    --ink:#191f28; --g700:#333d4b; --g600:#4e5968; --g500:#6b7684; --g400:#8b95a1;
+    --g300:#b0b8c1; --g200:#d1d6db; --g100:#e5e8eb; --g50:#f2f4f6; --g25:#f9fafb;
+    --red:#f04452; --red-soft:#fdeef0; --green:#03b26c; --green-soft:#e6f6ef;
+    --coral:#ff8078;
+    --r-md:12px; --r-lg:16px;
+    --font:"Pretendard",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{background:#fff;}
+  body{
+    font-family:var(--font); color:var(--ink); font-size:15px; line-height:1.6;
+    -webkit-font-smoothing:antialiased; letter-spacing:-.02em;
+  }
+  button{font-family:inherit; letter-spacing:inherit; cursor:pointer; border:none; background:none; color:inherit;}
+  input,select{font-family:inherit; letter-spacing:inherit; color:var(--ink);}
+  .num{font-variant-numeric:tabular-nums; font-feature-settings:"tnum";}
+  ::selection{background:var(--blue-soft);}
+  :focus-visible{outline:2px solid var(--blue); outline-offset:2px; border-radius:6px;}
+
+  .wrap{max-width:720px; padding:56px 40px 120px; margin:0;}
+
+  /* ── 헤더 ── */
+  .head h1{font-size:26px; font-weight:700; letter-spacing:-.03em; display:flex; align-items:center; gap:10px;}
+  .head h1 svg{flex:0 0 auto;}
+  .head .sub{font-size:16px; color:var(--g500); margin-top:10px; font-weight:400;}
+
+  /* ── 언더라인 탭 스테퍼 ── */
+  .tabs{display:flex; gap:28px; margin-top:44px; border-bottom:1px solid var(--g100);}
+  .tab{
+    position:relative; padding:12px 2px 13px; font-size:15px; font-weight:500;
+    color:var(--g300); cursor:default; transition:color .15s; white-space:nowrap;
+  }
+  .tab.reach{color:var(--g400); cursor:pointer;}
+  .tab.reach:hover{color:var(--g600);}
+  .tab.active{color:var(--ink); font-weight:700; cursor:default;}
+  .tab.active::after{
+    content:""; position:absolute; left:0; right:0; bottom:-1px; height:2px;
+    background:var(--blue); border-radius:2px;
+  }
+  .tab .done-dot{display:none; color:var(--blue); font-size:12px; margin-right:4px;}
+  .tab.complete .done-dot{display:inline;}
+
+  /* ── 패널 공통 ── */
+  .panel{display:none; padding-top:40px;}
+  .panel.on{display:block; animation:rise .25s ease;}
+  @keyframes rise{from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:none;}}
+  .q{font-size:22px; font-weight:700; letter-spacing:-.03em; line-height:1.4;}
+  .q-sub{font-size:15px; color:var(--g500); margin-top:8px;}
+  .sec-gap{margin-top:40px;}
+  .sec-label{font-size:14px; font-weight:600; color:var(--g600); margin-bottom:12px; display:flex; align-items:center; gap:8px;}
+  .sec-label small{font-size:12.5px; font-weight:400; color:var(--g400);}
+
+  /* ── URL 간편입력 ── */
+  .urlbox{
+    margin-top:28px; background:var(--g25); border:1px solid var(--g100);
+    border-radius:var(--r-lg); padding:22px 24px;
+  }
+  .urlbox .ub-title{font-size:15px; font-weight:600; color:var(--g700); display:flex; align-items:center; gap:8px;}
+  .urlbox .ub-title .badge{font-size:11px; font-weight:700; color:var(--blue); background:var(--blue-soft); padding:2px 8px; border-radius:999px;}
+  .urlbox .ub-desc{font-size:13.5px; color:var(--g500); margin-top:4px;}
+  .url-row{display:flex; gap:10px; margin-top:16px;}
+  .url-row input{
+    flex:1; min-width:0; height:52px; padding:0 18px; font-size:15px;
+    background:#fff; border:1.5px solid var(--g100); border-radius:var(--r-md);
+    transition:border-color .15s, box-shadow .15s;
+  }
+  .url-row input::placeholder{color:var(--g300);}
+  .url-row input:focus{outline:none; border-color:var(--blue); box-shadow:0 0 0 3px var(--blue-soft);}
+  .url-row button{
+    flex:0 0 auto; height:52px; padding:0 26px; border-radius:var(--r-md);
+    background:var(--ink); color:#fff; font-size:15px; font-weight:600; transition:background .15s;
+  }
+  .url-row button:hover{background:var(--g700);}
+  .url-msg{display:none; margin-top:12px; font-size:13.5px; border-radius:10px; padding:10px 14px;}
+  .url-msg.err{display:block; color:var(--red); background:var(--red-soft);}
+  .url-msg.ok{display:block; color:var(--green); background:var(--green-soft);}
+
+  /* ── 경조사 선택 (세그먼트) ── */
+  .occ-row{display:flex; gap:10px;}
+  .occ-btn{
+    flex:1; height:88px; border:1.5px solid var(--g100); border-radius:var(--r-lg);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
+    background:#fff; transition:all .15s;
+  }
+  .occ-btn:hover{border-color:var(--g200); background:var(--g25);}
+  .occ-btn b{font-size:16px; font-weight:700; color:var(--g700);}
+  .occ-btn span{font-size:12.5px; color:var(--g400);}
+  .occ-btn.sel{border-color:var(--blue); background:var(--blue-soft-2);}
+  .occ-btn.sel b{color:var(--blue-dark);}
+  .occ-btn.sel span{color:var(--blue);}
+
+  /* ── 상품 리스트 (라디오 행) ── */
+  .prod-list{border-top:1px solid var(--g100);}
+  .prod-row{
+    width:100%; display:flex; align-items:center; gap:16px; padding:18px 4px;
+    border-bottom:1px solid var(--g100); text-align:left; transition:background .12s;
+  }
+  .prod-row:hover{background:var(--g25);}
+  .prod-row .radio{
+    width:22px; height:22px; flex:0 0 22px; border-radius:50%; border:1.5px solid var(--g200);
+    display:grid; place-items:center; transition:all .15s;
+  }
+  .prod-row .radio::after{content:""; width:10px; height:10px; border-radius:50%; background:transparent; transition:background .15s;}
+  .prod-row.sel .radio{border-color:var(--blue); background:var(--blue);}
+  .prod-row.sel .radio::after{background:#fff;}
+  .prod-row .pi{flex:1; min-width:0;}
+  .prod-row .pi b{font-size:15.5px; font-weight:600; color:var(--ink); display:block;}
+  .prod-row .pi span{font-size:13px; color:var(--g400);}
+  .prod-row .pp{font-size:16px; font-weight:700; color:var(--ink);}
+  .prod-row.sel .pp{color:var(--blue-dark);}
+  .prod-empty{padding:36px 4px; font-size:14px; color:var(--g400); text-align:center; border-bottom:1px solid var(--g100);}
+
+  /* ── 필드 ── */
+  .field{margin-bottom:24px;}
+  .field label{display:block; font-size:13.5px; font-weight:600; color:var(--g600); margin-bottom:8px;}
+  .field input[type=text], .field input[type=date]{
+    width:100%; height:54px; padding:0 18px; font-size:16px;
+    border:1.5px solid var(--g100); border-radius:var(--r-md); background:#fff;
+    transition:border-color .15s, box-shadow .15s;
+  }
+  .field input::placeholder{color:var(--g300);}
+  .field input:focus{outline:none; border-color:var(--blue); box-shadow:0 0 0 3px var(--blue-soft);}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+  .auto-chip{
+    display:none; font-size:12px; font-weight:600; color:var(--green);
+    background:var(--green-soft); padding:3px 10px; border-radius:999px; margin-left:8px; vertical-align:2px;
+  }
+  .auto-chip.show{display:inline-block;}
+
+  /* ── 배송 일시 ── */
+  .seg{display:inline-flex; background:var(--g50); border-radius:12px; padding:4px; margin-bottom:16px;}
+  .seg button{padding:9px 18px; border-radius:9px; font-size:14px; font-weight:600; color:var(--g500); transition:all .15s;}
+  .seg button.sel{background:#fff; color:var(--ink); box-shadow:0 1px 4px rgba(25,31,40,.1);}
+  .dt-row{display:flex; gap:12px;}
+  .dt-row input[type=date]{flex:0 0 200px; height:54px; padding:0 16px; font-size:15px; border:1.5px solid var(--g100); border-radius:var(--r-md);}
+  .dt-row input:focus{outline:none; border-color:var(--blue); box-shadow:0 0 0 3px var(--blue-soft);}
+  .dt-row.dim{opacity:.4; pointer-events:none;}
+
+  /* ── 커스텀 드롭다운 (harim mob 스타일) ── */
+  .dd{position:relative; min-width:104px;}
+  .dd-trigger{
+    width:100%; height:54px; padding:0 40px 0 16px; text-align:left; font-size:15px;
+    background:#fff; border:1.5px solid var(--g100); border-radius:var(--r-md);
+    transition:border-color .15s, box-shadow .15s; position:relative;
+  }
+  .dd-trigger::after{
+    content:""; position:absolute; right:16px; top:50%; width:9px; height:9px;
+    border-right:1.8px solid var(--g400); border-bottom:1.8px solid var(--g400);
+    transform:translateY(-70%) rotate(45deg); transition:transform .18s;
+  }
+  .dd.open .dd-trigger::after{transform:translateY(-30%) rotate(225deg);}
+  .dd-trigger:hover{border-color:var(--g200);}
+  .dd.open .dd-trigger,.dd-trigger:focus{outline:none; border-color:var(--blue); box-shadow:0 0 0 3px var(--blue-soft);}
+  .dd-panel{
+    display:none; position:absolute; left:0; right:0; bottom:calc(100% + 6px); z-index:30;
+    background:#fff; border:1px solid var(--g100); border-radius:var(--r-md);
+    box-shadow:0 8px 24px rgba(25,31,40,.12); max-height:296px; overflow-y:auto; padding:5px;
+  }
+  .dd.open .dd-panel{display:block;}
+  .dd-panel::-webkit-scrollbar{width:12px;}
+  .dd-panel::-webkit-scrollbar-thumb{background:var(--g200); border-radius:8px; border:3.5px solid #fff;}
+  .dd-panel::-webkit-scrollbar-track{background:transparent;}
+  .dd-opt{
+    width:100%; display:block; padding:9px 13px; font-size:15px; text-align:left;
+    border-radius:8px; color:var(--g700); transition:background .1s;
+  }
+  .dd-opt:hover{background:var(--g50);}
+  .dd-opt.sel{background:var(--blue); color:#fff; font-weight:600;}
+  .dd-opt.sel:hover{background:var(--blue);}
+
+  .seg button:disabled{color:var(--g300); cursor:not-allowed;}
+  .biz-note{display:none; margin-top:14px; font-size:13.5px; color:var(--g500); background:var(--g50); border-radius:10px; padding:10px 14px;}
+  .biz-note.show{display:block;}
+  .dt-info{margin-top:14px; font-size:13.5px; color:var(--g500);}
+  .dt-info b{color:var(--green); font-weight:600;}
+  .imm-note{display:none; margin-top:14px; font-size:13.5px; color:var(--green); background:var(--green-soft); border-radius:10px; padding:10px 14px;}
+  .imm-note.show{display:block;}
+
+  /* ── 리본 문구 ── */
+  .ribbon-wrap{position:relative;}
+  .ribbon-wrap input{
+    width:100%; height:58px; padding:0 76px 0 18px; font-size:17px; font-weight:500;
+    border:1.5px solid var(--g100); border-radius:var(--r-md);
+    transition:border-color .15s, box-shadow .15s;
+  }
+  .ribbon-wrap input::placeholder{color:var(--g300); font-weight:400;}
+  .ribbon-wrap input:focus{outline:none; border-color:var(--blue); box-shadow:0 0 0 3px var(--blue-soft);}
+  .ribbon-wrap .cnt{position:absolute; right:18px; top:50%; transform:translateY(-50%); font-size:13px; color:var(--g300);}
+  .chips{display:flex; flex-wrap:wrap; gap:8px; margin-top:14px;}
+  .chip{
+    padding:9px 16px; border-radius:999px; background:var(--g50); font-size:13.5px;
+    font-weight:500; color:var(--g600); transition:all .13s;
+  }
+  .chip:hover{background:var(--g100);}
+  .chip.sel{background:var(--blue-soft); color:var(--blue-dark); font-weight:600;}
+  .warn-line{margin-top:14px; font-size:13px; color:var(--g400);}
+  .warn-line b{color:var(--red); font-weight:600;}
+
+  /* ── 보내는분 리스트 ── */
+  .sender-list{border-top:1px solid var(--g100);}
+  .sender-row{
+    width:100%; display:flex; align-items:center; gap:16px; padding:16px 4px;
+    border-bottom:1px solid var(--g100); text-align:left; transition:background .12s;
+  }
+  .sender-row:hover{background:var(--g25);}
+  .sender-row .radio{width:22px; height:22px; flex:0 0 22px; border-radius:50%; border:1.5px solid var(--g200); display:grid; place-items:center; transition:all .15s;}
+  .sender-row .radio::after{content:""; width:10px; height:10px; border-radius:50%;}
+  .sender-row.sel .radio{border-color:var(--blue); background:var(--blue);}
+  .sender-row.sel .radio::after{background:#fff;}
+  .sender-row .si b{font-size:15px; font-weight:600; display:block;}
+  .sender-row .si span{font-size:13px; color:var(--g400);}
+  .sender-add{width:100%; padding:15px 4px; font-size:14px; font-weight:600; color:var(--blue); text-align:left;}
+  .sender-add:hover{color:var(--blue-dark);}
+
+  /* ── 확인 단계 ── */
+  .confirm-list{border-top:1px solid var(--g100); margin-top:28px;}
+  .cf-row{display:flex; align-items:center; justify-content:space-between; gap:20px; padding:17px 4px; border-bottom:1px solid var(--g100);}
+  .cf-row .cl{font-size:14px; color:var(--g500); flex:0 0 110px;}
+  .cf-row .cv{flex:1; font-size:15px; font-weight:600; color:var(--ink); text-align:right; min-width:0;}
+  .cf-row .cv small{display:block; font-size:12.5px; color:var(--g400); font-weight:400;}
+  .cf-row .edit{flex:0 0 auto; font-size:13px; font-weight:600; color:var(--blue); padding:4px 8px; border-radius:8px;}
+  .cf-row .edit:hover{background:var(--blue-soft-2);}
+  .cf-amount{display:flex; align-items:center; justify-content:space-between; padding:24px 4px 4px;}
+  .cf-amount span{font-size:15px; color:var(--g500);}
+  .cf-amount b{font-size:26px; font-weight:700; letter-spacing:-.03em;}
+
+  /* 담당자 · 알림 */
+  .opt-box{margin-top:36px; background:var(--g25); border-radius:var(--r-lg); padding:20px 24px;}
+  .opt-row{display:flex; align-items:center; justify-content:space-between; gap:14px; padding:9px 0;}
+  .opt-row .ol{font-size:14px; color:var(--g600);}
+  .opt-row .ol small{display:block; font-size:12px; color:var(--g400);}
+  .opt-row select{
+    height:40px; padding:0 12px; font-size:14px; border:1.5px solid var(--g100);
+    border-radius:10px; background:#fff; font-weight:600; color:var(--g700);
+  }
+  .opt-row select:focus{outline:none; border-color:var(--blue);}
+  .toggles{display:flex; gap:8px;}
+  .tg{
+    padding:7px 14px; border-radius:999px; font-size:13px; font-weight:600;
+    background:#fff; border:1.5px solid var(--g100); color:var(--g400); transition:all .13s;
+  }
+  .tg.on{background:var(--blue-soft); border-color:transparent; color:var(--blue-dark);}
+
+  /* ── 하단 CTA ── */
+  .cta-row{display:flex; gap:10px; margin-top:44px;}
+  .btn-back{
+    flex:0 0 auto; height:56px; padding:0 24px; border-radius:var(--r-md);
+    background:var(--g50); color:var(--g600); font-size:15.5px; font-weight:600; transition:background .15s;
+  }
+  .btn-back:hover{background:var(--g100);}
+  .btn-next{
+    flex:1; height:56px; border-radius:var(--r-md); background:var(--blue); color:#fff;
+    font-size:16px; font-weight:700; transition:background .15s;
+  }
+  .btn-next:hover{background:var(--blue-dark);}
+  .btn-next:disabled{background:var(--g100); color:var(--g300); cursor:not-allowed;}
+  .cta-hint{margin-top:12px; font-size:13px; color:var(--g400); text-align:center;}
+
+  /* ── 완료 화면 ── */
+  #panelDone{text-align:left; padding-top:64px;}
+  .done-ic{
+    width:64px; height:64px; border-radius:50%; background:var(--blue-soft);
+    display:grid; place-items:center; margin-bottom:24px;
+  }
+  .done-ic svg{width:30px; height:30px;}
+  #panelDone h2{font-size:24px; font-weight:700; letter-spacing:-.03em;}
+  #panelDone .d-sub{font-size:15px; color:var(--g500); margin-top:10px;}
+  .done-box{margin-top:32px; background:var(--g25); border-radius:var(--r-lg); padding:8px 24px;}
+  .done-box .cf-row{border-bottom:1px solid var(--g100);}
+  .done-box .cf-row:last-child{border-bottom:none;}
+  .done-cta{display:flex; gap:10px; margin-top:36px; max-width:480px;}
+  .done-cta .ghost{flex:1; height:54px; border-radius:var(--r-md); background:var(--g50); font-size:15px; font-weight:600; color:var(--g600);}
+  .done-cta .ghost:hover{background:var(--g100);}
+  .done-cta .solid{flex:1; height:54px; border-radius:var(--r-md); background:var(--blue); color:#fff; font-size:15px; font-weight:700;}
+  .done-cta .solid:hover{background:var(--blue-dark);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ═══════ 헤더 ═══════ -->
+  <div class="head">
+    <h1>
+      경조상품 간편주문
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M21.5 3.2 3.6 10.4c-.9.36-.85 1.64.07 1.93l4.9 1.55 1.72 5.1c.3.9 1.55.95 1.92.08l2.1-4.9 5.4-9.6c.44-.8-.4-1.7-1.2-1.35Z" fill="#ff8078"/>
+        <path d="m8.6 13.9 8.4-8.2-6.6 9.9-.35 3.3-1.45-5Z" fill="#f96d64"/>
+      </svg>
+    </h1>
+    <p class="sub">링크를 붙여넣어 빠르게 주문을 완료 할 수 있어요</p>
+  </div>
+
+  <!-- ═══════ 탭 스테퍼 ═══════ -->
+  <nav class="tabs" id="tabs">
+    <button class="tab active" data-tab="1"><span class="done-dot">●</span>경조사 및 상품 선택</button>
+    <button class="tab" data-tab="2"><span class="done-dot">●</span>배송지 정보 입력</button>
+    <button class="tab" data-tab="3"><span class="done-dot">●</span>리본문구 입력</button>
+    <button class="tab" data-tab="4"><span class="done-dot">●</span>작성내용 확인</button>
+  </nav>
+
+  <!-- ═══════ STEP 1 · 경조사 및 상품 ═══════ -->
+  <section class="panel on" id="p1">
+    <h2 class="q">어떤 경조사가 있으신가요?</h2>
+    <p class="q-sub">경조사를 선택하면 알맞은 상품만 보여드려요.</p>
+
+    <div class="urlbox">
+      <div class="ub-title">부고장 · 청첩장 링크가 있다면 <span class="badge">간편</span></div>
+      <p class="ub-desc">링크 하나로 경조사 구분과 배송지 정보까지 자동으로 입력돼요.</p>
+      <div class="url-row">
+        <input type="text" id="urlInput" placeholder="https:// 부고장 또는 청첩장 링크 붙여넣기" />
+        <button id="urlBtn">불러오기</button>
+      </div>
+      <div class="url-msg" id="urlMsg"></div>
+    </div>
+
+    <div class="sec-gap">
+      <div class="sec-label">경조사 구분</div>
+      <div class="occ-row" id="occRow">
+        <button class="occ-btn" data-occ="obit"><b>근조 · 부고</b><span>조의를 전해요</span></button>
+        <button class="occ-btn" data-occ="wed"><b>축하 · 결혼식</b><span>축하를 전해요</span></button>
+        <button class="occ-btn" data-occ="etc"><b>기타 경조사</b><span>개업 · 취임 · 승진</span></button>
+      </div>
+    </div>
+
+    <div class="sec-gap">
+      <div class="sec-label">상품 선택 <small id="prodHint">경조사를 먼저 선택해 주세요</small></div>
+      <div class="prod-list" id="prodList">
+        <div class="prod-empty">경조사를 선택하면 주문 가능한 상품이 표시돼요</div>
+      </div>
+    </div>
+
+    <div class="cta-row">
+      <button class="btn-next" id="next1" disabled>다음</button>
+    </div>
+  </section>
+
+  <!-- ═══════ STEP 2 · 배송지 ═══════ -->
+  <section class="panel" id="p2">
+    <h2 class="q">어디로 보낼까요?</h2>
+    <p class="q-sub" id="p2sub">화환을 받으실 장소와 시간을 알려주세요.</p>
+
+    <div class="sec-gap">
+      <div class="field">
+        <label>배송지 주소 <span class="auto-chip" id="autoChip">링크에서 자동입력</span></label>
+        <input type="text" id="fAddr" placeholder="장례식장 · 예식장 주소를 입력해 주세요" />
+      </div>
+      <div class="grid2">
+        <div class="field">
+          <label>받는분 성함</label>
+          <input type="text" id="fToName" placeholder="예) 김○○ 상주" />
+        </div>
+        <div class="field">
+          <label>받는분 연락처</label>
+          <input type="text" id="fToPhone" placeholder="010-0000-0000" inputmode="numeric" />
+        </div>
+      </div>
+    </div>
+
+    <div class="sec-gap">
+      <div class="sec-label">배송 일시</div>
+      <div class="seg">
+        <button id="segSched" class="sel">날짜 · 시간 지정</button>
+        <button id="segImm">즉시배송</button>
+      </div>
+      <div class="dt-row" id="dtRow">
+        <input type="date" id="fDate" />
+        <div class="dd" id="ddHour">
+          <button type="button" class="dd-trigger" aria-haspopup="listbox" aria-expanded="false"></button>
+          <div class="dd-panel" role="listbox"></div>
+        </div>
+        <div class="dd" id="ddMin">
+          <button type="button" class="dd-trigger" aria-haspopup="listbox" aria-expanded="false"></button>
+          <div class="dd-panel" role="listbox"></div>
+        </div>
+      </div>
+      <div class="imm-note" id="immNote"></div>
+      <div class="biz-note" id="bizNote"></div>
+      <p class="dt-info">배송 시간은 <b>09:00 ~ 18:30</b> 사이에서 지정할 수 있어요 · <b>오전 11시 이전</b> 접수 건은 당일 배송할 수 있어요</p>
+    </div>
+
+    <div class="cta-row">
+      <button class="btn-back" data-nav="1">이전</button>
+      <button class="btn-next" id="next2" disabled>다음</button>
+    </div>
+  </section>
+
+  <!-- ═══════ STEP 3 · 리본문구 ═══════ -->
+  <section class="panel" id="p3">
+    <h2 class="q">리본에 어떤 마음을 담을까요?</h2>
+    <p class="q-sub">왼쪽 리본에는 문구가, 오른쪽 리본에는 보내는분이 새겨져요.</p>
+
+    <div class="sec-gap">
+      <div class="sec-label">리본 문구</div>
+      <div class="ribbon-wrap">
+        <input type="text" id="ribbonInput" maxlength="20" placeholder="문구를 입력하거나 아래에서 선택해 주세요" />
+        <span class="cnt num" id="ribbonCnt">0/20</span>
+      </div>
+      <div class="chips" id="chipRow"></div>
+      <p class="warn-line"><b>접수 후에는 문구를 수정할 수 없어요.</b> 한 번 더 확인해 주세요.</p>
+    </div>
+
+    <div class="sec-gap">
+      <div class="sec-label">보내는분</div>
+      <div class="sender-list" id="senderList"></div>
+      <button class="sender-add">＋ 새 명의 등록하기</button>
+    </div>
+
+    <div class="cta-row">
+      <button class="btn-back" data-nav="2">이전</button>
+      <button class="btn-next" id="next3" disabled>다음</button>
+    </div>
+  </section>
+
+  <!-- ═══════ STEP 4 · 작성내용 확인 ═══════ -->
+  <section class="panel" id="p4">
+    <h2 class="q">작성하신 내용을 확인해 주세요</h2>
+    <p class="q-sub">잘못된 부분이 있다면 각 항목에서 바로 고칠 수 있어요.</p>
+
+    <div class="confirm-list" id="cfList"></div>
+    <div class="cf-amount"><span>결제 금액</span><b class="num" id="cfAmount">0원</b></div>
+
+    <div class="opt-box">
+      <div class="opt-row">
+        <div class="ol">주문 담당자<small>주문 처리 상황을 안내받을 담당자예요</small></div>
+        <select id="mgrSelect"></select>
+      </div>
+      <div class="opt-row">
+        <div class="ol">배송완료 알림<small>배송이 끝나면 문자로 알려드려요</small></div>
+        <div class="toggles">
+          <button class="tg on" data-nt="recipient">받는분</button>
+          <button class="tg on" data-nt="sender">보내는분</button>
+          <button class="tg on" data-nt="manager">담당자</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="cta-row">
+      <button class="btn-back" data-nav="3">이전</button>
+      <button class="btn-next" id="submitBtn">주문 접수하기</button>
+    </div>
+    <p class="cta-hint">접수 후 리본 문구는 수정할 수 없어요 · 문의 02-0000-0000</p>
+  </section>
+
+  <!-- ═══════ 완료 ═══════ -->
+  <section class="panel" id="panelDone">
+    <div class="done-ic">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M5 12.5 10 17.5 19 7" stroke="#3182f6" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <h2>주문이 접수되었어요</h2>
+    <p class="d-sub">배송이 시작되면 알림으로 알려드릴게요.<br/>진행 상황은 실시간 주문내역에서 확인할 수 있어요.</p>
+    <div class="done-box" id="doneBox"></div>
+    <div class="done-cta">
+      <button class="ghost" id="doneNew">새 주문 작성하기</button>
+      <button class="solid">주문내역 보기</button>
+    </div>
+  </section>
+</div>
+
+<script>
+/* ============================================================
+   데이터 (기존 order.js · store.js 목데이터 승계)
+   ============================================================ */
+const MANAGERS = [
+  { name: "한다운", role: "비서",   phone: "010-1111-2222" },
+  { name: "오임찬", role: "재경부", phone: "010-3333-4444" },
+  { name: "김현수", role: "경리",   phone: "010-5555-6666" },
+];
+const PRODUCTS = {
+  obit: [
+    { key: "ob1", name: "근조 3단화환 (기본)", cat: "근조화환", price: 75000 },
+    { key: "ob2", name: "근조 3단화환 (고급)", cat: "근조화환", price: 90000 },
+  ],
+  wed: [
+    { key: "wd1", name: "축하 3단화환 (기본)", cat: "축하화환", price: 75000 },
+    { key: "wd2", name: "축하 3단화환 (고급)", cat: "축하화환", price: 90000 },
+  ],
+};
+PRODUCTS.etc = [...PRODUCTS.wed, ...PRODUCTS.obit];
+const PHRASES = {
+  obit: ["삼가 고인의 명복을 빕니다", "근조(謹弔)", "조의를 표합니다"],
+  wed:  ["축 결혼(祝 結婚)", "화혼을 진심으로 축하드립니다", "행복한 새 출발을 축하합니다"],
+  etc:  ["축 개업(祝 開業)", "축 취임(祝 就任)", "번창하시길 기원합니다", "축 승진(祝 昇進)"],
+};
+const SENDERS = [
+  { name: "(주)하림지주 대표이사", sub: "회사 명의" },
+  { name: "하림지주 재경부 일동", sub: "부서 명의" },
+];
+const MOCK_URL_DB = {
+  obit: {
+    "kakao.com":    { addr: "서울특별시 강남구 테헤란로 152 강남파이낸스센터 3층", toName: "김○○ 상주" },
+    "naeil.com":    { addr: "경기도 성남시 분당구 판교로 289 판교오피스 빌딩",     toName: "이○○ 상주" },
+    "mobile.co.kr": { addr: "서울특별시 중구 세종대로 110 서울시청 본관 2층",       toName: "박○○ 상주" },
+  },
+  wed: {
+    "wedding.me":      { addr: "서울특별시 서초구 강남대로 373 홀리데이인 강남",     toName: "최○○ 신랑측" },
+    "weddingbook.com": { addr: "서울특별시 마포구 백범로 235 서울창업허브 컨벤션홀", toName: "정○○ 신부측" },
+  },
+};
+const OCC_LABEL = { obit: "근조 · 부고", wed: "축하 · 결혼식", etc: "기타 경조사" };
+const won = (n) => n.toLocaleString("ko-KR") + "원";
+
+/* ── 상태 ── */
+const state = {
+  step: 1, maxStep: 1,
+  occ: null, viaUrl: false,
+  product: null, ribbon: "", sender: null,
+  addr: "", toName: "", toPhone: "",
+  immediate: false, date: "", hour: "09", min: "00",
+  manager: 0,
+  notify: { recipient: true, sender: true, manager: true },
+};
+const $ = (s) => document.querySelector(s);
+
+/* ============================================================
+   단계 검증
+   ============================================================ */
+const valid = {
+  1: () => !!(state.occ && state.product),
+  2: () => !!(state.addr && state.toName && state.toPhone && (state.immediate || state.date)),
+  3: () => !!(state.ribbon && state.sender),
+};
+
+/* ============================================================
+   탭 · 패널 전환
+   ============================================================ */
+function go(n) {
+  state.step = n;
+  state.maxStep = Math.max(state.maxStep, n);
+  for (let i = 1; i <= 4; i++) $("#p" + i).classList.toggle("on", i === n);
+  $("#panelDone").classList.remove("on");
+  document.querySelectorAll(".tab").forEach((t) => {
+    const s = +t.dataset.tab;
+    t.classList.toggle("active", s === n);
+    t.classList.toggle("reach", s <= state.maxStep && s !== n);
+    t.classList.toggle("complete", s < 4 && valid[s] && valid[s]());
+  });
+  if (n === 4) renderConfirm();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+$("#tabs").addEventListener("click", (e) => {
+  const t = e.target.closest(".tab.reach");
+  if (t) go(+t.dataset.tab);
+});
+document.addEventListener("click", (e) => {
+  const b = e.target.closest("[data-nav]");
+  if (b) go(+b.dataset.nav);
+});
+function refreshCtas() {
+  $("#next1").disabled = !valid[1]();
+  $("#next2").disabled = !valid[2]();
+  $("#next3").disabled = !valid[3]();
+  document.querySelectorAll(".tab").forEach((t) => {
+    const s = +t.dataset.tab;
+    if (s < 4 && valid[s]) t.classList.toggle("complete", valid[s]());
+  });
+}
+$("#next1").addEventListener("click", () => go(2));
+$("#next2").addEventListener("click", () => go(3));
+$("#next3").addEventListener("click", () => go(4));
+
+/* ============================================================
+   STEP 1 — URL 간편입력 · 경조사 · 상품
+   ============================================================ */
+$("#urlBtn").addEventListener("click", () => {
+  const url = $("#urlInput").value.trim().toLowerCase();
+  const msg = $("#urlMsg");
+  if (!url) { msg.className = "url-msg err"; msg.textContent = "링크를 입력해 주세요."; return; }
+  for (const occ of ["obit", "wed"]) {
+    const hit = Object.keys(MOCK_URL_DB[occ]).find((d) => url.includes(d));
+    if (hit) {
+      const d = MOCK_URL_DB[occ][hit];
+      msg.className = "url-msg ok";
+      msg.textContent = (occ === "obit" ? "부고장" : "청첩장") + "을 확인했어요. 배송지 정보를 자동으로 입력했어요.";
+      setOcc(occ);
+      state.addr = d.addr; state.toName = d.toName; state.viaUrl = true;
+      $("#fAddr").value = d.addr; $("#fToName").value = d.toName;
+      $("#autoChip").classList.add("show");
+      refreshCtas();
+      return;
+    }
+  }
+  msg.className = "url-msg err";
+  msg.textContent = "확인할 수 없는 링크예요. (데모: kakao.com · naeil.com · wedding.me · weddingbook.com)";
+});
+
+function setOcc(occ) {
+  if (state.occ !== occ) {
+    state.occ = occ;
+    state.product = null;
+    state.ribbon = ""; $("#ribbonInput").value = ""; updateCnt();
+  }
+  document.querySelectorAll(".occ-btn").forEach((b) =>
+    b.classList.toggle("sel", b.dataset.occ === occ));
+  $("#prodHint").textContent = OCC_LABEL[occ] + " 상품";
+  renderProducts(); renderChips(); refreshCtas();
+}
+$("#occRow").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-occ]");
+  if (b) setOcc(b.dataset.occ);
+});
+function renderProducts() {
+  if (!state.occ) return;
+  $("#prodList").innerHTML = PRODUCTS[state.occ].map((p) => `
+    <button class="prod-row ${state.product?.key === p.key ? "sel" : ""}" data-prod="${p.key}">
+      <span class="radio"></span>
+      <span class="pi"><b>${p.name}</b><span>${p.cat} · 표준 규격 · 당일배송 가능</span></span>
+      <span class="pp num">${won(p.price)}</span>
+    </button>`).join("");
+}
+$("#prodList").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-prod]");
+  if (!b) return;
+  state.product = PRODUCTS[state.occ].find((p) => p.key === b.dataset.prod);
+  renderProducts(); refreshCtas();
+});
+
+/* ============================================================
+   STEP 2 — 배송지 · 일시
+   ============================================================ */
+$("#fAddr").addEventListener("input", (e) => {
+  state.addr = e.target.value.trim();
+  if (state.viaUrl) { state.viaUrl = false; $("#autoChip").classList.remove("show"); }
+  refreshCtas();
+});
+$("#fToName").addEventListener("input", (e) => { state.toName = e.target.value.trim(); refreshCtas(); });
+$("#fToPhone").addEventListener("input", (e) => {
+  let v = e.target.value.replace(/\D/g, "").slice(0, 11);
+  if (v.length > 7) v = v.slice(0, 3) + "-" + v.slice(3, 7) + "-" + v.slice(7);
+  else if (v.length > 3) v = v.slice(0, 3) + "-" + v.slice(3);
+  e.target.value = v; state.toPhone = v; refreshCtas();
+});
+/* ── 배송 가능 시간 규정: 09:00 ~ 18:30 ── */
+const BIZ = { openH: 9, closeH: 18, closeM: 30 };
+const hourOptions = () =>
+  Array.from({ length: BIZ.closeH - BIZ.openH + 1 }, (_, i) => String(BIZ.openH + i).padStart(2, "0"));
+const minOptions = (hour) =>
+  (+hour === BIZ.closeH ? ["00", "10", "20", "30"] : ["00", "10", "20", "30", "40", "50"])
+    .filter((m) => +hour !== BIZ.closeH || +m <= BIZ.closeM);
+const inBizHours = (d) => {
+  const t = d.getHours() * 60 + d.getMinutes();
+  return t >= BIZ.openH * 60 && t <= BIZ.closeH * 60 + BIZ.closeM;
+};
+
+/* ── 커스텀 드롭다운 (harim mob 스타일) ── */
+function makeDropdown(rootId, { unit, options, get, set }) {
+  const root = $("#" + rootId);
+  const trigger = root.querySelector(".dd-trigger");
+  const panel = root.querySelector(".dd-panel");
+  function renderOpts() {
+    panel.innerHTML = options().map((v) =>
+      `<button type="button" class="dd-opt ${v === get() ? "sel" : ""}" role="option"
+        aria-selected="${v === get()}" data-v="${v}">${v}${unit}</button>`).join("");
+  }
+  function renderTrigger() { trigger.textContent = get() + unit; }
+  function close() { root.classList.remove("open"); trigger.setAttribute("aria-expanded", "false"); }
+  function open() {
+    document.querySelectorAll(".dd.open").forEach((d) => d !== root && d.classList.remove("open"));
+    renderOpts();
+    root.classList.add("open");
+    trigger.setAttribute("aria-expanded", "true");
+    const sel = panel.querySelector(".dd-opt.sel");
+    if (sel) panel.scrollTop = sel.offsetTop - panel.clientHeight / 2 + sel.offsetHeight / 2;
+  }
+  trigger.addEventListener("click", () => root.classList.contains("open") ? close() : open());
+  panel.addEventListener("click", (e) => {
+    const o = e.target.closest("[data-v]");
+    if (!o) return;
+    set(o.dataset.v);
+    renderTrigger(); close();
+  });
+  document.addEventListener("click", (e) => { if (!root.contains(e.target)) close(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
+  renderTrigger();
+  return { renderTrigger, renderOpts };
+}
+const ddHour = makeDropdown("ddHour", {
+  unit: "시", options: hourOptions,
+  get: () => state.hour,
+  set: (v) => {
+    state.hour = v;
+    if (!minOptions(v).includes(state.min)) state.min = "30";  // 18시 선택 시 분 상한 보정
+    ddMin.renderTrigger();
+  },
+});
+const ddMin = makeDropdown("ddMin", {
+  unit: "분", options: () => minOptions(state.hour),
+  get: () => state.min,
+  set: (v) => { state.min = v; },
+});
+
+const tomorrow = new Date(Date.now() + 864e5);
+$("#fDate").value = state.date = tomorrow.toISOString().slice(0, 10);
+$("#fDate").min = new Date().toISOString().slice(0, 10);
+$("#fDate").addEventListener("change", (e) => { state.date = e.target.value; refreshCtas(); });
+
+/* ── 즉시배송: 영업시간(09:00~18:30) 규정 ── */
+function setImmediate(on) {
+  state.immediate = on;
+  $("#segImm").classList.toggle("sel", on);
+  $("#segSched").classList.toggle("sel", !on);
+  $("#dtRow").classList.toggle("dim", on);
+  const note = $("#immNote");
+  if (on) {
+    const d = new Date(Date.now() + 4 * 36e5);
+    note.textContent = `영업시간 내 접수 건은 4시간 이내(${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")} 전)에 배송해 드려요.`;
+    note.classList.add("show");
+  } else note.classList.remove("show");
+  refreshCtas();
+}
+function applyBizRule() {
+  const ok = inBizHours(new Date());
+  $("#segImm").disabled = !ok;
+  const biz = $("#bizNote");
+  if (!ok) {
+    if (state.immediate) setImmediate(false);
+    biz.textContent = "지금은 영업시간이 아니에요. 즉시배송은 영업시간(09:00 ~ 18:30)에만 접수할 수 있어요.";
+    biz.classList.add("show");
+  } else biz.classList.remove("show");
+}
+$("#segImm").addEventListener("click", () => setImmediate(true));
+$("#segSched").addEventListener("click", () => setImmediate(false));
+applyBizRule();
+setInterval(applyBizRule, 60 * 1000);
+
+/* ============================================================
+   STEP 3 — 리본문구 · 보내는분
+   ============================================================ */
+function renderChips() {
+  const occ = state.occ || "etc";
+  $("#chipRow").innerHTML = PHRASES[occ].map((ph) =>
+    `<button class="chip ${state.ribbon === ph ? "sel" : ""}" data-chip="${ph}">${ph}</button>`).join("");
+}
+$("#chipRow").addEventListener("click", (e) => {
+  const c = e.target.closest("[data-chip]");
+  if (!c) return;
+  state.ribbon = c.dataset.chip;
+  $("#ribbonInput").value = state.ribbon;
+  updateCnt(); renderChips(); refreshCtas();
+});
+$("#ribbonInput").addEventListener("input", (e) => {
+  state.ribbon = e.target.value.trim();
+  updateCnt();
+  document.querySelectorAll("[data-chip]").forEach((c) =>
+    c.classList.toggle("sel", c.dataset.chip === state.ribbon));
+  refreshCtas();
+});
+function updateCnt() { $("#ribbonCnt").textContent = $("#ribbonInput").value.length + "/20"; }
+function renderSenders() {
+  $("#senderList").innerHTML = SENDERS.map((s, i) => `
+    <button class="sender-row ${state.sender === s ? "sel" : ""}" data-sender="${i}">
+      <span class="radio"></span>
+      <span class="si"><b>${s.name}</b><span>${s.sub}</span></span>
+    </button>`).join("");
+}
+$("#senderList").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-sender]");
+  if (!b) return;
+  state.sender = SENDERS[+b.dataset.sender];
+  renderSenders(); refreshCtas();
+});
+
+/* ============================================================
+   STEP 4 — 확인 · 접수
+   ============================================================ */
+function dateLabel() {
+  if (state.immediate) return "즉시배송";
+  const d = new Date(state.date + "T00:00:00");
+  const day = ["일", "월", "화", "수", "목", "금", "토"][d.getDay()];
+  return `${d.getMonth() + 1}월 ${d.getDate()}일 (${day}) ${state.hour}:${state.min}`;
+}
+function renderConfirm() {
+  $("#cfList").innerHTML = `
+    <div class="cf-row"><span class="cl">경조사 · 상품</span>
+      <span class="cv">${state.product.name}<small>${OCC_LABEL[state.occ]}</small></span>
+      <button class="edit" data-nav="1">변경</button></div>
+    <div class="cf-row"><span class="cl">배송지</span>
+      <span class="cv">${state.addr}<small>${state.toName} · ${state.toPhone}</small></span>
+      <button class="edit" data-nav="2">변경</button></div>
+    <div class="cf-row"><span class="cl">배송 일시</span>
+      <span class="cv">${dateLabel()}</span>
+      <button class="edit" data-nav="2">변경</button></div>
+    <div class="cf-row"><span class="cl">리본 문구</span>
+      <span class="cv">${state.ribbon}<small>보내는분 · ${state.sender.name}</small></span>
+      <button class="edit" data-nav="3">변경</button></div>`;
+  $("#cfAmount").textContent = won(state.product.price);
+}
+$("#mgrSelect").innerHTML = MANAGERS.map((m, i) =>
+  `<option value="${i}">${m.name} · ${m.role}</option>`).join("");
+$("#mgrSelect").addEventListener("change", (e) => { state.manager = +e.target.value; });
+document.querySelectorAll("[data-nt]").forEach((t) =>
+  t.addEventListener("click", () => {
+    const k = t.dataset.nt;
+    state.notify[k] = !state.notify[k];
+    t.classList.toggle("on", state.notify[k]);
+  }));
+
+$("#submitBtn").addEventListener("click", () => {
+  const m = MANAGERS[state.manager];
+  $("#doneBox").innerHTML = `
+    <div class="cf-row"><span class="cl">상품</span><span class="cv">${state.product.name}</span></div>
+    <div class="cf-row"><span class="cl">리본 문구</span><span class="cv">${state.ribbon}</span></div>
+    <div class="cf-row"><span class="cl">배송</span><span class="cv">${dateLabel()}<small>${state.addr}</small></span></div>
+    <div class="cf-row"><span class="cl">담당자</span><span class="cv">${m.name} (${m.phone})</span></div>
+    <div class="cf-row"><span class="cl">결제 금액</span><span class="cv num">${won(state.product.price)}</span></div>`;
+  document.querySelectorAll(".panel").forEach((p) => p.classList.remove("on"));
+  $("#panelDone").classList.add("on");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+$("#doneNew").addEventListener("click", () => location.reload());
+
+/* ── init ── */
+renderChips(); renderSenders(); refreshCtas(); updateCnt();
+</script>
+</body>
+</html>

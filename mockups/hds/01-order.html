@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HDS · 경조화환 주문</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
+<link rel="stylesheet" href="hds.css" />
+<style>
+  /* 페이지 전용 (현행 구조 유지 · HDS 리스킨) */
+  .cselect{max-width:560px; margin:36px auto 0; text-align:center;}
+  .cselect .badge-ic{width:56px; height:56px; margin:0 auto 14px; border-radius:50%; background:var(--o-50); display:grid; place-items:center; font-size:24px;}
+  .cselect h2{font-size:21px; font-weight:700; color:var(--t-strong);}
+  .cselect p{font-size:13.5px; color:var(--t-mut); margin-top:6px;}
+  .ccard{display:flex; align-items:center; gap:14px; width:100%; padding:16px 18px; text-align:left;
+    background:#fff; border:1px solid var(--g-200); border-radius:var(--r-tile); transition:all .13s; margin-top:10px;}
+  .ccard:hover{border-color:var(--o-400); background:var(--o-50);}
+  .ccard .nm{font-size:15px; font-weight:700; color:var(--t-strong);}
+  .ccard .role{font-size:11.5px; font-weight:700; color:var(--blue); background:var(--blue-soft); padding:2px 9px; border-radius:999px; margin-left:8px;}
+  .ccard .ph{font-size:13px; color:var(--t-mut); margin-top:1px;}
+  .ccard .chev{margin-left:auto; color:var(--t-faint);}
+  .cselect .add{margin-top:16px; font-size:13.5px; font-weight:600; color:var(--blue);}
+  /* 주문서 */
+  .contactbar{display:flex; align-items:center; gap:10px; background:#fff; border:1px solid var(--g-200);
+    border-radius:var(--r-tile); padding:12px 18px; margin-bottom:16px;}
+  .contactbar .lbl{font-size:13px; color:var(--t-mut);}
+  .contactbar .nm{font-size:14.5px; font-weight:700; color:var(--t-strong);}
+  .quick{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:18px;}
+  .quick-btn{display:flex; align-items:center; gap:14px; padding:18px 22px; border-radius:var(--r-tile);
+    color:#fff; text-align:left; transition:background .15s; position:relative;}
+  .quick-btn--obit{background:var(--obit);} .quick-btn--obit:hover{background:var(--obit-hv);}
+  .quick-btn--wed{background:var(--wed);}  .quick-btn--wed:hover{background:var(--wed-hv);}
+  .quick-btn b{font-size:16px; font-weight:700; display:block;}
+  .quick-btn span{font-size:12px; opacity:.75;}
+  .quick-btn .chev{margin-left:auto; font-size:18px; opacity:.7;}
+  .divider{display:flex; align-items:center; gap:12px; margin:4px 0 18px; color:var(--t-faint); font-size:12px;}
+  .divider::before,.divider::after{content:""; flex:1; height:1px; background:var(--g-200);}
+  .cols{display:flex; gap:18px; align-items:flex-start;}
+  .col-l{flex:1; min-width:0;}
+  .col-r{width:320px; flex:0 0 320px; position:sticky; top:78px; display:flex; flex-direction:column; gap:14px;}
+  .sec-card + .sec-card{margin-top:14px;}
+  .ofield-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:14px;}
+  .dt-row{display:flex; gap:10px; margin-top:10px;}
+  .dt-row .input{flex:0 0 180px;}
+  .dt-row select{height:48px; padding:0 12px; font-size:14px; border:1px solid var(--g-200); border-radius:var(--r-lg); background:#fff; min-width:90px;}
+  .ribbon-box{border:1px dashed var(--g-300); border-radius:var(--r-lg); background:var(--g-25);
+    padding:14px 16px; font-size:13.5px; color:var(--t-faint); cursor:pointer; transition:all .13s;}
+  .ribbon-box:hover{border-color:var(--o-400); background:var(--o-50);}
+  .ribbon-box.filled{border-style:solid; border-color:var(--g-200); background:#fff; color:var(--t-strong); font-weight:600;}
+  .rib-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;}
+  .rib-head label{font-size:13px; font-weight:600; color:var(--t-2);}
+  .rib-head button{font-size:12.5px; font-weight:600; color:var(--blue);}
+  .noti-row{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 0; border-bottom:1px solid var(--g-100);}
+  .noti-row:last-child{border-bottom:none;}
+  .noti-row .k{font-size:12px; color:var(--t-mut);}
+  .noti-row .v{font-size:13.5px; font-weight:600; color:var(--t-2);}
+  .noti-row .v .none{color:var(--t-faint); font-weight:400;}
+  .sum-line{display:flex; justify-content:space-between; align-items:baseline; padding:6px 0; font-size:13.5px; color:var(--t-3);}
+  .sum-total{border-top:1px dashed var(--g-300); margin-top:8px; padding-top:12px; display:flex; justify-content:space-between; align-items:baseline;}
+  .sum-total b{font-size:20px; font-weight:700; color:var(--o-600);}
+  /* 모달 내부 */
+  .rib-tabs{display:flex; gap:6px; background:var(--g-50); border-radius:999px; padding:3px; margin-bottom:14px;}
+  .rib-tabs button{flex:1; padding:8px 0; border-radius:999px; font-size:13px; font-weight:600; color:var(--t-mut);}
+  .rib-tabs button.sel{background:#fff; color:var(--t-strong); box-shadow:0 1px 4px rgba(17,17,24,.1);}
+  .rib-group{font-size:12px; font-weight:700; color:var(--t-mut); margin:12px 0 8px;}
+  .success-ic{width:60px; height:60px; margin:6px auto 14px; border-radius:50%; background:var(--ok-bg); color:var(--ok); display:grid; place-items:center; font-size:26px;}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sb"></aside>
+  <div class="main">
+    <header class="hd"></header>
+    <div class="content">
+      <div class="pagehead"><div><h1>🌸 경조화환 주문</h1></div></div>
+
+      <!-- ═══ 담당자 선택 (게이트 · 현행 구조) ═══ -->
+      <section id="gate">
+        <div class="cselect">
+          <div class="badge-ic">👥</div>
+          <h2>담당자를 선택해 주세요</h2>
+          <p>주문을 진행할 담당자를 선택하면 주문서 작성이 시작됩니다.</p>
+          <div class="mt20">
+            <button class="ccard" data-c="한다운·비서·010-1111-2222"><span class="avatar" style="width:40px;height:40px;font-size:15px;">한</span><span><span class="nm">한다운</span><span class="role">비서</span><div class="ph num">010-1111-2222</div></span><span class="chev">›</span></button>
+            <button class="ccard" data-c="오임찬·재경부·010-3333-4444"><span class="avatar" style="width:40px;height:40px;font-size:15px;">오</span><span><span class="nm">오임찬</span><span class="role">재경부</span><div class="ph num">010-3333-4444</div></span><span class="chev">›</span></button>
+            <button class="ccard" data-c="김현수·경리·010-5555-6666"><span class="avatar" style="width:40px;height:40px;font-size:15px;">김</span><span><span class="nm">김현수</span><span class="role">경리</span><div class="ph num">010-5555-6666</div></span><span class="chev">›</span></button>
+          </div>
+          <button class="add">＋ 새 담당자 등록하기</button>
+        </div>
+      </section>
+
+      <!-- ═══ 주문서 (현행 구조 · HDS 리스킨) ═══ -->
+      <section id="form" style="display:none;">
+        <div class="contactbar">
+          <span class="avatar" style="width:32px;height:32px;font-size:13px;" id="cAv">한</span>
+          <span class="lbl">담당자</span><span class="nm" id="cNm">한다운 · 비서</span>
+          <span class="num" style="font-size:13px;color:var(--t-mut);" id="cPh">010-1111-2222</span>
+          <button class="btn btn--ghost btn--sm" style="margin-left:auto;" id="changeC">✎ 변경</button>
+        </div>
+
+        <div class="quick">
+          <button class="quick-btn quick-btn--obit" data-open="mQuick"><span style="font-size:20px;">🕊️</span><span><b>부고장으로 간편접수</b><span>근조화환 빠른주문</span></span><span class="chev">›</span></button>
+          <button class="quick-btn quick-btn--wed" data-open="mQuick"><span style="font-size:20px;">💐</span><span><b>청첩장으로 간편접수</b><span>축하화환 빠른주문</span></span><span class="chev">›</span></button>
+        </div>
+        <div class="divider">일반 주문서 작성</div>
+
+        <div class="cols">
+          <div class="col-l">
+            <div class="card sec-card">
+              <div class="card__head"><b>상품 선택</b><span>3단화환 4종</span></div>
+              <div class="card__body" id="prodList">
+                <button class="selrow" data-p="축하 3단화환 (기본)|75000"><span class="radio"></span><span class="si"><b>축하 3단화환 (기본)</b><span>축하화환 · 표준 규격</span></span><span class="price num">75,000원</span></button>
+                <button class="selrow" data-p="축하 3단화환 (고급)|90000"><span class="radio"></span><span class="si"><b>축하 3단화환 (고급)</b><span>축하화환 · 표준 규격</span></span><span class="price num">90,000원</span></button>
+                <button class="selrow" data-p="근조 3단화환 (기본)|75000"><span class="radio"></span><span class="si"><b>근조 3단화환 (기본)</b><span>근조화환 · 표준 규격</span></span><span class="price num">75,000원</span></button>
+                <button class="selrow" data-p="근조 3단화환 (고급)|90000"><span class="radio"></span><span class="si"><b>근조 3단화환 (고급)</b><span>근조화환 · 표준 규격</span></span><span class="price num">90,000원</span></button>
+              </div>
+            </div>
+
+            <div class="card sec-card">
+              <div class="card__head"><b>배송지 정보</b></div>
+              <div class="card__body">
+                <div class="field"><label>배송지 주소 <span class="req">*</span></label>
+                  <input class="input" placeholder="배송지 주소를 입력해 주세요" /></div>
+                <div class="ofield-grid">
+                  <div class="field"><label>받는분 성함 <span class="req">*</span></label><input class="input" placeholder="예) 홍길동" /></div>
+                  <div class="field"><label>받는분 연락처 <span class="req">*</span></label><input class="input" placeholder="010-0000-0000" /></div>
+                </div>
+                <div class="field mt14"><label>배송요청 일시 <span class="req">*</span>
+                  <span class="check" style="float:right;" id="immCk"><span class="box"></span>즉시배송</span></label>
+                  <div class="dt-row" style="margin-top:2px;">
+                    <input class="input" type="date" value="2026-07-03" />
+                    <select><option>09시</option><option>10시</option><option>11시</option></select>
+                    <select><option>00분</option><option>30분</option></select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card sec-card">
+              <div class="card__head"><b>리본 정보</b></div>
+              <div class="card__body">
+                <div class="rib-head"><label>리본 문구 <span style="color:var(--err);">*</span></label><button data-open="mRibbon">✎ 작성하기</button></div>
+                <div class="ribbon-box" id="ribBox" data-open="mRibbon">리본 문구를 작성해 주세요</div>
+                <div class="rib-head mt14"><label>보내는분 <span style="color:var(--err);">*</span></label><button data-open="mSender">👤 선택하기</button></div>
+                <div class="ribbon-box" id="sndBox" data-open="mSender">프로필에서 보내는분을 선택해 주세요</div>
+              </div>
+            </div>
+
+            <button class="btn btn--primary mt14" style="width:100%; height:54px;" id="submit" disabled>필수 항목을 모두 입력해 주세요</button>
+          </div>
+
+          <aside class="col-r">
+            <div class="banner banner--warn"><span>📌</span><span><b>주문 시 참고사항</b><br/>당일 오전 11:00 이전 주문 건 당일 배송 가능 · 주말·공휴일 배송 제한 · 리본 문구는 접수 후 수정 불가 · 문의 02-0000-0000</span></div>
+            <div class="card">
+              <div class="card__head"><b>배송완료 알림 수신</b></div>
+              <div class="card__body" style="padding-top:8px;">
+                <div class="noti-row"><span><span class="k">받는분</span><div class="v"><span class="none">미입력</span></div></span><button class="toggle on"></button></div>
+                <div class="noti-row"><span><span class="k">보내는분</span><div class="v" id="ntS"><span class="none">미선택</span></div></span><button class="toggle on"></button></div>
+                <div class="noti-row"><span><span class="k">담당자</span><div class="v" id="ntM">한다운 (010-1111-2222)</div></span><button class="toggle on"></button></div>
+                <p style="font-size:11.5px; color:var(--t-mut); margin-top:10px;">배송 완료 시 ON 설정된 분께 문자가 자동 발송됩니다.</p>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card__head"><b>주문 상품 요약</b></div>
+              <div class="card__body" style="padding-top:10px;">
+                <div class="sum-line"><span id="sumP">상품 미선택</span><span class="badge badge--neutral" id="sumC">—</span></div>
+                <div class="sum-total"><span style="font-size:13px; color:var(--t-mut);">금액</span><b class="num" id="sumA">0원</b></div>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ 모달: 리본 문구 ═══ -->
+<div class="overlay" id="mRibbon">
+  <div class="modal">
+    <div class="modal__head"><div><h3>리본 문구 작성</h3><p>화환 리본에 표시될 문구를 선택하거나 직접 입력하세요.</p></div><button class="modal__x" data-close>✕</button></div>
+    <div class="rib-tabs"><button class="sel">자주 사용 문구</button><button>직접 입력</button></div>
+    <div class="rib-group">부고 · 근조</div>
+    <div class="row" data-ribgroup><button class="chip">삼가 고인의 명복을 빕니다</button><button class="chip">근조(謹弔)</button><button class="chip">조의를 표합니다</button></div>
+    <div class="rib-group">결혼 축하</div>
+    <div class="row" data-ribgroup><button class="chip">축 결혼(祝 結婚)</button><button class="chip">화혼을 진심으로 축하드립니다</button></div>
+    <div class="rib-group">개업 · 취임</div>
+    <div class="row" data-ribgroup><button class="chip">축 개업(祝 開業)</button><button class="chip">축 취임(祝 就任)</button><button class="chip">번창하시길 기원합니다</button></div>
+    <div class="modal__acts"><button class="btn btn--secondary btn--md" data-close>취소</button><button class="btn btn--primary btn--md" id="ribApply" disabled>문구 적용</button></div>
+  </div>
+</div>
+
+<!-- ═══ 모달: 보내는분 ═══ -->
+<div class="overlay" id="mSender">
+  <div class="modal">
+    <div class="modal__head"><div><h3>보내는분 선택</h3><p>오른쪽 리본에 새겨질 명의를 선택하세요.</p></div><button class="modal__x" data-close>✕</button></div>
+    <div id="sndList">
+      <button class="selrow" data-s="(주)하림지주 대표이사"><span class="radio"></span><span class="si"><b>(주)하림지주 대표이사</b><span>회사 명의</span></span></button>
+      <button class="selrow" data-s="하림지주 재경부 일동"><span class="radio"></span><span class="si"><b>하림지주 재경부 일동</b><span>부서 명의</span></span></button>
+    </div>
+    <div class="modal__acts"><button class="btn btn--secondary btn--md" data-close>취소</button><button class="btn btn--primary btn--md" id="sndApply" disabled>선택 완료</button></div>
+  </div>
+</div>
+
+<!-- ═══ 모달: 간편접수 ═══ -->
+<div class="overlay" id="mQuick">
+  <div class="modal">
+    <div class="modal__head"><div><h3>부고장 · 청첩장 간편접수</h3><p>URL을 입력하면 배송지 정보를 자동으로 불러옵니다.</p></div><button class="modal__x" data-close>✕</button></div>
+    <p style="font-size:12px; font-weight:700; color:var(--t-mut); margin-bottom:8px;">STEP 1 — URL 조회</p>
+    <div class="row" style="flex-wrap:nowrap;">
+      <input class="input" placeholder="부고장 또는 청첩장 URL 붙여넣기" style="flex:1;" />
+      <button class="btn btn--dark btn--md" style="flex:0 0 auto;">조회</button>
+    </div>
+    <p style="font-size:12px; color:var(--t-mut); margin-top:8px;">데모 도메인: kakao.com · naeil.com · wedding.me</p>
+    <div class="banner banner--info mt14"><span>ℹ️</span><span>조회 성공 시 배송지·받는분이 자동 입력된 주문서로 이동합니다.</span></div>
+    <div class="modal__acts"><button class="btn btn--secondary btn--md" data-close>닫기</button></div>
+  </div>
+</div>
+
+<!-- ═══ 모달: 접수 완료 ═══ -->
+<div class="overlay" id="mDone">
+  <div class="modal" style="text-align:center;">
+    <div class="success-ic">✓</div>
+    <h3 style="font-size:18px; font-weight:700; color:var(--t-strong);">주문이 접수되었습니다!</h3>
+    <p style="font-size:13px; color:var(--t-mut); margin-top:6px;">실시간 주문내역에서 진행 상황을 확인할 수 있습니다.</p>
+    <div class="modal__acts"><button class="btn btn--secondary btn--md" data-close>확인</button><a class="btn btn--primary btn--md" href="02-orders.html" style="flex:1;">주문내역 보기</a></div>
+  </div>
+</div>
+
+<script src="hds.js"></script>
+<script>
+HDS.shell("order");
+HDS.initModals();
+const $ = (s) => document.querySelector(s);
+const state = { product: null, price: 0, ribbon: "", sender: "" };
+
+/* 게이트 → 주문서 */
+document.querySelectorAll("[data-c]").forEach((c) => c.addEventListener("click", () => {
+  const [nm, role, ph] = c.dataset.c.split("·");
+  $("#cNm").textContent = nm + " · " + role;
+  $("#cPh").textContent = ph;
+  $("#cAv").textContent = nm[0];
+  $("#ntM").textContent = nm + " (" + ph + ")";
+  $("#gate").style.display = "none";
+  $("#form").style.display = "";
+}));
+$("#changeC").addEventListener("click", () => { $("#form").style.display = "none"; $("#gate").style.display = ""; });
+
+/* 상품 선택 → 요약 갱신 */
+$("#prodList").addEventListener("click", (e) => {
+  const r = e.target.closest(".selrow"); if (!r) return;
+  document.querySelectorAll("#prodList .selrow").forEach((x) => x.classList.toggle("sel", x === r));
+  const [name, price] = r.dataset.p.split("|");
+  state.product = name; state.price = +price;
+  $("#sumP").textContent = name;
+  $("#sumC").textContent = name.includes("근조") ? "근조화환" : "축하화환";
+  $("#sumC").className = "badge " + (name.includes("근조") ? "badge--obit" : "badge--wed");
+  $("#sumA").textContent = state.price.toLocaleString("ko-KR") + "원";
+  refresh();
+});
+
+/* 리본 모달 */
+document.querySelectorAll("[data-ribgroup]").forEach((g) => g.addEventListener("click", (e) => {
+  const c = e.target.closest(".chip"); if (!c) return;
+  document.querySelectorAll("[data-ribgroup] .chip").forEach((x) => x.classList.toggle("sel", x === c));
+  $("#ribApply").disabled = false;
+}));
+$("#ribApply").addEventListener("click", () => {
+  const sel = document.querySelector("[data-ribgroup] .chip.sel");
+  if (!sel) return;
+  state.ribbon = sel.textContent;
+  const box = $("#ribBox");
+  box.textContent = state.ribbon;
+  box.classList.add("filled");
+  $("#mRibbon").classList.remove("show");
+  refresh();
+});
+
+/* 보내는분 모달 */
+$("#sndList").addEventListener("click", (e) => {
+  const r = e.target.closest(".selrow"); if (!r) return;
+  document.querySelectorAll("#sndList .selrow").forEach((x) => x.classList.toggle("sel", x === r));
+  $("#sndApply").disabled = false;
+});
+$("#sndApply").addEventListener("click", () => {
+  const sel = document.querySelector("#sndList .selrow.sel");
+  if (!sel) return;
+  state.sender = sel.dataset.s;
+  const box = $("#sndBox");
+  box.textContent = state.sender;
+  box.classList.add("filled");
+  $("#ntS").textContent = state.sender;
+  $("#mSender").classList.remove("show");
+  refresh();
+});
+
+/* 즉시배송 체크 · 토글 데모 */
+$("#immCk").addEventListener("click", () => $("#immCk").classList.toggle("on"));
+document.querySelectorAll(".toggle").forEach((t) => t.addEventListener("click", () => t.classList.toggle("on")));
+
+/* 제출 활성화 (데모: 상품+리본+보내는분) */
+function refresh() {
+  const ready = state.product && state.ribbon && state.sender;
+  const b = $("#submit");
+  b.disabled = !ready;
+  b.textContent = ready ? "🌸 주문 접수하기" : "필수 항목을 모두 입력해 주세요";
+}
+$("#submit").addEventListener("click", () => {
+  if (!$("#submit").disabled) $("#mDone").classList.add("show");
+});
+</script>
+</body>
+</html>

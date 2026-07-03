@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>경조상품 간편주문 — 기존 디자인 시스템</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
+<style>
+  /* ============================================================
+     시안 8 — 간편주문 (시안 07의 레이아웃 · 플로우 유지)
+     톤앤매너: 기존 디자인 시스템(tokens.css) 그대로
+       · 주 CTA · 활성 액센트 = 브랜드 오렌지 #f15a2a
+       · 선택 상태 = 연블루 워시 #f8f9ff + 블루 #4169e1 (기존 주문화면 패턴)
+       · 보조 강조 버튼 = 다크 #111118 (기존 '기간 변경' 패턴)
+       · 필드 포커스 = 인디고 링 (기존 Text Field 컴포넌트)
+     ============================================================ */
+  :root{
+    --c-orange:#f15a2a; --c-orange-hover:#d94e24; --c-orange-ink:#d94000; --c-orange-soft:#fff1ec;
+    --c-blue:#4169e1; --c-blue-soft:#f0f3fd; --c-blue-sel:#f8f9ff; --c-blue-border:#c5cdff;
+    --c-dark:#111118; --c-dark-hover:#2b2b33;
+    --c-bg:#f9f9f9; --c-surface:#fff; --c-surface-2:#f5f5f7;
+    --c-border:#e0e0e0; --c-border-strong:#d8d8d8; --c-border-input:#e3e3e3; --c-divider:#e8e8e8;
+    --c-text-strong:#111; --c-text:#222; --c-text-2:#444; --c-text-3:#555; --c-text-4:#666;
+    --c-text-muted:#888; --c-text-faint:#aaa;
+    --c-success:#2e7d32; --c-success-bg:#e8f5e9;
+    --c-danger:#c62828; --c-danger-bg:#ffebee;
+    --c-indigo:#4f46e5;
+    --r-md:6px; --r-lg:8px; --r-xl:10px;
+    --sh-btn:0 2px 8px rgba(241,90,42,.28);
+    --sh-pop:0 8px 28px rgba(17,17,24,.14);
+    --ring:0 0 0 3px rgba(241,90,42,.09);
+    --ring-field:0 0 0 3px rgba(79,70,229,.14);
+    --font:"Pretendard",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{background:var(--c-bg);}
+  body{
+    font-family:var(--font); color:var(--c-text); font-size:15px; line-height:1.6;
+    -webkit-font-smoothing:antialiased; letter-spacing:-.011em;
+  }
+  button{font-family:inherit; letter-spacing:inherit; cursor:pointer; border:none; background:none; color:inherit;}
+  input,select{font-family:inherit; letter-spacing:inherit; color:var(--c-text);}
+  .num{font-variant-numeric:tabular-nums; font-feature-settings:"tnum";}
+  ::selection{background:var(--c-orange-soft);}
+  :focus-visible{outline:none; box-shadow:var(--ring); border-radius:var(--r-md);}
+
+  .wrap{max-width:840px; padding:28px 32px 90px; margin:0;}
+
+  /* ── 페이지 헤더 (다른 페이지와 동일 패턴: 이모지 + 볼드 타이틀) ── */
+  .pagetitle{display:flex; align-items:center; gap:9px; font-size:22px; font-weight:700;
+    color:var(--c-text-strong); letter-spacing:-.02em; margin-bottom:18px;}
+
+  /* ── 주문 영역: 플로팅 화이트 시트 ── */
+  .sheet{background:var(--c-surface); border:1px solid var(--c-border); border-radius:12px;
+    box-shadow:0 1px 6px rgba(17,17,24,.04); padding:30px 36px 44px;}
+  .sheet-head{display:flex; align-items:center; gap:10px;}
+  .sheet-head b{font-size:18px; font-weight:700; color:var(--c-text-strong); letter-spacing:-.02em;}
+  .sheet-head .sub{font-size:13.5px; color:var(--c-text-muted); margin-left:auto;}
+
+  /* ── 언더라인 탭 스테퍼 (레이아웃 유지 · 액센트만 오렌지) ── */
+  .tabs{display:flex; gap:28px; margin-top:20px; border-bottom:1px solid var(--c-divider);}
+  .tab{position:relative; padding:12px 2px 13px; font-size:15px; font-weight:500; color:var(--c-text-faint); cursor:default; transition:color .15s; white-space:nowrap;}
+  .tab.reach{color:var(--c-text-muted); cursor:pointer;}
+  .tab.reach:hover{color:var(--c-text-2);}
+  .tab.active{color:var(--c-text-strong); font-weight:700; cursor:default;}
+  .tab.active::after{content:""; position:absolute; left:0; right:0; bottom:-1px; height:2px; background:var(--c-orange); border-radius:2px;}
+  .tab .done-dot{display:none; color:var(--c-orange); font-size:12px; margin-right:4px;}
+  .tab.complete .done-dot{display:inline;}
+
+  /* ── 패널 공통 ── */
+  .panel{display:none; padding-top:40px;}
+  .panel.on{display:block; animation:rise .25s ease;}
+  @keyframes rise{from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:none;}}
+  .q{font-size:22px; font-weight:700; color:var(--c-text-strong); letter-spacing:-.02em; line-height:1.4;}
+  .q-sub{font-size:15px; color:var(--c-text-muted); margin-top:8px;}
+  .sec-gap{margin-top:40px;}
+  .sec-label{font-size:14px; font-weight:600; color:var(--c-text-2); margin-bottom:12px; display:flex; align-items:center; gap:8px;}
+  .sec-label small{font-size:12.5px; font-weight:400; color:var(--c-text-muted);}
+
+  /* ── 단계적 공개(reveal) — 배너 선택 → 링크 박스 → 상품 선택 ── */
+  .reveal{display:none;}
+  .reveal.show{display:block; animation:reveal .38s cubic-bezier(.2,.7,.3,1);}
+  @keyframes reveal{from{opacity:0; transform:translateY(-10px);} to{opacity:1; transform:none;}}
+
+  /* ── URL 간편입력 ── */
+  .urlbox{margin-top:28px; background:var(--c-surface-2); border:1px solid var(--c-border); border-radius:var(--r-xl); padding:22px 24px;}
+  .urlbox .ub-title{font-size:15px; font-weight:600; color:var(--c-text-2); display:flex; align-items:center; gap:8px;}
+  .urlbox .ub-title .badge{font-size:11px; font-weight:700; color:var(--c-orange-ink); background:var(--c-orange-soft); padding:2px 8px; border-radius:999px;}
+  .urlbox .ub-desc{font-size:13.5px; color:var(--c-text-muted); margin-top:4px;}
+  .url-row{display:flex; gap:10px; margin-top:16px;}
+  .url-row input{flex:1; min-width:0; height:52px; padding:0 18px; font-size:15px; background:#fff;
+    border:1px solid var(--c-border-input); border-radius:var(--r-lg); transition:border-color .15s, box-shadow .15s;}
+  .url-row input::placeholder{color:var(--c-text-faint);}
+  .url-row input:focus{outline:none; border-color:var(--c-indigo); box-shadow:var(--ring-field);}
+  .url-row button{flex:0 0 auto; height:52px; padding:0 26px; border-radius:var(--r-lg);
+    background:var(--c-orange); color:#fff; font-size:15px; font-weight:700;
+    box-shadow:var(--sh-btn); transition:background .15s;}
+  .url-row button:hover{background:var(--c-orange-hover);}
+  .direct-btn{width:100%; height:48px; margin-top:12px; border-radius:var(--r-lg);
+    background:#fff; border:1px solid var(--c-border-strong); color:var(--c-text-2);
+    font-size:14px; font-weight:600; transition:all .15s;}
+  .direct-btn:hover{border-color:var(--c-text-muted); background:var(--c-bg);}
+  .url-msg{display:none; margin-top:12px; font-size:13.5px; border-radius:var(--r-lg); padding:10px 14px;}
+  .url-msg.err{display:block; color:var(--c-danger); background:var(--c-danger-bg);}
+  .url-msg.ok{display:block; color:var(--c-success); background:var(--c-success-bg);}
+
+  /* ── 경조사 배너 (harim mob 홈 intake-card 패턴) ── */
+  .occ-stack{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .intake-card{position:relative; width:100%; min-height:88px; display:flex; align-items:center;
+    justify-content:space-between; padding:0 22px; border:none; border-radius:var(--r-xl);
+    overflow:hidden; background-color:#1f2430; background-size:cover; background-position:center;
+    background-repeat:no-repeat; text-align:left; transition:transform .12s ease, box-shadow .12s ease;}
+  .intake-card::before{content:""; position:absolute; inset:0;
+    background:linear-gradient(90deg, rgba(8,11,20,.82) 0%, rgba(8,11,20,.45) 42%, rgba(8,11,20,.05) 100%);}
+  .intake-card .lbl{position:relative; z-index:1; color:#fff;}
+  .intake-card .lbl b{font-size:16px; font-weight:600; display:block; text-shadow:0 1px 8px rgba(0,0,0,.45);}
+  .intake-card .lbl span{font-size:12px; color:rgba(255,255,255,.78); text-shadow:0 1px 6px rgba(0,0,0,.4);}
+  .intake-card .arrow{position:relative; z-index:1; color:#fff; opacity:.9; font-size:18px;
+    filter:drop-shadow(0 1px 4px rgba(0,0,0,.5));}
+  .intake-card:hover{box-shadow:0 6px 20px rgba(17,17,24,.28);}
+  .intake-card:active{transform:scale(.98);}
+  .intake-wedding{background-size:130%; background-position:60% 70%;}
+  /* 선택 상태: 오렌지 링 + 체크 */
+  [data-occ] .ck{display:none; position:relative; z-index:1; width:24px; height:24px; border-radius:50%;
+    background:var(--c-orange); color:#fff; font-size:13px; align-items:center; justify-content:center; margin-right:10px;}
+  [data-occ].sel .ck{display:inline-flex;}
+  [data-occ].sel{outline:2px solid var(--c-orange); outline-offset:2px;}
+  .occ-right{display:flex; align-items:center; position:relative; z-index:1;}
+
+  /* ── 상품 리스트 (선택 = 연블루 워시 · 기존 주문화면 패턴) ── */
+  .prod-list{border-top:1px solid var(--c-divider);}
+  .prod-row{width:100%; display:flex; align-items:center; gap:16px; padding:18px 4px;
+    border-bottom:1px solid var(--c-divider); text-align:left; transition:background .12s;}
+  .prod-row:hover{background:var(--c-bg);}
+  .prod-row.sel{background:var(--c-blue-sel);}
+  .prod-row .radio{width:22px; height:22px; flex:0 0 22px; border-radius:50%; border:1.5px solid var(--c-border-strong);
+    display:grid; place-items:center; transition:all .15s; background:#fff;}
+  .prod-row .radio::after{content:""; width:10px; height:10px; border-radius:50%; background:transparent; transition:background .15s;}
+  .prod-row.sel .radio{border-color:var(--c-blue); background:var(--c-blue);}
+  .prod-row.sel .radio::after{background:#fff;}
+  .prod-row .pi{flex:1; min-width:0;}
+  .prod-row .pi b{font-size:15.5px; font-weight:600; color:var(--c-text-strong); display:block;}
+  .prod-row .pi span{font-size:13px; color:var(--c-text-muted);}
+  .prod-row .pp{font-size:16px; font-weight:700; color:var(--c-text-strong);}
+  .prod-row.sel .pp{color:var(--c-blue);}
+  .prod-empty{padding:36px 4px; font-size:14px; color:var(--c-text-muted); text-align:center; border-bottom:1px solid var(--c-divider);}
+
+  /* ── 필드 (포커스 = 인디고 링 · 기존 Text Field) ── */
+  .field{margin-bottom:24px;}
+  .field label{display:block; font-size:13.5px; font-weight:600; color:var(--c-text-2); margin-bottom:8px;}
+  .field input[type=text], .field input[type=date]{width:100%; height:54px; padding:0 18px; font-size:16px;
+    border:1px solid var(--c-border-input); border-radius:var(--r-lg); background:#fff; transition:border-color .15s, box-shadow .15s;}
+  .field input::placeholder{color:var(--c-text-faint);}
+  .field input:focus{outline:none; border-color:var(--c-indigo); box-shadow:var(--ring-field);}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+  .auto-chip{display:none; font-size:12px; font-weight:600; color:var(--c-success);
+    background:var(--c-success-bg); padding:3px 10px; border-radius:999px; margin-left:8px; vertical-align:2px;}
+  .auto-chip.show{display:inline-block;}
+
+  /* ── 배송 일시 ── */
+  .seg{display:inline-flex; background:var(--c-surface-2); border:1px solid var(--c-border); border-radius:999px; padding:3px; margin-bottom:16px;}
+  .seg button{padding:9px 18px; border-radius:999px; font-size:14px; font-weight:600; color:var(--c-text-muted); transition:all .15s;}
+  .seg button.sel{background:#fff; color:var(--c-text-strong); box-shadow:0 1px 4px rgba(17,17,24,.1);}
+  .seg button:disabled{color:var(--c-text-faint); cursor:not-allowed;}
+  .dt-row{display:flex; gap:12px;}
+  .dt-row input[type=date]{flex:0 0 200px; height:54px; padding:0 16px; font-size:15px; border:1px solid var(--c-border-input); border-radius:var(--r-lg);}
+  .dt-row input:focus{outline:none; border-color:var(--c-indigo); box-shadow:var(--ring-field);}
+  .dt-row.dim{opacity:.4; pointer-events:none;}
+
+  /* ── 커스텀 드롭다운 (harim mob 원형 유지 · 선택 행 블루) ── */
+  .dd{position:relative; min-width:104px;}
+  .dd-trigger{width:100%; height:54px; padding:0 40px 0 16px; text-align:left; font-size:15px;
+    background:#fff; border:1px solid var(--c-border-input); border-radius:var(--r-lg);
+    transition:border-color .15s, box-shadow .15s; position:relative;}
+  .dd-trigger::after{content:""; position:absolute; right:16px; top:50%; width:9px; height:9px;
+    border-right:1.8px solid var(--c-text-muted); border-bottom:1.8px solid var(--c-text-muted);
+    transform:translateY(-70%) rotate(45deg); transition:transform .18s;}
+  .dd.open .dd-trigger::after{transform:translateY(-30%) rotate(225deg);}
+  .dd-trigger:hover{border-color:var(--c-border-strong);}
+  .dd.open .dd-trigger,.dd-trigger:focus{outline:none; border-color:var(--c-indigo); box-shadow:var(--ring-field);}
+  .dd-panel{display:none; position:absolute; left:0; right:0; bottom:calc(100% + 6px); z-index:30;
+    background:#fff; border:1px solid var(--c-border); border-radius:var(--r-lg);
+    box-shadow:var(--sh-pop); max-height:296px; overflow-y:auto; padding:5px;}
+  .dd.open .dd-panel{display:block;}
+  .dd-panel::-webkit-scrollbar{width:12px;}
+  .dd-panel::-webkit-scrollbar-thumb{background:var(--c-border-strong); border-radius:8px; border:3.5px solid #fff;}
+  .dd-panel::-webkit-scrollbar-track{background:transparent;}
+  .dd-opt{width:100%; display:block; padding:9px 13px; font-size:15px; text-align:left;
+    border-radius:var(--r-md); color:var(--c-text-2); transition:background .1s;}
+  .dd-opt:hover{background:var(--c-surface-2);}
+  .dd-opt.sel{background:var(--c-blue); color:#fff; font-weight:600;}
+  .dd-opt.sel:hover{background:var(--c-blue);}
+
+  /* ── 커스텀 데이트피커 (드롭다운과 동일한 패널 디자인) ── */
+  .datepick{flex:0 0 230px;}
+  .cal-panel{width:292px; right:auto; max-height:none; padding:14px;}
+  .cal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;}
+  .cal-head b{font-size:14.5px; color:var(--c-text-strong);}
+  .cal-nav{width:30px; height:30px; border-radius:var(--r-md); display:grid; place-items:center; color:var(--c-text-3); font-size:15px;}
+  .cal-nav:hover{background:var(--c-surface-2);}
+  .cal-nav:disabled{color:#d8d8d8; cursor:default; background:none;}
+  .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:2px;}
+  .cal-dow{font-size:11px; color:var(--c-text-faint); text-align:center; padding:4px 0; font-weight:600;}
+  .cal-day{height:34px; border-radius:var(--r-md); font-size:13.5px; color:var(--c-text-2); display:grid; place-items:center; transition:background .1s;}
+  .cal-day:hover{background:var(--c-surface-2);}
+  .cal-day.dis{color:#d0d0d0; cursor:default;}
+  .cal-day.dis:hover{background:none;}
+  .cal-day.today{box-shadow:inset 0 0 0 1.5px var(--c-blue-border);}
+  .cal-day.sel{background:var(--c-blue); color:#fff; font-weight:700;}
+  .cal-day.sel:hover{background:var(--c-blue);}
+  .cal-note{margin-top:10px; font-size:11.5px; color:var(--c-text-muted); text-align:center;}
+
+  .dt-info{margin-top:14px; font-size:13.5px; color:var(--c-text-muted);}
+  .dt-info b{color:var(--c-success); font-weight:600;}
+  .imm-note{display:none; margin-top:14px; font-size:13.5px; color:var(--c-success); background:var(--c-success-bg); border-radius:var(--r-lg); padding:10px 14px;}
+  .imm-note.show{display:block;}
+  .biz-note{display:none; margin-top:14px; font-size:13.5px; color:var(--c-text-4); background:var(--c-surface-2); border-radius:var(--r-lg); padding:10px 14px;}
+  .biz-note.show{display:block;}
+
+  /* ── 리본 문구 ── */
+  .ribbon-wrap{position:relative;}
+  .ribbon-wrap input{width:100%; height:58px; padding:0 76px 0 18px; font-size:17px; font-weight:500;
+    border:1px solid var(--c-border-input); border-radius:var(--r-lg); transition:border-color .15s, box-shadow .15s;}
+  .ribbon-wrap input::placeholder{color:var(--c-text-faint); font-weight:400;}
+  .ribbon-wrap input:focus{outline:none; border-color:var(--c-indigo); box-shadow:var(--ring-field);}
+  .ribbon-wrap .cnt{position:absolute; right:18px; top:50%; transform:translateY(-50%); font-size:13px; color:var(--c-text-faint);}
+  .chips{display:flex; flex-wrap:wrap; gap:8px; margin-top:14px;}
+  .chip{padding:9px 16px; border-radius:999px; background:var(--c-surface-2); border:1px solid transparent;
+    font-size:13.5px; font-weight:500; color:var(--c-text-3); transition:all .13s;}
+  .chip:hover{background:#eeeef1;}
+  .chip.sel{background:var(--c-blue-soft); border-color:var(--c-blue-border); color:var(--c-blue); font-weight:600;}
+  .warn-line{margin-top:14px; font-size:13px; color:var(--c-text-muted);}
+  .warn-line b{color:var(--c-danger); font-weight:600;}
+
+  /* ── 보내는분 리스트 ── */
+  .sender-list{border-top:1px solid var(--c-divider);}
+  .sender-row{width:100%; display:flex; align-items:center; gap:16px; padding:16px 4px;
+    border-bottom:1px solid var(--c-divider); text-align:left; transition:background .12s;}
+  .sender-row:hover{background:var(--c-bg);}
+  .sender-row.sel{background:var(--c-blue-sel);}
+  .sender-row .radio{width:22px; height:22px; flex:0 0 22px; border-radius:50%; border:1.5px solid var(--c-border-strong); display:grid; place-items:center; background:#fff; transition:all .15s;}
+  .sender-row .radio::after{content:""; width:10px; height:10px; border-radius:50%;}
+  .sender-row.sel .radio{border-color:var(--c-blue); background:var(--c-blue);}
+  .sender-row.sel .radio::after{background:#fff;}
+  .sender-row .si b{font-size:15px; font-weight:600; color:var(--c-text-strong); display:block;}
+  .sender-row .si span{font-size:13px; color:var(--c-text-muted);}
+  .sender-add{width:100%; padding:15px 4px; font-size:14px; font-weight:600; color:var(--c-blue); text-align:left;}
+  .sender-add:hover{text-decoration:underline;}
+
+  /* ── 확인 단계 ── */
+  .confirm-list{border-top:1px solid var(--c-divider); margin-top:28px;}
+  .cf-row{display:flex; align-items:center; justify-content:space-between; gap:20px; padding:17px 4px; border-bottom:1px solid var(--c-divider);}
+  .cf-row .cl{font-size:14px; color:var(--c-text-muted); flex:0 0 110px;}
+  .cf-row .cv{flex:1; font-size:15px; font-weight:600; color:var(--c-text-strong); text-align:right; min-width:0;}
+  .cf-row .cv small{display:block; font-size:12.5px; color:var(--c-text-muted); font-weight:400;}
+  .cf-row .edit{flex:0 0 auto; font-size:13px; font-weight:600; color:var(--c-blue); padding:4px 8px; border-radius:var(--r-md);}
+  .cf-row .edit:hover{background:var(--c-blue-soft);}
+  .cf-amount{display:flex; align-items:center; justify-content:space-between; padding:24px 4px 4px;}
+  .cf-amount span{font-size:15px; color:var(--c-text-muted);}
+  .cf-amount b{font-size:26px; font-weight:700; color:var(--c-orange-ink); letter-spacing:-.02em;}
+
+  /* 담당자 · 알림 */
+  .opt-box{margin-top:36px; background:var(--c-surface-2); border:1px solid var(--c-border); border-radius:var(--r-xl); padding:20px 24px;}
+  .opt-row{display:flex; align-items:center; justify-content:space-between; gap:14px; padding:9px 0;}
+  .opt-row .ol{font-size:14px; color:var(--c-text-2); flex:0 0 auto;}
+  .opt-row .ol small{display:block; font-size:12px; color:var(--c-text-muted);}
+  .opt-row select{height:40px; padding:0 12px; font-size:14px; border:1px solid var(--c-border-input);
+    border-radius:var(--r-lg); background:#fff; font-weight:600; color:var(--c-text-2);}
+  .opt-row select:focus{outline:none; border-color:var(--c-indigo);}
+  .toggles{display:flex; gap:8px;}
+  .tg{display:inline-flex; align-items:center; gap:5px; padding:7px 14px; border-radius:999px;
+    font-size:13px; font-weight:600; background:#fff; border:1px solid var(--c-border);
+    color:var(--c-text-faint); transition:all .13s;}
+  .tg svg{display:none; width:13px; height:13px; flex:0 0 auto;}
+  .tg.on{background:var(--c-blue-soft); border-color:var(--c-blue-border); color:var(--c-blue);}
+  .tg.on svg{display:inline-block;}
+
+  /* ── 하단 CTA (주 = 오렌지 · 기존 로그인/다음단계 버튼) ── */
+  .cta-row{display:flex; gap:10px; margin-top:44px;}
+  .btn-back{flex:0 0 auto; height:56px; padding:0 24px; border-radius:var(--r-lg);
+    background:#fff; border:1px solid var(--c-border-strong); color:var(--c-text-2); font-size:15.5px; font-weight:600; transition:all .15s;}
+  .btn-back:hover{border-color:var(--c-text-muted); background:var(--c-bg);}
+  .btn-next{flex:1; height:56px; border-radius:var(--r-lg); background:var(--c-orange); color:#fff;
+    font-size:16px; font-weight:700; box-shadow:var(--sh-btn); transition:background .15s;}
+  .btn-next:hover{background:var(--c-orange-hover);}
+  .btn-next:disabled{background:#ececef; color:var(--c-text-faint); box-shadow:none; cursor:not-allowed;}
+  .cta-hint{margin-top:12px; font-size:13px; color:var(--c-text-muted); text-align:center;}
+
+  /* ── 완료 화면 ── */
+  #panelDone{text-align:left; padding-top:64px;}
+  .done-ic{width:64px; height:64px; border-radius:50%; background:var(--c-success-bg); display:grid; place-items:center; margin-bottom:24px;}
+  .done-ic svg{width:30px; height:30px;}
+  #panelDone h2{font-size:24px; font-weight:700; color:var(--c-text-strong); letter-spacing:-.02em;}
+  #panelDone .d-sub{font-size:15px; color:var(--c-text-muted); margin-top:10px;}
+  .done-box{margin-top:32px; background:var(--c-surface-2); border:1px solid var(--c-border); border-radius:var(--r-xl); padding:8px 24px;}
+  .done-box .cf-row{border-bottom:1px solid var(--c-divider);}
+  .done-box .cf-row:last-child{border-bottom:none;}
+  .done-cta{display:flex; gap:10px; margin-top:36px; max-width:480px;}
+  .done-cta .ghost{flex:1; height:54px; border-radius:var(--r-lg); background:#fff; border:1px solid var(--c-border-strong); font-size:15px; font-weight:600; color:var(--c-text-2);}
+  .done-cta .ghost:hover{background:var(--c-bg);}
+  .done-cta .solid{flex:1; height:54px; border-radius:var(--r-lg); background:var(--c-orange); color:#fff; font-size:15px; font-weight:700; box-shadow:var(--sh-btn);}
+  .done-cta .solid:hover{background:var(--c-orange-hover);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ═══════ 페이지 헤더 (앱 공통 패턴) ═══════ -->
+  <h1 class="pagetitle">🌸 경조화환 주문</h1>
+
+  <!-- ═══════ 주문 영역: 플로팅 시트 ═══════ -->
+  <div class="sheet">
+
+  <div class="sheet-head">
+    <b>경조상품 간편주문</b>
+    <span class="sub">경조화환을 간편하게 주문해보세요!</span>
+  </div>
+
+  <!-- ═══════ 탭 스테퍼 ═══════ -->
+  <nav class="tabs" id="tabs">
+    <button class="tab active" data-tab="1"><span class="done-dot">●</span>경조사 및 상품 선택</button>
+    <button class="tab" data-tab="2"><span class="done-dot">●</span>배송지 정보 입력</button>
+    <button class="tab" data-tab="3"><span class="done-dot">●</span>리본문구 입력</button>
+    <button class="tab" data-tab="4"><span class="done-dot">●</span>작성내용 확인</button>
+  </nav>
+
+  <!-- ═══════ STEP 1 · 경조사 및 상품 ═══════ -->
+  <section class="panel on" id="p1">
+    <h2 class="q">어떤 경조사가 있으신가요?</h2>
+    <p class="q-sub">경조사를 선택하면 알맞은 주문 방법을 안내해 드려요.</p>
+
+    <!-- ① 경조사 배너 (harim mob 홈 패턴) -->
+    <div class="sec-gap" style="margin-top:24px;">
+      <div class="sec-label" style="justify-content:space-between;">경조사 구분 <small>상황에 따른 상품선택</small></div>
+      <div class="occ-stack" id="occRow">
+        <button class="intake-card" data-occ="obit" style="background-image:url('img/intake_obituary.jpg');">
+          <span class="lbl"><b>근조 · 부고</b><span>부고장 간편접수 지원</span></span>
+          <span class="occ-right"><span class="ck">✓</span><span class="arrow">›</span></span>
+        </button>
+        <button class="intake-card intake-wedding" data-occ="wed" style="background-image:url('img/intake_wedding.jpg');">
+          <span class="lbl"><b>축하 · 행사</b><span>청첩장 · 초대장 간편접수 지원</span></span>
+          <span class="occ-right"><span class="ck">✓</span><span class="arrow">›</span></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ② 배너 선택 시 나타남: 링크 간편입력 + 직접작성 -->
+    <div class="reveal" id="secUrl">
+      <div class="urlbox">
+        <div class="ub-title"><span id="ubTitle">부고장 링크가 있다면 붙여넣어주세요!</span> <span class="badge">간편</span></div>
+        <p class="ub-desc" id="ubDesc">링크 하나로 배송지 정보까지 자동으로 입력돼요.</p>
+        <div class="url-row">
+          <input type="text" id="urlInput" placeholder="https:// 부고장 링크 붙여넣기" />
+          <button id="urlBtn">불러오기</button>
+        </div>
+        <div class="url-msg" id="urlMsg"></div>
+        <button class="direct-btn" id="directBtn">링크 없이 직접 작성하기 →</button>
+      </div>
+    </div>
+
+    <!-- ③ 불러오기 완료 · 직접작성 시 나타남: 상품 선택 -->
+    <div class="reveal" id="secProd">
+      <div class="sec-gap" style="margin-top:32px;">
+        <div class="sec-label">상품 선택 <small id="prodHint"></small></div>
+        <div class="prod-list" id="prodList"></div>
+      </div>
+    </div>
+
+    <div class="cta-row">
+      <button class="btn-next" id="next1" disabled>다음</button>
+    </div>
+  </section>
+
+  <!-- ═══════ STEP 2 · 배송지 ═══════ -->
+  <section class="panel" id="p2">
+    <h2 class="q">어디로 보낼까요?</h2>
+    <p class="q-sub">화환을 받으실 장소와 시간을 알려주세요.</p>
+
+    <div class="sec-gap">
+      <div class="field">
+        <label>배송지 주소 <span class="auto-chip" id="autoChip">링크에서 자동입력</span></label>
+        <input type="text" id="fAddr" placeholder="장례식장 · 예식장 주소를 입력해 주세요" />
+      </div>
+      <div class="grid2">
+        <div class="field">
+          <label>받는분 성함</label>
+          <input type="text" id="fToName" placeholder="예) 김○○ 상주" />
+        </div>
+        <div class="field">
+          <label>받는분 연락처</label>
+          <input type="text" id="fToPhone" placeholder="010-0000-0000" inputmode="numeric" />
+        </div>
+      </div>
+    </div>
+
+    <div class="sec-gap">
+      <div class="sec-label">배송 일시</div>
+      <div class="seg">
+        <button id="segSched" class="sel">날짜 · 시간 지정</button>
+        <button id="segImm">즉시배송</button>
+      </div>
+      <div class="dt-row" id="dtRow">
+        <div class="dd datepick" id="ddDate">
+          <button type="button" class="dd-trigger" aria-haspopup="dialog" aria-expanded="false"></button>
+          <div class="dd-panel cal-panel" role="dialog" aria-label="배송 날짜 선택">
+            <div class="cal-head">
+              <button type="button" class="cal-nav" id="calPrev">‹</button>
+              <b id="calTitle"></b>
+              <button type="button" class="cal-nav" id="calNext">›</button>
+            </div>
+            <div class="cal-grid" id="calGrid"></div>
+            <p class="cal-note">오늘부터 최대 30일까지 예약할 수 있어요</p>
+          </div>
+        </div>
+        <div class="dd" id="ddHour">
+          <button type="button" class="dd-trigger" aria-haspopup="listbox" aria-expanded="false"></button>
+          <div class="dd-panel" role="listbox"></div>
+        </div>
+        <div class="dd" id="ddMin">
+          <button type="button" class="dd-trigger" aria-haspopup="listbox" aria-expanded="false"></button>
+          <div class="dd-panel" role="listbox"></div>
+        </div>
+      </div>
+      <div class="imm-note" id="immNote"></div>
+      <div class="biz-note" id="bizNote"></div>
+      <p class="dt-info">배송 시간은 <b>09:00 ~ 18:30</b> 사이에서 지정할 수 있어요 · <b>오전 11시 이전</b> 접수 건은 당일 배송할 수 있어요</p>
+    </div>
+
+    <div class="cta-row">
+      <button class="btn-back" data-nav="1">이전</button>
+      <button class="btn-next" id="next2" disabled>다음</button>
+    </div>
+  </section>
+
+  <!-- ═══════ STEP 3 · 리본문구 ═══════ -->
+  <section class="panel" id="p3">
+    <h2 class="q">리본에 어떤 마음을 담을까요?</h2>
+    <p class="q-sub">왼쪽 리본에는 문구가, 오른쪽 리본에는 보내는분이 새겨져요.</p>
+
+    <div class="sec-gap">
+      <div class="sec-label">리본 문구</div>
+      <div class="ribbon-wrap">
+        <input type="text" id="ribbonInput" maxlength="20" placeholder="문구를 입력하거나 아래에서 선택해 주세요" />
+        <span class="cnt num" id="ribbonCnt">0/20</span>
+      </div>
+      <div class="chips" id="chipRow"></div>
+      <p class="warn-line"><b>접수 후에는 문구를 수정할 수 없어요.</b> 한 번 더 확인해 주세요.</p>
+    </div>
+
+    <div class="sec-gap">
+      <div class="sec-label">보내는분</div>
+      <div class="sender-list" id="senderList"></div>
+      <button class="sender-add">＋ 새 명의 등록하기</button>
+    </div>
+
+    <div class="cta-row">
+      <button class="btn-back" data-nav="2">이전</button>
+      <button class="btn-next" id="next3" disabled>다음</button>
+    </div>
+  </section>
+
+  <!-- ═══════ STEP 4 · 작성내용 확인 ═══════ -->
+  <section class="panel" id="p4">
+    <h2 class="q">작성하신 내용을 확인해 주세요</h2>
+    <p class="q-sub">잘못된 부분이 있다면 각 항목에서 바로 고칠 수 있어요.</p>
+
+    <div class="confirm-list" id="cfList"></div>
+    <div class="cf-amount"><span>결제 금액</span><b class="num" id="cfAmount">0원</b></div>
+
+    <div class="opt-box">
+      <div class="opt-row">
+        <div class="ol">주문 담당자<small>주문 처리 상황을 안내받을 담당자예요</small></div>
+        <select id="mgrSelect"></select>
+      </div>
+      <div class="opt-row">
+        <div class="ol">배송완료 알림<small>배송이 끝나면 문자로 알려드려요</small></div>
+        <div class="toggles">
+          <button class="tg on" data-nt="recipient"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12.5 10 17.5 19 7" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>받는분</button>
+          <button class="tg on" data-nt="sender"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12.5 10 17.5 19 7" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>보내는분</button>
+          <button class="tg on" data-nt="manager"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12.5 10 17.5 19 7" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>담당자</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="cta-row">
+      <button class="btn-back" data-nav="3">이전</button>
+      <button class="btn-next" id="submitBtn">주문 접수하기</button>
+    </div>
+    <p class="cta-hint">접수 후 리본 문구는 수정할 수 없어요 · 문의 02-0000-0000</p>
+  </section>
+
+  <!-- ═══════ 완료 ═══════ -->
+  <section class="panel" id="panelDone">
+    <div class="done-ic">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M5 12.5 10 17.5 19 7" stroke="#2e7d32" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <h2>주문이 접수되었어요</h2>
+    <p class="d-sub">배송이 시작되면 알림으로 알려드릴게요.<br/>진행 상황은 실시간 주문내역에서 확인할 수 있어요.</p>
+    <div class="done-box" id="doneBox"></div>
+    <div class="done-cta">
+      <button class="ghost" id="doneNew">새 주문 작성하기</button>
+      <button class="solid">주문내역 보기</button>
+    </div>
+  </section>
+
+  </div><!-- /.sheet -->
+</div>
+
+<script>
+/* ============================================================
+   데이터 · 로직 — 시안 07과 동일 (레이아웃/플로우 유지)
+   ============================================================ */
+const MANAGERS = [
+  { name: "한다운", role: "비서",   phone: "010-1111-2222" },
+  { name: "오임찬", role: "재경부", phone: "010-3333-4444" },
+  { name: "김현수", role: "경리",   phone: "010-5555-6666" },
+];
+const PRODUCTS = {
+  obit: [
+    { key: "ob1", name: "근조 3단화환 (기본)", cat: "근조화환", price: 75000 },
+    { key: "ob2", name: "근조 3단화환 (고급)", cat: "근조화환", price: 90000 },
+  ],
+  wed: [
+    { key: "wd1", name: "축하 3단화환 (기본)", cat: "축하화환", price: 75000 },
+    { key: "wd2", name: "축하 3단화환 (고급)", cat: "축하화환", price: 90000 },
+  ],
+};
+PRODUCTS.etc = [...PRODUCTS.wed, ...PRODUCTS.obit];
+const PHRASES = {
+  obit: ["삼가 고인의 명복을 빕니다", "근조(謹弔)", "조의를 표합니다"],
+  wed:  ["축 결혼(祝 結婚)", "화혼을 진심으로 축하드립니다", "행복한 새 출발을 축하합니다"],
+  etc:  ["축 개업(祝 開業)", "축 취임(祝 就任)", "번창하시길 기원합니다", "축 승진(祝 昇進)"],
+};
+const SENDERS = [
+  { name: "(주)하림지주 대표이사", sub: "회사 명의" },
+  { name: "하림지주 재경부 일동", sub: "부서 명의" },
+];
+const MOCK_URL_DB = {
+  obit: {
+    "kakao.com":    { addr: "서울특별시 강남구 테헤란로 152 강남파이낸스센터 3층", toName: "김○○ 상주" },
+    "naeil.com":    { addr: "경기도 성남시 분당구 판교로 289 판교오피스 빌딩",     toName: "이○○ 상주" },
+    "mobile.co.kr": { addr: "서울특별시 중구 세종대로 110 서울시청 본관 2층",       toName: "박○○ 상주" },
+  },
+  wed: {
+    "wedding.me":      { addr: "서울특별시 서초구 강남대로 373 홀리데이인 강남",     toName: "최○○ 신랑측" },
+    "weddingbook.com": { addr: "서울특별시 마포구 백범로 235 서울창업허브 컨벤션홀", toName: "정○○ 신부측" },
+  },
+};
+const OCC_LABEL = { obit: "근조 · 부고", wed: "축하 · 행사", etc: "기타 경조사" };
+const URL_TEXTS = {
+  obit: { title: "부고장 링크가 있다면 붙여넣어주세요!", ph: "https:// 부고장 링크 붙여넣기" },
+  wed:  { title: "청첩장 또는 초대장 링크가 있다면 붙여넣어주세요!", ph: "https:// 청첩장 · 초대장 링크 붙여넣기" },
+};
+const won = (n) => n.toLocaleString("ko-KR") + "원";
+
+const state = {
+  step: 1, maxStep: 1,
+  occ: null, viaUrl: false,
+  product: null, ribbon: "", sender: null,
+  addr: "", toName: "", toPhone: "",
+  immediate: false, date: "", hour: "09", min: "00",
+  manager: 0,
+  notify: { recipient: true, sender: true, manager: true },
+};
+const $ = (s) => document.querySelector(s);
+
+const valid = {
+  1: () => !!(state.occ && state.product),
+  2: () => !!(state.addr && state.toName && state.toPhone && (state.immediate || state.date)),
+  3: () => !!(state.ribbon && state.sender),
+};
+
+function go(n) {
+  state.step = n;
+  state.maxStep = Math.max(state.maxStep, n);
+  for (let i = 1; i <= 4; i++) $("#p" + i).classList.toggle("on", i === n);
+  $("#panelDone").classList.remove("on");
+  document.querySelectorAll(".tab").forEach((t) => {
+    const s = +t.dataset.tab;
+    t.classList.toggle("active", s === n);
+    t.classList.toggle("reach", s <= state.maxStep && s !== n);
+    t.classList.toggle("complete", s < 4 && valid[s] && valid[s]());
+  });
+  if (n === 4) renderConfirm();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+$("#tabs").addEventListener("click", (e) => {
+  const t = e.target.closest(".tab.reach");
+  if (t) go(+t.dataset.tab);
+});
+document.addEventListener("click", (e) => {
+  const b = e.target.closest("[data-nav]");
+  if (b) go(+b.dataset.nav);
+});
+function refreshCtas() {
+  $("#next1").disabled = !valid[1]();
+  $("#next2").disabled = !valid[2]();
+  $("#next3").disabled = !valid[3]();
+  document.querySelectorAll(".tab").forEach((t) => {
+    const s = +t.dataset.tab;
+    if (s < 4 && valid[s]) t.classList.toggle("complete", valid[s]());
+  });
+}
+$("#next1").addEventListener("click", () => go(2));
+$("#next2").addEventListener("click", () => go(3));
+$("#next3").addEventListener("click", () => go(4));
+
+/* STEP 1 — 배너 선택 → 링크 박스 공개 → (불러오기 성공/직접작성) → 상품 공개 */
+function reveal(id) {
+  const el = $("#" + id);
+  if (el.classList.contains("show")) return;
+  el.classList.add("show");
+  el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+function revealProducts() { reveal("secProd"); refreshCtas(); }
+
+$("#urlBtn").addEventListener("click", () => {
+  const url = $("#urlInput").value.trim().toLowerCase();
+  const msg = $("#urlMsg");
+  if (!url) { msg.className = "url-msg err"; msg.textContent = "링크를 입력해 주세요."; return; }
+  for (const occ of ["obit", "wed"]) {
+    const hit = Object.keys(MOCK_URL_DB[occ]).find((d) => url.includes(d));
+    if (hit) {
+      const d = MOCK_URL_DB[occ][hit];
+      msg.className = "url-msg ok";
+      msg.textContent = (occ === "obit" ? "부고장" : "청첩장") + "을 확인했어요. 배송지 정보를 자동으로 입력했어요.";
+      setOcc(occ);
+      state.addr = d.addr; state.toName = d.toName; state.viaUrl = true;
+      $("#fAddr").value = d.addr; $("#fToName").value = d.toName;
+      $("#autoChip").classList.add("show");
+      revealProducts();                       /* 불러오기 완료 → 상품 공개 */
+      return;
+    }
+  }
+  msg.className = "url-msg err";
+  msg.textContent = "확인할 수 없는 링크예요. (데모: kakao.com · naeil.com · wedding.me · weddingbook.com)";
+});
+$("#directBtn").addEventListener("click", revealProducts);  /* 직접작성 → 상품 공개 */
+
+function setOcc(occ) {
+  if (state.occ !== occ) {
+    state.occ = occ;
+    state.product = null;
+    state.ribbon = ""; $("#ribbonInput").value = ""; updateCnt();
+  }
+  document.querySelectorAll("[data-occ]").forEach((b) => b.classList.toggle("sel", b.dataset.occ === occ));
+  $("#prodHint").textContent = OCC_LABEL[occ] + " 상품";
+  const t = URL_TEXTS[occ];                    /* 선택한 경조사에 맞는 안내 문구 */
+  if (t) { $("#ubTitle").textContent = t.title; $("#urlInput").placeholder = t.ph; }
+  renderProducts(); renderChips(); refreshCtas();
+  reveal("secUrl");                            /* 배너 선택 → 링크 박스 공개 */
+}
+$("#occRow").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-occ]");
+  if (b) setOcc(b.dataset.occ);
+});
+function renderProducts() {
+  if (!state.occ) return;
+  $("#prodList").innerHTML = PRODUCTS[state.occ].map((p) => `
+    <button class="prod-row ${state.product?.key === p.key ? "sel" : ""}" data-prod="${p.key}">
+      <span class="radio"></span>
+      <span class="pi"><b>${p.name}</b><span>${p.cat} · 표준 규격 · 당일배송 가능</span></span>
+      <span class="pp num">${won(p.price)}</span>
+    </button>`).join("");
+}
+$("#prodList").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-prod]");
+  if (!b) return;
+  state.product = PRODUCTS[state.occ].find((p) => p.key === b.dataset.prod);
+  renderProducts(); refreshCtas();
+});
+
+/* STEP 2 — 배송지 · 일시 */
+$("#fAddr").addEventListener("input", (e) => {
+  state.addr = e.target.value.trim();
+  if (state.viaUrl) { state.viaUrl = false; $("#autoChip").classList.remove("show"); }
+  refreshCtas();
+});
+$("#fToName").addEventListener("input", (e) => { state.toName = e.target.value.trim(); refreshCtas(); });
+$("#fToPhone").addEventListener("input", (e) => {
+  let v = e.target.value.replace(/\D/g, "").slice(0, 11);
+  if (v.length > 7) v = v.slice(0, 3) + "-" + v.slice(3, 7) + "-" + v.slice(7);
+  else if (v.length > 3) v = v.slice(0, 3) + "-" + v.slice(3);
+  e.target.value = v; state.toPhone = v; refreshCtas();
+});
+
+/* 배송 가능 시간 규정: 09:00 ~ 18:30 */
+const BIZ = { openH: 9, closeH: 18, closeM: 30 };
+const hourOptions = () =>
+  Array.from({ length: BIZ.closeH - BIZ.openH + 1 }, (_, i) => String(BIZ.openH + i).padStart(2, "0"));
+const minOptions = (hour) =>
+  (+hour === BIZ.closeH ? ["00", "10", "20", "30"] : ["00", "10", "20", "30", "40", "50"]);
+const inBizHours = (d) => {
+  const t = d.getHours() * 60 + d.getMinutes();
+  return t >= BIZ.openH * 60 && t <= BIZ.closeH * 60 + BIZ.closeM;
+};
+
+/* 커스텀 드롭다운 (harim mob 스타일) */
+function makeDropdown(rootId, { unit, options, get, set }) {
+  const root = $("#" + rootId);
+  const trigger = root.querySelector(".dd-trigger");
+  const panel = root.querySelector(".dd-panel");
+  const renderTrigger = () => { trigger.textContent = get() + unit; };
+  const close = () => { root.classList.remove("open"); trigger.setAttribute("aria-expanded", "false"); };
+  function open() {
+    document.querySelectorAll(".dd.open").forEach((d) => d !== root && d.classList.remove("open"));
+    panel.innerHTML = options().map((v) =>
+      `<button type="button" class="dd-opt ${v === get() ? "sel" : ""}" role="option"
+        aria-selected="${v === get()}" data-v="${v}">${v}${unit}</button>`).join("");
+    root.classList.add("open");
+    trigger.setAttribute("aria-expanded", "true");
+    const sel = panel.querySelector(".dd-opt.sel");
+    if (sel) panel.scrollTop = sel.offsetTop - panel.clientHeight / 2 + sel.offsetHeight / 2;
+  }
+  trigger.addEventListener("click", () => root.classList.contains("open") ? close() : open());
+  panel.addEventListener("click", (e) => {
+    const o = e.target.closest("[data-v]");
+    if (!o) return;
+    set(o.dataset.v); renderTrigger(); close();
+  });
+  document.addEventListener("click", (e) => { if (!root.contains(e.target)) close(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
+  renderTrigger();
+  return { renderTrigger };
+}
+const ddHour = makeDropdown("ddHour", {
+  unit: "시", options: hourOptions,
+  get: () => state.hour,
+  set: (v) => {
+    state.hour = v;
+    if (!minOptions(v).includes(state.min)) { state.min = "30"; ddMin.renderTrigger(); }
+  },
+});
+const ddMin = makeDropdown("ddMin", {
+  unit: "분", options: () => minOptions(state.hour),
+  get: () => state.min,
+  set: (v) => { state.min = v; },
+});
+
+/* 커스텀 데이트피커 — 현재일 기준 최대 30일 예약 */
+const fmtYMD = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+const DAYS_KO = ["일", "월", "화", "수", "목", "금", "토"];
+const dpMin = new Date(); dpMin.setHours(0, 0, 0, 0);
+const dpMax = new Date(dpMin); dpMax.setDate(dpMax.getDate() + 30);
+state.date = fmtYMD(new Date(dpMin.getTime() + 864e5));
+const dp = { y: 0, m: 0 };
+const dpRoot = $("#ddDate");
+const dpTrigger = dpRoot.querySelector(".dd-trigger");
+function dpLabel() {
+  const d = new Date(state.date + "T00:00:00");
+  dpTrigger.textContent = `${d.getFullYear()}. ${String(d.getMonth() + 1).padStart(2, "0")}. ${String(d.getDate()).padStart(2, "0")} (${DAYS_KO[d.getDay()]})`;
+}
+function dpRender() {
+  $("#calTitle").textContent = `${dp.y}년 ${dp.m + 1}월`;
+  const first = new Date(dp.y, dp.m, 1);
+  const last = new Date(dp.y, dp.m + 1, 0);
+  let html = DAYS_KO.map((w) => `<span class="cal-dow">${w}</span>`).join("");
+  for (let i = 0; i < first.getDay(); i++) html += "<span></span>";
+  for (let day = 1; day <= last.getDate(); day++) {
+    const d = new Date(dp.y, dp.m, day);
+    const ymd = fmtYMD(d);
+    const dis = d < dpMin || d > dpMax;
+    const cls = "cal-day" + (dis ? " dis" : "") + (ymd === state.date ? " sel" : "") + (ymd === fmtYMD(dpMin) ? " today" : "");
+    html += `<button type="button" class="${cls}" ${dis ? "disabled" : `data-d="${ymd}"`}>${day}</button>`;
+  }
+  $("#calGrid").innerHTML = html;
+  $("#calPrev").disabled = new Date(dp.y, dp.m, 1) <= new Date(dpMin.getFullYear(), dpMin.getMonth(), 1);
+  $("#calNext").disabled = new Date(dp.y, dp.m + 1, 1) > new Date(dpMax.getFullYear(), dpMax.getMonth(), 1);
+}
+const dpClose = () => { dpRoot.classList.remove("open"); dpTrigger.setAttribute("aria-expanded", "false"); };
+dpTrigger.addEventListener("click", () => {
+  if (dpRoot.classList.contains("open")) { dpClose(); return; }
+  document.querySelectorAll(".dd.open").forEach((x) => x !== dpRoot && x.classList.remove("open"));
+  const d0 = new Date(state.date + "T00:00:00");
+  dp.y = d0.getFullYear(); dp.m = d0.getMonth();
+  dpRender();
+  dpRoot.classList.add("open");
+  dpTrigger.setAttribute("aria-expanded", "true");
+});
+$("#calPrev").addEventListener("click", () => { dp.m--; if (dp.m < 0) { dp.m = 11; dp.y--; } dpRender(); });
+$("#calNext").addEventListener("click", () => { dp.m++; if (dp.m > 11) { dp.m = 0; dp.y++; } dpRender(); });
+$("#calGrid").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-d]"); if (!b) return;
+  state.date = b.dataset.d;
+  dpLabel(); dpClose(); refreshCtas();
+});
+document.addEventListener("click", (e) => { if (!dpRoot.contains(e.target)) dpClose(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") dpClose(); });
+dpLabel();
+
+/* 즉시배송: 영업시간(09:00~18:30) 규정 */
+function setImmediate(on) {
+  state.immediate = on;
+  $("#segImm").classList.toggle("sel", on);
+  $("#segSched").classList.toggle("sel", !on);
+  $("#dtRow").classList.toggle("dim", on);
+  const note = $("#immNote");
+  if (on) {
+    const d = new Date(Date.now() + 4 * 36e5);
+    note.textContent = `영업시간 내 접수 건은 4시간 이내(${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")} 전)에 배송해 드려요.`;
+    note.classList.add("show");
+  } else note.classList.remove("show");
+  refreshCtas();
+}
+function applyBizRule() {
+  const ok = inBizHours(new Date());
+  $("#segImm").disabled = !ok;
+  const biz = $("#bizNote");
+  if (!ok) {
+    if (state.immediate) setImmediate(false);
+    biz.textContent = "지금은 영업시간이 아니에요. 즉시배송은 영업시간(09:00 ~ 18:30)에만 접수할 수 있어요.";
+    biz.classList.add("show");
+  } else biz.classList.remove("show");
+}
+$("#segImm").addEventListener("click", () => setImmediate(true));
+$("#segSched").addEventListener("click", () => setImmediate(false));
+applyBizRule();
+setInterval(applyBizRule, 60 * 1000);
+
+/* STEP 3 — 리본문구 · 보내는분 */
+function renderChips() {
+  const occ = state.occ || "etc";
+  $("#chipRow").innerHTML = PHRASES[occ].map((ph) =>
+    `<button class="chip ${state.ribbon === ph ? "sel" : ""}" data-chip="${ph}">${ph}</button>`).join("");
+}
+$("#chipRow").addEventListener("click", (e) => {
+  const c = e.target.closest("[data-chip]");
+  if (!c) return;
+  state.ribbon = c.dataset.chip;
+  $("#ribbonInput").value = state.ribbon;
+  updateCnt(); renderChips(); refreshCtas();
+});
+$("#ribbonInput").addEventListener("input", (e) => {
+  state.ribbon = e.target.value.trim();
+  updateCnt();
+  document.querySelectorAll("[data-chip]").forEach((c) =>
+    c.classList.toggle("sel", c.dataset.chip === state.ribbon));
+  refreshCtas();
+});
+function updateCnt() { $("#ribbonCnt").textContent = $("#ribbonInput").value.length + "/20"; }
+function renderSenders() {
+  $("#senderList").innerHTML = SENDERS.map((s, i) => `
+    <button class="sender-row ${state.sender === s ? "sel" : ""}" data-sender="${i}">
+      <span class="radio"></span>
+      <span class="si"><b>${s.name}</b><span>${s.sub}</span></span>
+    </button>`).join("");
+}
+$("#senderList").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-sender]");
+  if (!b) return;
+  state.sender = SENDERS[+b.dataset.sender];
+  renderSenders(); refreshCtas();
+});
+
+/* STEP 4 — 확인 · 접수 */
+function dateLabel() {
+  if (state.immediate) return "즉시배송";
+  const d = new Date(state.date + "T00:00:00");
+  const day = ["일", "월", "화", "수", "목", "금", "토"][d.getDay()];
+  return `${d.getMonth() + 1}월 ${d.getDate()}일 (${day}) ${state.hour}:${state.min}`;
+}
+function renderConfirm() {
+  $("#cfList").innerHTML = `
+    <div class="cf-row"><span class="cl">경조사 · 상품</span>
+      <span class="cv">${state.product.name}<small>${OCC_LABEL[state.occ]}</small></span>
+      <button class="edit" data-nav="1">변경</button></div>
+    <div class="cf-row"><span class="cl">배송지</span>
+      <span class="cv">${state.addr}<small>${state.toName} · ${state.toPhone}</small></span>
+      <button class="edit" data-nav="2">변경</button></div>
+    <div class="cf-row"><span class="cl">배송 일시</span>
+      <span class="cv">${dateLabel()}</span>
+      <button class="edit" data-nav="2">변경</button></div>
+    <div class="cf-row"><span class="cl">리본 문구</span>
+      <span class="cv">${state.ribbon}<small>보내는분 · ${state.sender.name}</small></span>
+      <button class="edit" data-nav="3">변경</button></div>`;
+  $("#cfAmount").textContent = won(state.product.price);
+}
+$("#mgrSelect").innerHTML = MANAGERS.map((m, i) =>
+  `<option value="${i}">${m.name} · ${m.role}</option>`).join("");
+$("#mgrSelect").addEventListener("change", (e) => { state.manager = +e.target.value; });
+document.querySelectorAll("[data-nt]").forEach((t) =>
+  t.addEventListener("click", () => {
+    const k = t.dataset.nt;
+    state.notify[k] = !state.notify[k];
+    t.classList.toggle("on", state.notify[k]);
+  }));
+
+$("#submitBtn").addEventListener("click", () => {
+  const m = MANAGERS[state.manager];
+  $("#doneBox").innerHTML = `
+    <div class="cf-row"><span class="cl">상품</span><span class="cv">${state.product.name}</span></div>
+    <div class="cf-row"><span class="cl">리본 문구</span><span class="cv">${state.ribbon}</span></div>
+    <div class="cf-row"><span class="cl">배송</span><span class="cv">${dateLabel()}<small>${state.addr}</small></span></div>
+    <div class="cf-row"><span class="cl">담당자</span><span class="cv">${m.name} (${m.phone})</span></div>
+    <div class="cf-row"><span class="cl">결제 금액</span><span class="cv num" style="color:var(--c-orange-ink);">${won(state.product.price)}</span></div>`;
+  document.querySelectorAll(".panel").forEach((p) => p.classList.remove("on"));
+  $("#panelDone").classList.add("on");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+$("#doneNew").addEventListener("click", () => location.reload());
+
+/* init */
+renderChips(); renderSenders(); refreshCtas(); updateCnt();
+</script>
+</body>
+</html>

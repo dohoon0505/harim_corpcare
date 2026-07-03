@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>올해의경조사 디자인 시스템 (HDS) — 컴포넌트 가이드</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
+<style>
+/* ============================================================
+   HDS — Harim CorpCare Design System (올해의경조사)
+   기준: 로그인·회원가입 페이지의 브랜드 아이덴티티.
+   모든 hex는 이 토큰에서만. 외부(타사) 팔레트 값 사용 금지.
+   ============================================================ */
+:root{
+  --hds-orange-50:#fff1ec; --hds-orange-100:#ffdfd2; --hds-orange-200:#ffbfa4;
+  --hds-orange-300:#fb9a72; --hds-orange-400:#f4713f; --hds-orange-500:#f15a2a;
+  --hds-orange-600:#d94000; --hds-orange-700:#b23300;
+  --hds-ink-900:#111118; --hds-ink-700:#2b2b33; --hds-ink-500:#4b4b55;
+  --hds-gray-25:#f9f9f9; --hds-gray-50:#f5f5f7; --hds-gray-100:#ececef;
+  --hds-gray-200:#e0e0e4; --hds-gray-300:#d0d0d6; --hds-gray-400:#a9a9b2;
+  --hds-gray-500:#83838d; --hds-gray-600:#5d5d66;
+  --hds-text-strong:#111118; --hds-text:#222; --hds-text-2:#444; --hds-text-3:#666;
+  --hds-text-muted:#888; --hds-text-faint:#aaa;
+  --hds-blue:#4169e1; --hds-blue-soft:#f0f3fd; --hds-blue-border:#c5cdff;
+  --hds-success:#2e7d32; --hds-success-bg:#e8f5e9;
+  --hds-danger:#c62828;  --hds-danger-bg:#ffebee;
+  --hds-warn:#c87000;    --hds-warn-bg:#fffae6; --hds-warn-border:#f0c040;
+  --hds-obit:#3c3c48; --hds-obit-hover:#2e2e38; --hds-obit-soft:#ececf1;
+  --hds-wed:#b01254;  --hds-wed-hover:#94104a;  --hds-wed-soft:#fbe9f1;
+  --hds-r-sm:6px; --hds-r-md:8px; --hds-r-lg:10px; --hds-r-tile:14px;
+  --hds-sh-card:0 1px 6px rgba(17,17,24,.04);
+  --hds-sh-pop:0 8px 28px rgba(17,17,24,.14);
+  --hds-sh-modal:0 16px 50px rgba(17,17,24,.22);
+  --hds-sh-btn:0 2px 8px rgba(241,90,42,.28);
+  --hds-ring:0 0 0 3px rgba(241,90,42,.13);
+  --hds-ring-blue:0 0 0 3px rgba(65,105,225,.14);
+  --font:"Pretendard",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{font-family:var(--font); background:var(--hds-gray-25); color:var(--hds-text);
+  font-size:15px; line-height:1.6; -webkit-font-smoothing:antialiased; letter-spacing:-.011em;}
+button{font-family:inherit; letter-spacing:inherit; cursor:pointer; border:none; background:none; color:inherit;}
+input,select{font-family:inherit; letter-spacing:inherit; color:var(--hds-text);}
+.num{font-variant-numeric:tabular-nums;}
+::selection{background:var(--hds-orange-50);}
+:focus-visible{outline:none; box-shadow:var(--hds-ring); border-radius:var(--hds-r-sm);}
+
+/* ══════════ 가이드 프레임 ══════════ */
+.topnav{position:sticky; top:0; z-index:50; background:rgba(249,249,249,.94); backdrop-filter:blur(6px);
+  border-bottom:1px solid var(--hds-gray-200); padding:10px 24px; display:flex; gap:4px; flex-wrap:wrap;}
+.topnav a{font-size:12px; font-weight:600; color:var(--hds-text-3); text-decoration:none; padding:5px 10px; border-radius:999px;}
+.topnav a:hover{background:var(--hds-orange-50); color:var(--hds-orange-600);}
+.gd{max-width:1060px; margin:0 auto; padding:40px 40px 140px;}
+.gd-cover{background:var(--hds-ink-900); color:#fff; border-radius:var(--hds-r-tile); padding:42px 48px; margin-bottom:40px;}
+.gd-cover .k{font-size:11px; letter-spacing:3px; color:var(--hds-orange-400); font-weight:700;}
+.gd-cover h1{font-size:29px; font-weight:700; letter-spacing:-.02em; margin:12px 0 10px;}
+.gd-cover p{font-size:14px; color:#b8b8c0; max-width:640px;}
+.gd h2{font-size:20px; font-weight:700; color:var(--hds-text-strong); letter-spacing:-.02em;
+  margin:64px 0 4px; padding-top:28px; border-top:1px solid var(--hds-gray-200); scroll-margin-top:64px;}
+.gd h2 .no{color:var(--hds-orange-500); margin-right:8px; font-size:15px; vertical-align:2px;}
+.gd .desc{font-size:13.5px; color:var(--hds-text-muted); margin-bottom:18px; max-width:760px;}
+.gd h3{font-size:13.5px; font-weight:700; color:var(--hds-text-2); margin:24px 0 10px;}
+.row{display:flex; flex-wrap:wrap; gap:12px; align-items:center;}
+.panel{background:#fff; border:1px solid var(--hds-gray-200); border-radius:var(--hds-r-tile); padding:22px 24px; box-shadow:var(--hds-sh-card);}
+.canvas{background:var(--hds-gray-25); border:1px dashed var(--hds-gray-300); border-radius:var(--hds-r-lg); padding:20px;}
+
+/* 규격 표 */
+.spec{width:100%; border-collapse:collapse; font-size:12.5px; background:#fff; margin-top:14px;}
+.spec th{text-align:left; font-size:11.5px; color:var(--hds-text-3); background:var(--hds-gray-50); padding:8px 12px; border:1px solid var(--hds-gray-200); white-space:nowrap;}
+.spec td{padding:8px 12px; border:1px solid var(--hds-gray-100); color:var(--hds-text-2); vertical-align:top;}
+.spec td:first-child{font-weight:600; color:var(--hds-text-strong); white-space:nowrap;}
+.spec code{background:var(--hds-gray-50); border-radius:4px; padding:1px 6px; font-size:11px;}
+
+/* Do / Don't */
+.dodont{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:14px;}
+.dd-card{border-radius:var(--hds-r-lg); padding:14px 16px; font-size:12.5px; line-height:1.7;}
+.dd-card b{display:block; font-size:12px; margin-bottom:4px; letter-spacing:.04em;}
+.dd-card.do{background:var(--hds-success-bg);}
+.dd-card.do b{color:var(--hds-success);}
+.dd-card.dont{background:var(--hds-danger-bg);}
+.dd-card.dont b{color:var(--hds-danger);}
+.dd-card ul{margin-left:16px;}
+
+/* 스와치 */
+.swatches{display:grid; grid-template-columns:repeat(auto-fill,minmax(112px,1fr)); gap:10px;}
+.sw{border:1px solid var(--hds-gray-200); border-radius:var(--hds-r-lg); overflow:hidden; background:#fff;}
+.sw .c{height:52px;}
+.sw .m{padding:7px 10px;}
+.sw .m b{font-size:11.5px; font-weight:700; color:var(--hds-text-2); display:block;}
+.sw .m span{font-size:10.5px; color:var(--hds-text-muted);}
+.statelbl{font-size:11px; color:var(--hds-text-faint); font-weight:600; display:block; margin-bottom:6px; text-align:center;}
+.statecol{display:flex; flex-direction:column; align-items:center; gap:0;}
+
+/* ══════════ HDS 컴포넌트 ══════════ */
+/* 버튼 */
+.hds-btn{display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  height:48px; padding:0 22px; border-radius:var(--hds-r-lg); font-size:15px; font-weight:700; transition:background .15s, border-color .15s;}
+.hds-btn--primary{background:var(--hds-orange-500); color:#fff; box-shadow:var(--hds-sh-btn);}
+.hds-btn--primary:hover{background:var(--hds-orange-600);}
+.hds-btn--primary.pressed{background:var(--hds-orange-700);}
+.hds-btn--dark{background:var(--hds-ink-900); color:#fff;}
+.hds-btn--dark:hover{background:var(--hds-ink-700);}
+.hds-btn--secondary{background:#fff; border:1px solid var(--hds-gray-300); color:var(--hds-text-2); font-weight:600;}
+.hds-btn--secondary:hover{border-color:var(--hds-gray-400); background:var(--hds-gray-25);}
+.hds-btn--ghost{background:none; color:var(--hds-text-3); font-weight:600;}
+.hds-btn--ghost:hover{background:var(--hds-gray-50);}
+.hds-btn--danger{background:#fff; border:1px solid var(--hds-danger); color:var(--hds-danger); font-weight:600;}
+.hds-btn--danger:hover{background:var(--hds-danger-bg);}
+.hds-btn:disabled,.hds-btn.disabled{background:var(--hds-gray-100); color:var(--hds-text-faint); box-shadow:none; cursor:not-allowed; border:none;}
+.hds-btn--md{height:42px; padding:0 18px; font-size:14px;}
+.hds-btn--sm{height:34px; padding:0 14px; font-size:13px; border-radius:var(--hds-r-md);}
+.hds-ibtn{width:42px; height:42px; border-radius:var(--hds-r-lg); border:1px solid var(--hds-gray-200); background:#fff; display:inline-grid; place-items:center; font-size:16px; color:var(--hds-text-3); transition:all .13s;}
+.hds-ibtn:hover{border-color:var(--hds-gray-300); background:var(--hds-gray-25);}
+
+/* 텍스트 필드 */
+.hds-field{width:300px;}
+.hds-field label{display:block; font-size:13px; font-weight:600; color:var(--hds-text-2); margin-bottom:7px;}
+.hds-field label .req{color:var(--hds-danger); margin-left:2px;}
+.hds-input-wrap{position:relative;}
+.hds-input{width:100%; height:50px; padding:0 16px; font-size:15px; background:#fff;
+  border:1px solid var(--hds-gray-200); border-radius:var(--hds-r-lg); transition:border-color .15s, box-shadow .15s;}
+.hds-input::placeholder{color:var(--hds-text-faint);}
+.hds-input:hover{border-color:var(--hds-gray-300);}
+.hds-input:focus,.hds-input.focused{outline:none; border-color:var(--hds-orange-500); box-shadow:var(--hds-ring);}
+.hds-input:disabled{background:var(--hds-gray-50); color:var(--hds-text-faint); cursor:not-allowed;}
+.hds-input.has-icon{padding-left:42px;}
+.hds-input-wrap .lead{position:absolute; left:15px; top:50%; transform:translateY(-50%); color:var(--hds-text-faint); font-size:15px;}
+.hds-input-wrap .trail{position:absolute; right:13px; top:50%; transform:translateY(-50%); color:var(--hds-text-faint); font-size:12px;}
+.hds-field .help{font-size:12px; color:var(--hds-text-muted); margin-top:6px;}
+.hds-field.is-error .hds-input{border-color:var(--hds-danger); box-shadow:0 0 0 3px rgba(198,40,40,.1);}
+.hds-field.is-error .help{color:var(--hds-danger);}
+.hds-field.is-success .hds-input{border-color:var(--hds-success);}
+.hds-field.is-success .help{color:var(--hds-success);}
+
+/* 드롭다운 */
+.hds-dd{position:relative; width:180px;}
+.hds-dd-trigger{width:100%; height:50px; padding:0 40px 0 16px; text-align:left; font-size:15px; font-weight:600;
+  background:#fff; border:1px solid var(--hds-gray-200); border-radius:var(--hds-r-lg);
+  transition:border-color .15s, box-shadow .15s; position:relative; color:var(--hds-text-strong);}
+.hds-dd-trigger::after{content:""; position:absolute; right:16px; top:50%; width:8px; height:8px;
+  border-right:1.6px solid var(--hds-text-muted); border-bottom:1.6px solid var(--hds-text-muted);
+  transform:translateY(-70%) rotate(45deg); transition:transform .18s;}
+.hds-dd.open .hds-dd-trigger::after{transform:translateY(-30%) rotate(225deg);}
+.hds-dd-trigger:hover{border-color:var(--hds-gray-300);}
+.hds-dd.open .hds-dd-trigger,.hds-dd-trigger:focus{outline:none; border-color:var(--hds-orange-500); box-shadow:var(--hds-ring);}
+.hds-dd-trigger:disabled{background:var(--hds-gray-50); color:var(--hds-text-faint); cursor:not-allowed;}
+.hds-dd-panel{display:none; position:absolute; left:0; right:0; top:calc(100% + 6px); z-index:30;
+  background:#fff; border:1px solid var(--hds-gray-200); border-radius:var(--hds-r-lg);
+  box-shadow:var(--hds-sh-pop); max-height:264px; overflow-y:auto; padding:5px;}
+.hds-dd.open .hds-dd-panel{display:block;}
+.hds-dd-panel::-webkit-scrollbar{width:12px;}
+.hds-dd-panel::-webkit-scrollbar-thumb{background:var(--hds-gray-300); border-radius:8px; border:3.5px solid #fff;}
+.hds-dd-opt{width:100%; display:flex; align-items:center; justify-content:space-between;
+  padding:10px 13px; font-size:14.5px; text-align:left; border-radius:var(--hds-r-md); color:var(--hds-text-2); transition:background .1s;}
+.hds-dd-opt:hover{background:var(--hds-gray-50);}
+.hds-dd-opt.sel{background:var(--hds-orange-50); color:var(--hds-orange-600); font-weight:700;}
+.hds-dd-opt.sel::after{content:"✓"; font-size:13px;}
+
+/* 세그먼트 · 토글 · 체크 · 칩 */
+.hds-seg{display:inline-flex; background:var(--hds-gray-50); border:1px solid var(--hds-gray-200); border-radius:999px; padding:3px;}
+.hds-seg button{padding:8px 18px; border-radius:999px; font-size:13.5px; font-weight:600; color:var(--hds-text-muted); transition:all .13s;}
+.hds-seg button.sel{background:#fff; color:var(--hds-text-strong); box-shadow:0 1px 4px rgba(17,17,24,.1);}
+.hds-seg button:disabled{color:var(--hds-text-faint); cursor:not-allowed;}
+.hds-toggle{width:42px; height:23px; border-radius:999px; background:var(--hds-gray-300); position:relative; transition:background .15s; flex:0 0 auto;}
+.hds-toggle::after{content:""; position:absolute; top:2px; left:2px; width:19px; height:19px; border-radius:50%; background:#fff; transition:left .15s; box-shadow:0 1px 3px rgba(17,17,24,.2);}
+.hds-toggle.on{background:var(--hds-blue);}
+.hds-toggle.on::after{left:21px;}
+.hds-toggle:disabled{opacity:.45; cursor:not-allowed;}
+.hds-check{display:inline-flex; align-items:center; gap:9px; font-size:14px; color:var(--hds-text-2); cursor:pointer;}
+.hds-check .box{width:20px; height:20px; border-radius:6px; border:1.5px solid var(--hds-gray-300); display:grid; place-items:center; color:#fff; font-size:12px; transition:all .13s; background:#fff;}
+.hds-check.on .box{background:var(--hds-orange-500); border-color:var(--hds-orange-500);}
+.hds-radio .box{border-radius:50%;}
+.hds-radio.on .box::after{content:""; width:8px; height:8px; border-radius:50%; background:#fff;}
+.hds-chip{padding:8px 15px; border-radius:999px; border:1px solid var(--hds-gray-200); background:#fff; font-size:13px; font-weight:500; color:var(--hds-text-3); transition:all .12s;}
+.hds-chip:hover{border-color:var(--hds-orange-300); background:var(--hds-orange-50);}
+.hds-chip.sel{background:var(--hds-orange-50); border-color:var(--hds-orange-400); color:var(--hds-orange-600); font-weight:700;}
+
+/* 배지 · 아바타 */
+.hds-badge{display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:700; padding:3px 10px; border-radius:999px;}
+.hds-badge--success{background:var(--hds-success-bg); color:var(--hds-success);}
+.hds-badge--danger{background:var(--hds-danger-bg); color:var(--hds-danger);}
+.hds-badge--warn{background:var(--hds-warn-bg); color:var(--hds-warn);}
+.hds-badge--info{background:var(--hds-blue-soft); color:var(--hds-blue);}
+.hds-badge--neutral{background:var(--hds-gray-50); color:var(--hds-text-3);}
+.hds-badge--obit{background:var(--hds-obit); color:#fff;}
+.hds-badge--wed{background:var(--hds-wed); color:#fff;}
+.hds-avatar{border-radius:50%; background:var(--hds-orange-50); color:var(--hds-orange-600); display:inline-grid; place-items:center; font-weight:700;}
+.hds-avatar--info{background:var(--hds-blue-soft); color:var(--hds-blue);}
+.hds-avatar--gray{background:var(--hds-gray-50); color:var(--hds-text-3);}
+
+/* 카드 · 선택 행 */
+.hds-card{background:#fff; border:1px solid var(--hds-gray-200); border-radius:var(--hds-r-tile); box-shadow:var(--hds-sh-card);}
+.hds-card__head{display:flex; align-items:baseline; gap:10px; padding:16px 20px; border-bottom:1px solid var(--hds-gray-100);}
+.hds-card__head b{font-size:15px; font-weight:700; color:var(--hds-text-strong);}
+.hds-card__head span{font-size:12px; color:var(--hds-text-muted);}
+.hds-card__body{padding:20px;}
+.hds-selrow{display:flex; align-items:center; gap:14px; width:100%; padding:15px 16px; text-align:left;
+  border:1px solid var(--hds-gray-200); border-radius:var(--hds-r-lg); background:#fff; transition:all .13s;}
+.hds-selrow + .hds-selrow{margin-top:8px;}
+.hds-selrow:hover{border-color:var(--hds-gray-300); background:var(--hds-gray-25);}
+.hds-selrow.sel{border-color:var(--hds-orange-500); background:var(--hds-orange-50);}
+.hds-selrow .radio{width:22px; height:22px; flex:0 0 22px; border-radius:50%; border:1.5px solid var(--hds-gray-300); display:grid; place-items:center; background:#fff; transition:all .13s;}
+.hds-selrow .radio::after{content:""; width:10px; height:10px; border-radius:50%;}
+.hds-selrow.sel .radio{border-color:var(--hds-orange-500); background:var(--hds-orange-500);}
+.hds-selrow.sel .radio::after{background:#fff;}
+.hds-selrow .si{flex:1; min-width:0;}
+.hds-selrow .si b{font-size:14.5px; font-weight:600; color:var(--hds-text-strong); display:block;}
+.hds-selrow .si span{font-size:12px; color:var(--hds-text-muted);}
+.hds-selrow .price{font-size:15px; font-weight:700; color:var(--hds-text-strong);}
+.hds-selrow.sel .price{color:var(--hds-orange-600);}
+
+/* 스텝퍼 · 탭 */
+.hds-steps{display:flex; align-items:center;}
+.hds-step{display:flex; flex-direction:column; align-items:center; gap:7px; width:110px;}
+.hds-step .n{width:30px; height:30px; border-radius:50%; background:#fff; border:1.5px solid var(--hds-gray-300); color:var(--hds-text-muted); display:grid; place-items:center; font-size:13px; font-weight:700; transition:all .15s;}
+.hds-step span{font-size:12px; color:var(--hds-text-muted); font-weight:600; white-space:nowrap;}
+.hds-step.active .n{background:var(--hds-orange-500); border-color:var(--hds-orange-500); color:#fff; box-shadow:var(--hds-sh-btn);}
+.hds-step.active span{color:var(--hds-orange-600);}
+.hds-step.done .n{background:var(--hds-orange-50); border-color:var(--hds-orange-300); color:var(--hds-orange-600);}
+.hds-step-link{flex:1; height:1.5px; background:var(--hds-gray-200); min-width:40px; margin-bottom:24px;}
+.hds-tabs{display:flex; gap:26px; border-bottom:1px solid var(--hds-gray-200);}
+.hds-tab{position:relative; padding:11px 2px 12px; font-size:14.5px; font-weight:500; color:var(--hds-text-faint); cursor:default; white-space:nowrap;}
+.hds-tab.reach{color:var(--hds-text-muted); cursor:pointer;}
+.hds-tab.reach:hover{color:var(--hds-text-2);}
+.hds-tab.active{color:var(--hds-text-strong); font-weight:700;}
+.hds-tab.active::after{content:""; position:absolute; left:0; right:0; bottom:-1px; height:2px; background:var(--hds-orange-500); border-radius:2px;}
+.hds-tab .dot{display:none; color:var(--hds-orange-500); font-size:11px; margin-right:4px;}
+.hds-tab.complete .dot{display:inline;}
+
+/* 테이블 */
+.hds-table{width:100%; border-collapse:collapse; font-size:13.5px; background:#fff;}
+.hds-table th{text-align:left; font-size:12px; font-weight:600; color:var(--hds-text-3); background:var(--hds-gray-50); padding:11px 14px; border-bottom:1px solid var(--hds-gray-200); white-space:nowrap;}
+.hds-table td{padding:12px 14px; border-bottom:1px solid var(--hds-gray-100); color:var(--hds-text-2);}
+.hds-table tr:hover td{background:var(--hds-gray-25);}
+.hds-table .r{text-align:right;}
+
+/* 모달 · 토스트 · 배너 · 빈 상태 */
+.hds-modal-demo{min-height:340px; background:rgba(17,17,24,.45); display:flex; align-items:center; justify-content:center; border-radius:var(--hds-r-lg);}
+.hds-modal{width:400px; background:#fff; border-radius:var(--hds-r-tile); box-shadow:var(--hds-sh-modal); padding:26px 26px 22px;}
+.hds-modal h4{font-size:17px; font-weight:700; color:var(--hds-text-strong);}
+.hds-modal p{font-size:13.5px; color:var(--hds-text-3); margin-top:6px;}
+.hds-modal .acts{display:flex; gap:8px; margin-top:20px;}
+.hds-toast{display:inline-flex; align-items:center; gap:8px; background:var(--hds-ink-900); color:#fff; font-size:14px; font-weight:600; padding:12px 20px; border-radius:999px; box-shadow:var(--hds-sh-pop);}
+.hds-banner{display:flex; gap:10px; align-items:flex-start; border-radius:var(--hds-r-lg); padding:13px 16px; font-size:13px; line-height:1.65;}
+.hds-banner--warn{background:var(--hds-warn-bg); border:1px solid var(--hds-warn-border); color:var(--hds-text-2);}
+.hds-banner--warn b{color:var(--hds-warn);}
+.hds-banner--info{background:var(--hds-blue-soft); color:var(--hds-text-2);}
+.hds-banner--info b{color:var(--hds-blue);}
+.hds-empty{text-align:center; padding:36px 20px; color:var(--hds-text-muted); font-size:13.5px;}
+.hds-empty .ic{width:44px; height:44px; margin:0 auto 12px; border-radius:50%; background:var(--hds-gray-50); display:grid; place-items:center; font-size:18px; color:var(--hds-text-faint);}
+.hds-empty .hds-btn{margin-top:14px;}
+
+/* 내비 항목 · 페이지 헤더 */
+.hds-nav{width:210px; display:flex; flex-direction:column; gap:2px; background:#fff; border:1px solid var(--hds-gray-200); border-radius:var(--hds-r-lg); padding:10px;}
+.hds-nav .sec{font-size:11px; color:var(--hds-text-faint); font-weight:600; padding:10px 10px 5px;}
+.hds-nav a{display:flex; align-items:center; gap:10px; padding:10px 10px; border-radius:var(--hds-r-md); color:var(--hds-text-3); font-size:14px; font-weight:500; text-decoration:none; transition:background .12s,color .12s;}
+.hds-nav a:hover{background:var(--hds-gray-50);}
+.hds-nav a.active{background:var(--hds-orange-50); color:var(--hds-orange-600); font-weight:700;}
+.hds-pagehead h1{font-size:26px; font-weight:700; color:var(--hds-text-strong); letter-spacing:-.025em;}
+.hds-pagehead .sub{font-size:14.5px; color:var(--hds-text-muted); margin-top:6px;}
+</style>
+</head>
+<body>
+
+<nav class="topnav" id="topnav"></nav>
+
+<div class="gd">
+  <div class="gd-cover">
+    <div class="k">HDS · HARIM CORPCARE DESIGN SYSTEM</div>
+    <h1>올해의경조사 디자인 시스템 — 컴포넌트 가이드</h1>
+    <p>로그인·회원가입 페이지의 브랜드 아이덴티티(잉크 패널 · 브랜드 오렌지 · 소프트 그레이)를 기준으로 한
+    파운데이션과 컴포넌트별 상세 규격입니다. 모든 hex는 tokens.css에서만 정의하고, 외부 서비스 팔레트 값은 사용하지 않습니다.</p>
+  </div>
+
+  <!-- ═══ 01 원칙 ═══ -->
+  <h2 id="s01"><span class="no">01</span>디자인 원칙</h2>
+  <div class="row" style="align-items:stretch;">
+    <div class="panel" style="flex:1; min-width:250px;"><b style="font-size:14.5px;">오렌지는 행동, 블루는 정보</b>
+      <p style="font-size:13px; color:var(--hds-text-3); margin-top:8px;">화면당 오렌지 솔리드 CTA는 1개. 링크·토글·정보 배지는 블루, 그 외는 뉴트럴로 절제합니다.</p></div>
+    <div class="panel" style="flex:1; min-width:250px;"><b style="font-size:14.5px;">잉크는 무게, 그레이는 구조</b>
+      <p style="font-size:13px; color:var(--hds-text-3); margin-top:8px;">잉크(#111118)는 다크 패널·토스트·다크 버튼에만. 위계는 색이 아니라 보더·여백·타이포로 만듭니다.</p></div>
+    <div class="panel" style="flex:1; min-width:250px;"><b style="font-size:14.5px;">무드는 상황에만</b>
+      <p style="font-size:13px; color:var(--hds-text-3); margin-top:8px;">근조(#3c3c48)·축하(#b01254)는 경조 상황 구분에만 쓰고, 일반 UI에 침범하지 않습니다.</p></div>
+  </div>
+
+  <!-- ═══ 02 컬러 ═══ -->
+  <h2 id="s02"><span class="no">02</span>컬러 팔레트</h2>
+  <p class="desc">역할별 램프. 컴포넌트는 var(--hds-*)만 참조합니다.</p>
+  <h3>브랜드 오렌지 — Primary</h3><div class="swatches" id="swOrange"></div>
+  <h3>잉크 &amp; 뉴트럴</h3><div class="swatches" id="swGray"></div>
+  <h3>정보 블루 · 시맨틱</h3><div class="swatches" id="swSemantic"></div>
+  <h3>무드 (경조 상황 전용)</h3><div class="swatches" id="swMood"></div>
+  <div class="dodont">
+    <div class="dd-card do"><b>DO</b><ul><li>주 CTA·선택 강조 → 오렌지</li><li>링크·토글·자동입력 배지 → 블루</li><li>상태(성공/오류/주의) → 시맨틱 워시 + 잉크 텍스트</li></ul></div>
+    <div class="dd-card dont"><b>DON'T</b><ul><li>외부 팔레트(#3182f6, #191f28, #e5e8eb…) 사용</li><li>블루를 CTA에 사용</li><li>무드 컬러를 일반 버튼·배지에 사용</li></ul></div>
+  </div>
+
+  <!-- ═══ 03 타이포 ═══ -->
+  <h2 id="s03"><span class="no">03</span>타이포그래피</h2>
+  <p class="desc">Pretendard 단일 서체 · 웨이트 400/500/600/700 · letter-spacing -0.011em · 금액은 tabular-nums.</p>
+  <div class="panel">
+    <div style="font-size:30px; font-weight:700; color:var(--hds-text-strong); letter-spacing:-.025em;">Display 30/700 — 페이지 타이틀</div>
+    <div style="font-size:26px; font-weight:700; color:var(--hds-text-strong); margin-top:8px;">H1 26/700 — 화면 헤딩</div>
+    <div style="font-size:22px; font-weight:700; color:var(--hds-text-strong); margin-top:8px;">H2 22/700 — 대화형 질문 "어떤 경조사인가요?"</div>
+    <div style="font-size:18px; font-weight:700; color:var(--hds-text-strong); margin-top:8px;">H3 18/700 — 섹션 타이틀</div>
+    <div style="font-size:15px; margin-top:8px;">Body 15/400 — 본문 · <b style="font-weight:600;">강조 15/600</b></div>
+    <div style="font-size:13px; color:var(--hds-text-3); margin-top:6px;">Label 13/600 · 보조 13/400</div>
+    <div style="font-size:12px; color:var(--hds-text-muted); margin-top:4px;">Caption 12/400 — 힌트 · <span class="num" style="font-weight:700; color:var(--hds-text-strong);">610,000원</span> (금액 tabular-nums)</div>
+  </div>
+  <table class="spec"><tr><th>레벨</th><th>크기/웨이트</th><th>용도</th></tr>
+    <tr><td>Display</td><td>30 / 700</td><td>페이지 타이틀 (페이지당 1개)</td></tr>
+    <tr><td>H1</td><td>26 / 700</td><td>화면 헤딩, 게이트 화면 타이틀</td></tr>
+    <tr><td>H2</td><td>22 / 700</td><td>단계별 대화형 질문 헤딩</td></tr>
+    <tr><td>H3</td><td>18 / 700</td><td>카드·섹션 타이틀</td></tr>
+    <tr><td>Body</td><td>15 / 400·600</td><td>본문, 입력값, 리스트</td></tr>
+    <tr><td>Label</td><td>13 / 600</td><td>필드 라벨, 표 헤더</td></tr>
+    <tr><td>Caption</td><td>12 / 400</td><td>힌트, 캡션, 배지</td></tr></table>
+
+  <!-- ═══ 04 스페이싱 ═══ -->
+  <h2 id="s04"><span class="no">04</span>스페이싱 · 라디우스 · 그림자</h2>
+  <p class="desc">4px 기반 8단계 스페이싱. 라디우스는 4종만: 6 / 8 / 10 / 14.</p>
+  <table class="spec"><tr><th>토큰</th><th>값</th><th>용도</th></tr>
+    <tr><td>spacing</td><td>4 · 8 · 12 · 16 · 20 · 24 · 32 · 40</td><td>인접 요소 8, 그룹 간 16~24, 섹션 간 32~40</td></tr>
+    <tr><td>--hds-r-sm 6</td><td>6px</td><td>인라인 코드, 미니 요소</td></tr>
+    <tr><td>--hds-r-md 8</td><td>8px</td><td>드롭다운 옵션, 작은 버튼</td></tr>
+    <tr><td>--hds-r-lg 10</td><td>10px</td><td>버튼, 인풋, 드롭다운, 배너</td></tr>
+    <tr><td>--hds-r-tile 14</td><td>14px</td><td>카드, 모달, 큰 타일</td></tr>
+    <tr><td>--hds-sh-card</td><td><code>0 1px 6px rgba(17,17,24,.04)</code></td><td>카드 (기본은 보더가 위계, 그림자는 미세하게)</td></tr>
+    <tr><td>--hds-sh-pop</td><td><code>0 8px 28px …14%</code></td><td>드롭다운 패널, 팝오버, 토스트</td></tr>
+    <tr><td>--hds-sh-modal</td><td><code>0 16px 50px …22%</code></td><td>모달 전용</td></tr>
+    <tr><td>--hds-ring</td><td><code>0 0 0 3px rgba(241,90,42,.13)</code></td><td>포커스 링 (필드·드롭다운·버튼)</td></tr></table>
+
+  <!-- ═══ 05 버튼 ═══ -->
+  <h2 id="s05"><span class="no">05</span>버튼 Button</h2>
+  <p class="desc">행동의 무게에 따라 5종. Primary는 화면당 1개, Dark는 보조 강조(간편접수 조회·불러오기), 파괴적 행동은 Danger 아웃라인.</p>
+  <div class="panel">
+    <h3 style="margin-top:0;">변형 Variants</h3>
+    <div class="row">
+      <button class="hds-btn hds-btn--primary">주문 접수하기</button>
+      <button class="hds-btn hds-btn--dark">불러오기</button>
+      <button class="hds-btn hds-btn--secondary">공개 링크 복사</button>
+      <button class="hds-btn hds-btn--ghost">이전으로</button>
+      <button class="hds-btn hds-btn--danger hds-btn--md">담당자 삭제</button>
+      <button class="hds-btn" disabled>필수 항목을 입력해 주세요</button>
+    </div>
+    <h3>상태 States (Primary)</h3>
+    <div class="row" style="gap:20px;">
+      <span class="statecol"><span class="statelbl">default</span><button class="hds-btn hds-btn--primary hds-btn--md">버튼</button></span>
+      <span class="statecol"><span class="statelbl">hover</span><button class="hds-btn hds-btn--primary hds-btn--md" style="background:var(--hds-orange-600);">버튼</button></span>
+      <span class="statecol"><span class="statelbl">pressed</span><button class="hds-btn hds-btn--primary hds-btn--md pressed">버튼</button></span>
+      <span class="statecol"><span class="statelbl">focus</span><button class="hds-btn hds-btn--primary hds-btn--md" style="box-shadow:var(--hds-ring);">버튼</button></span>
+      <span class="statecol"><span class="statelbl">disabled</span><button class="hds-btn hds-btn--md" disabled>버튼</button></span>
+    </div>
+    <h3>사이즈 · 아이콘 버튼</h3>
+    <div class="row">
+      <button class="hds-btn hds-btn--primary">Large 48 — 제출·접수</button>
+      <button class="hds-btn hds-btn--secondary hds-btn--md">Medium 42 — 카드 내 액션</button>
+      <button class="hds-btn hds-btn--secondary hds-btn--sm">Small 34 — 행 안 보조</button>
+      <button class="hds-ibtn" aria-label="새로고침">↻</button>
+    </div>
+  </div>
+  <table class="spec"><tr><th>속성</th><th>Large</th><th>Medium</th><th>Small</th></tr>
+    <tr><td>높이</td><td>48px</td><td>42px</td><td>34px</td></tr>
+    <tr><td>패딩(좌우)</td><td>22px</td><td>18px</td><td>14px</td></tr>
+    <tr><td>폰트</td><td>15 / 700 (secondary·ghost 600)</td><td>14</td><td>13</td></tr>
+    <tr><td>라디우스</td><td colspan="2">10px</td><td>8px</td></tr>
+    <tr><td>컬러</td><td colspan="3">primary <code>orange-500→600→700</code> · dark <code>ink-900→700</code> · secondary <code>#fff + gray-300 보더</code> · disabled <code>gray-100 / text-faint</code></td></tr></table>
+  <div class="dodont">
+    <div class="dd-card do"><b>DO</b><ul><li>단계 이동·최종 제출은 Large Primary 1개</li><li>파괴적 행동은 Danger 아웃라인 + 확인 모달</li><li>버튼 문구는 동사로 ("주문 접수하기")</li></ul></div>
+    <div class="dd-card dont"><b>DON'T</b><ul><li>Primary 2개 이상 나란히 배치</li><li>Dark를 제출 버튼으로 사용 (보조 강조 전용)</li><li>비활성 버튼에 hover 효과 부여</li></ul></div>
+  </div>
+
+  <!-- ═══ 06 텍스트 필드 ═══ -->
+  <h2 id="s06"><span class="no">06</span>텍스트 필드 Text Field</h2>
+  <p class="desc">회원가입 페이지 필드와 동일 규격. 라벨은 항상 위, 도움말·오류는 아래 12px.</p>
+  <div class="panel">
+    <div class="row" style="align-items:flex-start; gap:22px;">
+      <div class="hds-field"><label>기본 <span class="req">*</span></label>
+        <input class="hds-input" placeholder="배송지 주소를 입력해 주세요" /><p class="help">플레이스홀더는 실제 입력 예시로</p></div>
+      <div class="hds-field"><label>포커스</label>
+        <input class="hds-input focused" value="서울 강남구 테헤란로 152" /><p class="help">오렌지 보더 + 소프트 링</p></div>
+      <div class="hds-field is-error"><label>오류</label>
+        <input class="hds-input" value="010-12" /><p class="help">연락처 형식이 올바르지 않아요</p></div>
+    </div>
+    <div class="row" style="align-items:flex-start; gap:22px; margin-top:18px;">
+      <div class="hds-field is-success"><label>성공 · 자동입력</label>
+        <input class="hds-input" value="서울 강남구 테헤란로 152" /><p class="help">부고장에서 자동입력되었습니다</p></div>
+      <div class="hds-field"><label>아이콘 · 트레일링</label>
+        <div class="hds-input-wrap"><span class="lead">🔍</span><input class="hds-input has-icon" value="리본 문구" /><span class="trail num">6/20</span></div></div>
+      <div class="hds-field"><label>비활성</label>
+        <input class="hds-input" value="자동 계산됩니다" disabled /></div>
+    </div>
+  </div>
+  <table class="spec"><tr><th>속성</th><th>값</th></tr>
+    <tr><td>높이 / 패딩</td><td>50px / 좌우 16px (아이콘 시 좌 42px)</td></tr>
+    <tr><td>보더 / 라디우스</td><td>1px <code>gray-200</code> / 10px · hover <code>gray-300</code></td></tr>
+    <tr><td>포커스</td><td>보더 <code>orange-500</code> + <code>--hds-ring</code></td></tr>
+    <tr><td>오류 / 성공</td><td>보더 <code>danger</code>+레드 링 / 보더 <code>success</code> · 도움말 동일 색</td></tr>
+    <tr><td>라벨 / 도움말</td><td>13/600 <code>text-2</code>, 필수 * 레드 / 12px, 위 6px 간격</td></tr>
+    <tr><td>비활성</td><td>배경 <code>gray-50</code>, 텍스트 <code>text-faint</code></td></tr></table>
+  <div class="dodont">
+    <div class="dd-card do"><b>DO</b><ul><li>연락처는 입력 중 자동 하이픈</li><li>자동입력 값은 성공 상태 + 배지로 출처 표기</li><li>오류는 제출 시점이 아닌 blur 시점에 인라인 표시</li></ul></div>
+    <div class="dd-card dont"><b>DON'T</b><ul><li>라벨을 플레이스홀더로 대체</li><li>필드 안에 버튼 2개 이상 내장</li><li>포커스 링 제거</li></ul></div>
+  </div>
+
+  <!-- ═══ 07 드롭다운 ═══ -->
+  <h2 id="s07"><span class="no">07</span>드롭다운 Dropdown</h2>
+  <p class="desc">harim mob 패턴. 네이티브 select 대신 사용. 옵션 7개 이하이며 값이 짧으면 세그먼트를 우선 고려.</p>
+  <div class="panel" style="padding-bottom:130px;">
+    <div class="row">
+      <div class="hds-dd" id="demoDD1"><button type="button" class="hds-dd-trigger" aria-haspopup="listbox" aria-expanded="false">09시</button><div class="hds-dd-panel" role="listbox"></div></div>
+      <div class="hds-dd" style="width:140px;" id="demoDD2"><button type="button" class="hds-dd-trigger" aria-haspopup="listbox" aria-expanded="false">00분</button><div class="hds-dd-panel" role="listbox"></div></div>
+      <div class="hds-dd" style="width:150px;"><button type="button" class="hds-dd-trigger" disabled>비활성</button></div>
+      <span style="font-size:12.5px; color:var(--hds-text-muted);">← 클릭 데모 · 시 09~18 / 18시 선택 시 분 00~30 제한</span>
+    </div>
+  </div>
+  <table class="spec"><tr><th>속성</th><th>값</th></tr>
+    <tr><td>트리거</td><td>필드와 동일(50px·10px·gray-200) + 우측 셰브론, 열림 시 180° 회전 + 오렌지 보더·링</td></tr>
+    <tr><td>패널</td><td>트리거 아래 6px · 라디우스 10 · <code>sh-pop</code> · max-height 264 스크롤 · 패딩 5px</td></tr>
+    <tr><td>옵션</td><td>높이 ~40px · hover <code>gray-50</code> · 선택 <code>orange-50 워시 + orange-600 텍스트 + ✓</code></td></tr>
+    <tr><td>동작</td><td>한 번에 1개만 열림 · 바깥 클릭/ESC 닫힘 · 열릴 때 선택값 중앙 스크롤 · 선택 즉시 닫힘</td></tr>
+    <tr><td>접근성</td><td><code>role="listbox"</code> · <code>aria-expanded</code> · <code>aria-selected</code></td></tr>
+    <tr><td>JS</td><td><code>ui.js makeDropdown()</code> 공용 헬퍼만 사용 (페이지별 재구현 금지)</td></tr></table>
+  <div class="dodont">
+    <div class="dd-card do"><b>DO</b><ul><li>연동 제약(18시→분 00~30)은 옵션 재계산 + 자동 보정</li><li>레일이 화면 하단이면 위로 전개</li></ul></div>
+    <div class="dd-card dont"><b>DON'T</b><ul><li>선택 행에 솔리드 배경+흰 글자 (워시+체크가 표준)</li><li>옵션 안에 보조 버튼 배치</li></ul></div>
+  </div>
+
+  <!-- ═══ 08 선택 컨트롤 ═══ -->
+  <h2 id="s08"><span class="no">08</span>선택 컨트롤 Selection Controls</h2>
+  <p class="desc">쓰임이 겹치지 않게: 세그먼트=모드 전환(2~3개) · 토글=켜기/끄기 · 라디오/체크=폼 선택 · 칩=값 빠른 선택.</p>
+  <div class="panel">
+    <div class="row" style="gap:28px;">
+      <span class="statecol"><span class="statelbl">세그먼트</span>
+        <span class="hds-seg" id="demoSeg"><button class="sel">날짜 · 시간 지정</button><button>즉시배송</button><button disabled>예약</button></span></span>
+      <span class="statecol"><span class="statelbl">토글 on / off / disabled</span>
+        <span class="row" style="gap:10px;"><button class="hds-toggle on" aria-label="알림"></button><button class="hds-toggle" aria-label="알림"></button><button class="hds-toggle" disabled aria-label="알림"></button></span></span>
+      <span class="statecol"><span class="statelbl">체크 · 라디오</span>
+        <span class="row" style="gap:14px;"><span class="hds-check on" data-ck><span class="box">✓</span>약관 동의</span>
+        <span class="hds-check hds-radio on"><span class="box"></span>회사 명의</span><span class="hds-check hds-radio"><span class="box"></span>부서 명의</span></span></span>
+    </div>
+    <h3>칩 — 추천 리본 문구</h3>
+    <div class="row" id="demoChips">
+      <button class="hds-chip sel">삼가 고인의 명복을 빕니다</button>
+      <button class="hds-chip">근조(謹弔)</button>
+      <button class="hds-chip">조의를 표합니다</button>
+      <button class="hds-chip">+ 직접 입력</button>
+    </div>
+  </div>
+  <table class="spec"><tr><th>컴포넌트</th><th>규격</th><th>사용 기준</th></tr>
+    <tr><td>세그먼트</td><td>트랙 <code>gray-50</code>+보더, 선택 필 흰색+그림자, 높이 36</td><td>상호배타 모드 2~3개 (즉시/지정)</td></tr>
+    <tr><td>토글</td><td>42×23 · on = <code>blue</code> (기존 앱 관례)</td><td>알림 on/off 등 즉시 반영 스위치</td></tr>
+    <tr><td>체크박스</td><td>20×20 r6 · on = <code>orange-500</code></td><td>동의, 다중 선택</td></tr>
+    <tr><td>라디오</td><td>20×20 원형 · on = <code>orange-500</code></td><td>폼 내 단일 선택</td></tr>
+    <tr><td>칩</td><td>높이 34 필 · 선택 = 오렌지 워시+보더+잉크</td><td>추천값 빠른 입력 (다중 아님)</td></tr></table>
+  <div class="dodont">
+    <div class="dd-card do"><b>DO</b><ul><li>칩 선택 시 입력 필드에 즉시 반영</li><li>토글은 저장 버튼 없이 즉시 적용되는 항목에만</li></ul></div>
+    <div class="dd-card dont"><b>DON'T</b><ul><li>세그먼트에 4개 이상 옵션</li><li>토글을 폼 제출 값 선택에 사용 (라디오 사용)</li></ul></div>
+  </div>
+
+  <!-- ═══ 09 선택 행 ═══ -->
+  <h2 id="s09"><span class="no">09</span>선택 행 Selection Row</h2>
+  <p class="desc">상품·보내는분처럼 "설명이 있는 단일 선택"에 사용하는 라디오 카드 행.</p>
+  <div class="panel" style="max-width:520px;">
+    <button class="hds-selrow"><span class="radio"></span><span class="si"><b>근조 3단화환 (기본)</b><span>근조화환 · 표준 규격 · 당일배송 가능</span></span><span class="price num">75,000원</span></button>
+    <button class="hds-selrow sel"><span class="radio"></span><span class="si"><b>근조 3단화환 (고급)</b><span>근조화환 · 표준 규격 · 당일배송 가능</span></span><span class="price num">90,000원</span></button>
+  </div>
+  <table class="spec"><tr><th>속성</th><th>값</th></tr>
+    <tr><td>구성</td><td>라디오(22px) + 타이틀 14.5/600 + 설명 12 + 우측 값(금액 등)</td></tr>
+    <tr><td>기본 / hover</td><td>흰 배경 + <code>gray-200</code> 보더 / <code>gray-300</code> 보더 + <code>gray-25</code></td></tr>
+    <tr><td>선택</td><td>보더 <code>orange-500</code> + 배경 <code>orange-50</code> + 값 <code>orange-600</code></td></tr>
+    <tr><td>간격 / 라디우스</td><td>행 간 8px / 10px · 패딩 15×16</td></tr></table>
+
+  <!-- ═══ 10 배지·아바타 ═══ -->
+  <h2 id="s10"><span class="no">10</span>배지 · 아바타 Badge · Avatar</h2>
+  <p class="desc">배지는 "상태"에만. 상황(근조/축하) 라벨은 무드 배지로 구분합니다.</p>
+  <div class="panel">
+    <div class="row">
+      <span class="hds-badge hds-badge--success">동의 완료</span>
+      <span class="hds-badge hds-badge--danger">동의 필요</span>
+      <span class="hds-badge hds-badge--warn">기한 임박</span>
+      <span class="hds-badge hds-badge--info">자동입력</span>
+      <span class="hds-badge hds-badge--neutral">임시저장</span>
+      <span class="hds-badge hds-badge--obit">근조 · 부고</span>
+      <span class="hds-badge hds-badge--wed">축하 · 결혼식</span>
+    </div>
+    <h3>아바타 (이니셜)</h3>
+    <div class="row">
+      <span class="hds-avatar" style="width:44px;height:44px;font-size:16px;">한</span>
+      <span class="hds-avatar" style="width:34px;height:34px;font-size:13px;">오</span>
+      <span class="hds-avatar hds-avatar--info" style="width:34px;height:34px;font-size:13px;">김</span>
+      <span class="hds-avatar hds-avatar--gray" style="width:28px;height:28px;font-size:11.5px;">하</span>
+    </div>
+  </div>
+  <table class="spec"><tr><th>속성</th><th>값</th></tr>
+    <tr><td>배지</td><td>12/700 · 패딩 3×10 · 필(999px) · 시맨틱 워시 배경 + 동일 계열 잉크</td></tr>
+    <tr><td>무드 배지</td><td>솔리드(<code>obit</code>/<code>wed</code>) + 흰 글자 — 상황 라벨 전용</td></tr>
+    <tr><td>아바타</td><td>44(프로필) / 34(리스트) / 28(인라인) · 기본 오렌지 워시, 정보성은 블루 워시</td></tr></table>
+
+  <!-- ═══ 11 카드 ═══ -->
+  <h2 id="s11"><span class="no">11</span>카드 Card</h2>
+  <p class="desc">화면의 기본 컨테이너. 헤더(타이틀+보조)와 바디로 구성. 카드 안에 카드를 넣지 않습니다.</p>
+  <div class="row" style="align-items:flex-start;">
+    <div class="hds-card" style="width:360px;">
+      <div class="hds-card__head"><b>상품 선택</b><span>근조 · 부고 상품 2종</span></div>
+      <div class="hds-card__body" style="font-size:13.5px; color:var(--hds-text-3);">섹션 카드 — 폼 그룹, 요약, 설정 묶음에 사용</div>
+    </div>
+    <div class="hds-card" style="width:300px;"><div class="hds-card__body">
+      <div class="hds-empty"><div class="ic">◎</div>해당 월의 거래 내역이 없어요<br/><button class="hds-btn hds-btn--secondary hds-btn--sm">기간 변경</button></div>
+    </div></div>
+  </div>
+  <table class="spec"><tr><th>속성</th><th>값</th></tr>
+    <tr><td>컨테이너</td><td>흰 배경 · 1px <code>gray-200</code> · 라디우스 14 · <code>sh-card</code></td></tr>
+    <tr><td>헤더</td><td>패딩 16×20 · 타이틀 15/700 + 보조 12 · 하단 헤어라인 <code>gray-100</code></td></tr>
+    <tr><td>바디</td><td>패딩 20 · 카드 간 간격 14~16px</td></tr>
+    <tr><td>빈 상태</td><td>아이콘 서클 44 + 안내 13.5 + (선택) Small Secondary 액션</td></tr></table>
+
+  <!-- ═══ 12 스텝퍼·탭 ═══ -->
+  <h2 id="s12"><span class="no">12</span>스텝퍼 · 탭 Stepper · Tabs</h2>
+  <p class="desc">위저드 진행은 스텝퍼(회원가입 패턴), 완료 여부가 있는 단계 이동은 언더라인 탭(주문 페이지 패턴).</p>
+  <div class="panel">
+    <div class="hds-steps">
+      <div class="hds-step done"><span class="n">✓</span><span>경조사 · 상품</span></div><div class="hds-step-link"></div>
+      <div class="hds-step active"><span class="n">2</span><span>배송지 입력</span></div><div class="hds-step-link"></div>
+      <div class="hds-step"><span class="n">3</span><span>리본문구</span></div><div class="hds-step-link"></div>
+      <div class="hds-step"><span class="n">4</span><span>작성내용 확인</span></div>
+    </div>
+    <h3>언더라인 탭</h3>
+    <div class="hds-tabs">
+      <button class="hds-tab complete reach"><span class="dot">●</span>경조사 및 상품 선택</button>
+      <button class="hds-tab active"><span class="dot">●</span>배송지 정보 입력</button>
+      <button class="hds-tab"><span class="dot">●</span>리본문구 입력</button>
+      <button class="hds-tab"><span class="dot">●</span>작성내용 확인</button>
+    </div>
+  </div>
+  <table class="spec"><tr><th>속성</th><th>값</th></tr>
+    <tr><td>스텝 원</td><td>30px · 대기 = 흰 배경+<code>gray-300</code> 보더 · 활성 = <code>orange-500</code> 솔리드 · 완료 = <code>orange-50</code> 워시+✓</td></tr>
+    <tr><td>탭</td><td>14.5px · 활성 = 잉크 700 + 2px <code>orange-500</code> 언더라인 · 완료 = 오렌지 점 · 도달한 탭만 클릭 가능</td></tr>
+    <tr><td>연결선</td><td>1.5px <code>gray-200</code></td></tr></table>
+
+  <!-- ═══ 13 테이블 ═══ -->
+  <h2 id="s13"><span class="no">13</span>테이블 Table</h2>
+  <p class="desc">앱 내 조회 화면용. A4 명세서 문서 내부 표(invoice-doc)는 인쇄 규격이므로 이 스타일을 적용하지 않습니다.</p>
+  <div class="hds-card"><div class="hds-card__body" style="padding:0;">
+    <table class="hds-table">
+      <thead><tr><th>배송요청일</th><th>발송인</th><th>주문상품</th><th class="r">결제금액</th><th class="r">상태</th></tr></thead>
+      <tbody>
+        <tr><td class="num">2026. 04. 28</td><td>홍길동</td><td>근조 3단화환 (기본)</td><td class="r num">75,000원</td><td class="r"><span class="hds-badge hds-badge--success">배송완료</span></td></tr>
+        <tr><td class="num">2026. 04. 25</td><td>김태권</td><td>축하 3단화환 (기본)</td><td class="r num">75,000원</td><td class="r"><span class="hds-badge hds-badge--info">배송중</span></td></tr>
+        <tr><td class="num">2026. 04. 21</td><td>김태권</td><td>근조 3단화환 (고급)</td><td class="r num">90,000원</td><td class="r"><span class="hds-badge hds-badge--warn">접수대기</span></td></tr>
+      </tbody>
+    </table>
+  </div></div>
+  <table class="spec"><tr><th>속성</th><th>값</th></tr>
+    <tr><td>헤더</td><td><code>gray-50</code> 배경 · 12/600 <code>text-3</code> · 하단 1px <code>gray-200</code></td></tr>
+    <tr><td>행</td><td>패딩 12×14 · 헤어라인 <code>gray-100</code> · hover <code>gray-25</code></td></tr>
+    <tr><td>정렬</td><td>금액·숫자 우측 + tabular-nums · 상태는 배지</td></tr></table>
+
+  <!-- ═══ 14 모달 ═══ -->
+  <h2 id="s14"><span class="no">14</span>모달 Modal</h2>
+  <p class="desc">확인이 꼭 필요한 결정(파괴적 행동, 최종 동의)에만. 입력 플로우는 모달 대신 인라인/단계로 풉니다.</p>
+  <div class="hds-modal-demo">
+    <div class="hds-modal">
+      <h4>계산서 발급에 동의할까요?</h4>
+      <p>2026년 4월 결제금액 610,000원으로 세금계산서가 발급됩니다. 동의 후에는 내용을 변경할 수 없습니다.</p>
+      <div class="acts">
+        <button class="hds-btn hds-btn--secondary hds-btn--md" style="flex:1;">취소</button>
+        <button class="hds-btn hds-btn--primary hds-btn--md" style="flex:1;">동의합니다</button>
+      </div>
+    </div>
+  </div>
+  <table class="spec"><tr><th>속성</th><th>값</th></tr>
+    <tr><td>오버레이</td><td><code>rgba(17,17,24,.45)</code> — 잉크 기반 딤</td></tr>
+    <tr><td>패널</td><td>너비 400~560 · 라디우스 14 · <code>sh-modal</code> · 패딩 26</td></tr>
+    <tr><td>구성</td><td>타이틀 17/700 + 본문 13.5 + 액션 2개(취소=Secondary 좌, 확인=Primary 우)</td></tr>
+    <tr><td>동작</td><td>포커스 트랩(<code>ui.js openModal</code>) · ESC/딤 클릭 닫기 · 파괴적 확인은 Danger 버튼</td></tr></table>
+
+  <!-- ═══ 15 피드백 ═══ -->
+  <h2 id="s15"><span class="no">15</span>피드백 Toast · Inline · Banner</h2>
+  <p class="desc">토스트=행동 결과(2초) · 인라인 메시지=필드/조회 결과 · 배너=화면 단위 안내.</p>
+  <div class="panel">
+    <div class="row" style="gap:14px;">
+      <span class="hds-toast">공개 링크가 복사되었습니다</span>
+      <span style="background:var(--hds-success-bg); color:var(--hds-success); font-size:13px; border-radius:var(--hds-r-md); padding:9px 14px;">조회 성공 — 배송지 정보를 불러왔습니다</span>
+      <span style="background:var(--hds-danger-bg); color:var(--hds-danger); font-size:13px; border-radius:var(--hds-r-md); padding:9px 14px;">지원하지 않는 URL입니다</span>
+    </div>
+    <h3>배너</h3>
+    <div class="hds-banner hds-banner--warn" style="margin-bottom:10px;"><span>📌</span><span><b>주문 시 참고사항</b> — 당일 오전 11:00 이전 주문 건 당일 배송 가능 · 리본 문구는 접수 후 수정 불가</span></div>
+    <div class="hds-banner hds-banner--info"><span>ℹ️</span><span><b>영업시간 안내</b> — 즉시배송은 영업시간(09:00 ~ 18:30)에만 접수할 수 있어요</span></div>
+  </div>
+  <table class="spec"><tr><th>유형</th><th>규격</th><th>사용</th></tr>
+    <tr><td>토스트</td><td>잉크 필 · 14/600 · 하단 중앙 · 2초 후 자동 소멸</td><td>복사·저장·동의 등 행동 결과</td></tr>
+    <tr><td>인라인</td><td>시맨틱 워시 박스 · 13px · 라디우스 8</td><td>조회 성공/실패, 필드 결과</td></tr>
+    <tr><td>배너</td><td>warn = <code>warn-bg</code>+보더 · info = <code>blue-soft</code> · 13px</td><td>화면 상시 안내 (닫기 없음)</td></tr></table>
+
+  <!-- ═══ 16 내비 ═══ -->
+  <h2 id="s16"><span class="no">16</span>사이드바 내비 · 페이지 헤더</h2>
+  <p class="desc">셸 컴포넌트. 활성 항목은 오렌지 워시(기존 앱과 동일), 페이지 헤더는 타이틀+서브카피 고정 패턴.</p>
+  <div class="row" style="align-items:flex-start; gap:24px;">
+    <div class="hds-nav">
+      <div class="sec">사용자 메뉴</div>
+      <a href="#" class="active">🌸 경조화환 주문</a>
+      <a href="#">📋 실시간 주문내역</a>
+      <div class="sec">정산관련메뉴</div>
+      <a href="#">📄 거래명세서 조회</a>
+      <a href="#">💰 정산회계 조회</a>
+    </div>
+    <div class="panel hds-pagehead" style="flex:1; min-width:320px;">
+      <h1>경조화환 주문</h1>
+      <p class="sub">상황을 먼저 선택하면, 알맞은 상품과 리본 문구를 준비해 드려요</p>
+    </div>
+  </div>
+  <table class="spec"><tr><th>속성</th><th>값</th></tr>
+    <tr><td>내비 항목</td><td>높이 ~40 · 14/500 · hover <code>gray-50</code> · 활성 <code>orange-50</code> 배경 + <code>orange-600</code> 700</td></tr>
+    <tr><td>페이지 헤더</td><td>타이틀 26/700 + 서브 14.5 <code>text-muted</code> · 아래 콘텐츠와 24~32px 간격</td></tr></table>
+
+  <p style="font-size:12px; color:var(--hds-text-muted); margin-top:48px;">
+    적용 계획: 레포 루트 <code style="background:var(--hds-gray-50); border-radius:4px; padding:1px 6px;">PLAN_디자인시스템_적용.md</code> ·
+    모든 hex의 원천: <code style="background:var(--hds-gray-50); border-radius:4px; padding:1px 6px;">css/tokens.css</code> ·
+    새 컴포넌트는 이 문서에 먼저 추가한 뒤 사용합니다.
+  </p>
+</div>
+
+<script>
+/* 상단 앵커 내비 */
+const SECTIONS = [
+  ["s01","원칙"],["s02","컬러"],["s03","타이포"],["s04","스페이싱"],["s05","버튼"],["s06","텍스트 필드"],
+  ["s07","드롭다운"],["s08","선택 컨트롤"],["s09","선택 행"],["s10","배지·아바타"],["s11","카드"],
+  ["s12","스텝퍼·탭"],["s13","테이블"],["s14","모달"],["s15","피드백"],["s16","내비·헤더"],
+];
+document.getElementById("topnav").innerHTML =
+  SECTIONS.map(([id, name]) => `<a href="#${id}">${name}</a>`).join("");
+
+/* 스와치 */
+const ramps = {
+  swOrange: [
+    ["--hds-orange-50","#fff1ec","orange-50 · 워시"],["--hds-orange-100","#ffdfd2","orange-100"],
+    ["--hds-orange-200","#ffbfa4","orange-200"],["--hds-orange-300","#fb9a72","orange-300"],
+    ["--hds-orange-400","#f4713f","orange-400"],["--hds-orange-500","#f15a2a","orange-500 · PRIMARY"],
+    ["--hds-orange-600","#d94000","orange-600 · hover/ink"],["--hds-orange-700","#b23300","orange-700"],
+  ],
+  swGray: [
+    ["--hds-ink-900","#111118","ink-900 · 패널/강조"],["--hds-ink-700","#2b2b33","ink-700"],
+    ["--hds-gray-600","#5d5d66","gray-600"],["--hds-gray-400","#a9a9b2","gray-400"],
+    ["--hds-gray-300","#d0d0d6","gray-300"],["--hds-gray-200","#e0e0e4","gray-200 · 보더"],
+    ["--hds-gray-50","#f5f5f7","gray-50 · 필"],["--hds-gray-25","#f9f9f9","gray-25 · 캔버스"],
+  ],
+  swSemantic: [
+    ["--hds-blue","#4169e1","blue · 링크/토글"],["--hds-blue-soft","#f0f3fd","blue-soft"],
+    ["--hds-success","#2e7d32","success"],["--hds-success-bg","#e8f5e9","success-bg"],
+    ["--hds-danger","#c62828","danger"],["--hds-danger-bg","#ffebee","danger-bg"],
+    ["--hds-warn","#c87000","warn"],["--hds-warn-bg","#fffae6","warn-bg"],
+  ],
+  swMood: [
+    ["--hds-obit","#3c3c48","obit · 근조"],["--hds-obit-soft","#ececf1","obit-soft"],
+    ["--hds-wed","#b01254","wed · 축하"],["--hds-wed-soft","#fbe9f1","wed-soft"],
+  ],
+};
+for (const [id, list] of Object.entries(ramps)) {
+  document.getElementById(id).innerHTML = list.map(([v, hex, name]) => `
+    <div class="sw"><div class="c" style="background:var(${v});"></div>
+    <div class="m"><b>${name}</b><span class="num">${hex}</span></div></div>`).join("");
+}
+
+/* 드롭다운 데모 (harim mob 패턴 · 09~18시 / 18시 → 분 00~30) */
+const dd = { hour: "09", min: "00" };
+const minsFor = (h) => (+h === 18 ? ["00","10","20","30"] : ["00","10","20","30","40","50"]);
+function makeDropdown(rootId, { unit, options, get, set }) {
+  const root = document.getElementById(rootId);
+  const trigger = root.querySelector(".hds-dd-trigger");
+  const panel = root.querySelector(".hds-dd-panel");
+  const renderTrigger = () => { trigger.textContent = get() + unit; };
+  const close = () => { root.classList.remove("open"); trigger.setAttribute("aria-expanded","false"); };
+  function open() {
+    document.querySelectorAll(".hds-dd.open").forEach((d) => d !== root && d.classList.remove("open"));
+    panel.innerHTML = options().map((v) =>
+      `<button type="button" class="hds-dd-opt ${v === get() ? "sel" : ""}" role="option" aria-selected="${v===get()}" data-v="${v}">${v}${unit}</button>`).join("");
+    root.classList.add("open");
+    trigger.setAttribute("aria-expanded","true");
+    const sel = panel.querySelector(".sel");
+    if (sel) panel.scrollTop = sel.offsetTop - panel.clientHeight/2 + sel.offsetHeight/2;
+  }
+  trigger.addEventListener("click", () => root.classList.contains("open") ? close() : open());
+  panel.addEventListener("click", (e) => {
+    const o = e.target.closest("[data-v]"); if (!o) return;
+    set(o.dataset.v); renderTrigger(); close();
+  });
+  document.addEventListener("click", (e) => { if (!root.contains(e.target)) close(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
+  renderTrigger();
+  return { renderTrigger };
+}
+const ddMin = makeDropdown("demoDD2", {
+  unit: "분", options: () => minsFor(dd.hour),
+  get: () => dd.min, set: (v) => { dd.min = v; },
+});
+makeDropdown("demoDD1", {
+  unit: "시", options: () => Array.from({length:10}, (_,i)=>String(9+i).padStart(2,"0")),
+  get: () => dd.hour,
+  set: (v) => { dd.hour = v; if (!minsFor(v).includes(dd.min)) { dd.min = "30"; ddMin.renderTrigger(); } },
+});
+
+/* 데모 인터랙션 */
+document.getElementById("demoSeg").addEventListener("click", (e) => {
+  const b = e.target.closest("button"); if (!b || b.disabled) return;
+  document.querySelectorAll("#demoSeg button").forEach((x) => x.classList.toggle("sel", x === b));
+});
+document.getElementById("demoChips").addEventListener("click", (e) => {
+  const c = e.target.closest(".hds-chip"); if (!c) return;
+  document.querySelectorAll("#demoChips .hds-chip").forEach((x) => x.classList.toggle("sel", x === c));
+});
+document.querySelectorAll(".hds-toggle:not([disabled])").forEach((t) => t.addEventListener("click", () => t.classList.toggle("on")));
+document.querySelectorAll("[data-ck]").forEach((c) => c.addEventListener("click", () => c.classList.toggle("on")));
+document.querySelectorAll(".hds-selrow").forEach((r) => r.addEventListener("click", () => {
+  r.parentElement.querySelectorAll(".hds-selrow").forEach((x) => x.classList.toggle("sel", x === r));
+}));
+</script>
+</body>
+</html>

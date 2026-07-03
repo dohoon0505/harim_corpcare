@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HDS · 프로필 저장공간</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
+<link rel="stylesheet" href="hds.css" />
+<style>
+  .sec-title{display:flex; align-items:center; gap:10px; margin:26px 0 12px;}
+  .sec-title .bar{width:3px; height:16px; background:var(--o-500); border-radius:2px;}
+  .sec-title b{font-size:16px; font-weight:700; color:var(--t-strong);}
+  .sec-title .btn{margin-left:auto;}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sb"></aside>
+  <div class="main">
+    <header class="hd"></header>
+    <div class="content">
+      <div class="pagehead"><div><h1>👤 프로필 저장공간</h1></div></div>
+
+      <!-- 발송인 프로필관리 -->
+      <div class="sec-title"><span class="bar"></span><b>발송인 프로필관리</b>
+        <button class="btn btn--primary btn--md" data-open="mProfile">＋ 신규 프로필 등록</button></div>
+      <div class="card">
+        <table class="tbl">
+          <thead><tr><th class="c" style="width:56px;">순번</th><th>성함</th><th>직위</th><th>배송완료 수신번호</th><th>고정문구</th><th class="c" style="width:64px;">수정</th><th class="c" style="width:64px;">삭제</th></tr></thead>
+          <tbody>
+            <tr><td class="c num">01</td><td>홍길동</td><td>대표이사</td><td class="num">010-0000-0000</td><td>(주)올해의경조사 대표이사 홍길동</td><td class="c"><button class="ibtn" data-open="mProfile">✎</button></td><td class="c"><button class="ibtn ibtn--danger" data-open="mDelete">🗑</button></td></tr>
+            <tr><td class="c num">02</td><td>정소빈</td><td>대표변호사</td><td class="num">010-0000-0000</td><td>올해표현(유) 대표변호사 정소빈</td><td class="c"><button class="ibtn" data-open="mProfile">✎</button></td><td class="c"><button class="ibtn ibtn--danger" data-open="mDelete">🗑</button></td></tr>
+            <tr><td class="c num">03</td><td>임직원</td><td>일동</td><td class="num">010-0000-0000</td><td>(주)올해의경조사 임직원 일동</td><td class="c"><button class="ibtn" data-open="mProfile">✎</button></td><td class="c"><button class="ibtn ibtn--danger" data-open="mDelete">🗑</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 담당자 저장공간 -->
+      <div class="sec-title"><span class="bar"></span><b>담당자 저장공간</b>
+        <button class="btn btn--primary btn--md" data-open="mManager">＋ 신규 담당자 등록</button></div>
+      <div class="banner banner--info mb14"><span>ℹ️</span><span>거래명세서 발급·입금요청 <b>알림톡</b>은 정산·회계 담당자에게 발송됩니다 (1명 지정). 현재 <b>오임찬 (재경부) · 010-3333-4444</b></span></div>
+      <div class="card">
+        <table class="tbl">
+          <thead><tr><th class="c" style="width:56px;">순번</th><th>성함</th><th>부서·직위</th><th>연락처</th><th>메세지 수신여부</th><th class="c">정산·회계 담당</th><th class="c" style="width:64px;">수정</th><th class="c" style="width:64px;">삭제</th></tr></thead>
+          <tbody id="mgrTbl">
+            <tr><td class="c num">01</td><td>한다운</td><td>비서</td><td class="num">010-1111-2222</td><td>모든 배송완료 마다 메세지를 수신합니다</td><td class="c"><button class="btn btn--secondary btn--sm" data-assign>정산담당 지정</button></td><td class="c"><button class="ibtn" data-open="mManager">✎</button></td><td class="c"><button class="ibtn ibtn--danger" data-open="mDelete">🗑</button></td></tr>
+            <tr><td class="c num">02</td><td>오임찬</td><td>재경부</td><td class="num">010-3333-4444</td><td>메세지를 수신하지 않습니다.</td><td class="c"><span class="badge badge--info" data-current>✓ 정산·회계 담당</span></td><td class="c"><button class="ibtn" data-open="mManager">✎</button></td><td class="c"><button class="ibtn ibtn--danger" data-open="mDelete">🗑</button></td></tr>
+            <tr><td class="c num">03</td><td>김현수</td><td>경리</td><td class="num">010-5555-6666</td><td>모든 배송완료 마다 메세지를 수신합니다</td><td class="c"><button class="btn btn--secondary btn--sm" data-assign>정산담당 지정</button></td><td class="c"><button class="ibtn" data-open="mManager">✎</button></td><td class="c"><button class="ibtn ibtn--danger" data-open="mDelete">🗑</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ 모달: 프로필 등록·수정 ═══ -->
+<div class="overlay" id="mProfile">
+  <div class="modal">
+    <div class="modal__head"><div><h3>발송인 프로필 등록</h3><p>화환 리본의 보내는분으로 사용됩니다.</p></div><button class="modal__x" data-close>✕</button></div>
+    <div class="grid2">
+      <div class="field"><label>성함 <span class="req">*</span></label><input class="input" placeholder="예) 홍길동" /></div>
+      <div class="field"><label>직위</label><input class="input" placeholder="예) 대표이사" /></div>
+    </div>
+    <div class="field mt14"><label>배송완료 수신번호</label><input class="input" placeholder="010-0000-0000" /></div>
+    <div class="field mt14"><label>고정문구 <span class="req">*</span></label><input class="input" placeholder="예) (주)올해의경조사 대표이사 홍길동" />
+      <p class="help">오른쪽 리본에 새겨지는 문구입니다.</p></div>
+    <div class="modal__acts"><button class="btn btn--secondary btn--md" data-close>취소</button><button class="btn btn--primary btn--md" id="pfSave">저장</button></div>
+  </div>
+</div>
+
+<!-- ═══ 모달: 담당자 등록·수정 ═══ -->
+<div class="overlay" id="mManager">
+  <div class="modal">
+    <div class="modal__head"><div><h3>담당자 등록</h3><p>주문 진행과 알림 수신에 사용됩니다.</p></div><button class="modal__x" data-close>✕</button></div>
+    <div class="grid2">
+      <div class="field"><label>성함 <span class="req">*</span></label><input class="input" placeholder="예) 한다운" /></div>
+      <div class="field"><label>부서·직위</label><input class="input" placeholder="예) 비서" /></div>
+    </div>
+    <div class="field mt14"><label>연락처 <span class="req">*</span></label><input class="input" placeholder="010-0000-0000" /></div>
+    <div class="field mt14"><label>메세지 수신여부</label>
+      <div class="row mt8"><span class="check on" data-ck><span class="box">✓</span>모든 배송완료 마다 메세지를 수신합니다</span></div></div>
+    <div class="modal__acts"><button class="btn btn--secondary btn--md" data-close>취소</button><button class="btn btn--primary btn--md" id="mgSave">저장</button></div>
+  </div>
+</div>
+
+<!-- ═══ 모달: 삭제 확인 ═══ -->
+<div class="overlay" id="mDelete">
+  <div class="modal" style="width:400px;">
+    <div class="modal__head"><div><h3>정말 삭제할까요?</h3></div><button class="modal__x" data-close>✕</button></div>
+    <div class="banner banner--err"><span>⚠️</span><span>삭제한 항목은 되돌릴 수 없습니다. 진행 중인 주문에는 영향을 주지 않습니다.</span></div>
+    <div class="modal__acts"><button class="btn btn--secondary btn--md" data-close>취소</button><button class="btn btn--danger btn--md" id="delOk">삭제</button></div>
+  </div>
+</div>
+
+<script src="hds.js"></script>
+<script>
+HDS.shell("profile");
+HDS.initModals();
+const close = (id) => document.getElementById(id).classList.remove("show");
+document.getElementById("pfSave").addEventListener("click", () => { close("mProfile"); HDS.toast("프로필이 저장되었습니다"); });
+document.getElementById("mgSave").addEventListener("click", () => { close("mManager"); HDS.toast("담당자가 저장되었습니다"); });
+document.getElementById("delOk").addEventListener("click", () => { close("mDelete"); HDS.toast("삭제되었습니다"); });
+document.querySelectorAll("[data-ck]").forEach((c) => c.addEventListener("click", () => c.classList.toggle("on")));
+/* 정산담당 지정 데모 */
+document.getElementById("mgrTbl").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-assign]"); if (!b) return;
+  document.querySelectorAll("#mgrTbl [data-current]").forEach((x) => {
+    const btn = document.createElement("button");
+    btn.className = "btn btn--secondary btn--sm";
+    btn.dataset.assign = "";
+    btn.textContent = "정산담당 지정";
+    x.replaceWith(btn);
+  });
+  const badge = document.createElement("span");
+  badge.className = "badge badge--info";
+  badge.dataset.current = "";
+  badge.textContent = "✓ 정산·회계 담당";
+  b.replaceWith(badge);
+  HDS.toast("정산·회계 담당자가 변경되었습니다");
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HDS · 상품 규격 안내</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
+<link rel="stylesheet" href="hds.css" />
+<style>
+  .sample{height:280px; border-radius:var(--r-lg); background:var(--g-50); display:grid; place-items:center; color:var(--t-faint); font-size:14px;}
+  .sm-meta{display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-top:14px;}
+  .sm-meta b{font-size:16px; font-weight:700; color:var(--t-strong);}
+  .sm-meta span{font-size:16px; font-weight:700; color:var(--o-600);}
+  .sm-desc{font-size:13px; color:var(--t-3); margin-top:4px;}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sb"></aside>
+  <div class="main">
+    <header class="hd"></header>
+    <div class="content">
+      <div class="pagehead"><div><h1>📦 상품 규격 안내</h1></div></div>
+
+      <div class="card">
+        <table class="tbl" id="prodTbl">
+          <thead><tr><th>상세상품</th><th class="r">상품금액</th><th>상품설명 및 비고(규격)</th><th class="c" style="width:100px;">샘플사진</th></tr></thead>
+          <tbody>
+            <tr><td><span class="badge badge--wed" style="margin-right:8px;">축하</span>축하 3단화환 (기본)</td><td class="r num" style="font-weight:700;">75,000원</td><td>100% 신품 생화(국화) 60송이 + 기본 데코</td><td class="c"><button class="btn btn--secondary btn--sm" data-sample="축하 3단화환 (기본)|75,000원|100% 신품 생화(국화) 60송이 + 기본 데코">📷 보기</button></td></tr>
+            <tr><td><span class="badge badge--wed" style="margin-right:8px;">축하</span>축하 3단화환 (고급)</td><td class="r num" style="font-weight:700;">90,000원</td><td>100% 신품 생화(국화) 80송이 + 프리미엄 데코</td><td class="c"><button class="btn btn--secondary btn--sm" data-sample="축하 3단화환 (고급)|90,000원|100% 신품 생화(국화) 80송이 + 프리미엄 데코">📷 보기</button></td></tr>
+            <tr><td><span class="badge badge--obit" style="margin-right:8px;">근조</span>근조 3단화환 (기본)</td><td class="r num" style="font-weight:700;">75,000원</td><td>100% 신품 생화(국화) 60송이 + 기본 데코</td><td class="c"><button class="btn btn--secondary btn--sm" data-sample="근조 3단화환 (기본)|75,000원|100% 신품 생화(국화) 60송이 + 기본 데코">📷 보기</button></td></tr>
+            <tr><td><span class="badge badge--obit" style="margin-right:8px;">근조</span>근조 3단화환 (고급)</td><td class="r num" style="font-weight:700;">90,000원</td><td>100% 신품 생화(국화) 80송이 + 프리미엄 데코</td><td class="c"><button class="btn btn--secondary btn--sm" data-sample="근조 3단화환 (고급)|90,000원|100% 신품 생화(국화) 80송이 + 프리미엄 데코">📷 보기</button></td></tr>
+            <tr><td><span class="badge badge--neutral" style="margin-right:8px;">특수</span>특수 화환 (오브제)</td><td class="r num" style="font-weight:700;">75,000원</td><td>100% 신품 생화 40송이~50송이 + 기본 데코</td><td class="c"><button class="btn btn--secondary btn--sm" data-sample="특수 화환 (오브제)|75,000원|100% 신품 생화 40송이~50송이 + 기본 데코">📷 보기</button></td></tr>
+            <tr><td><span class="badge badge--neutral" style="margin-right:8px;">특수</span>특수 화환 (스탠드)</td><td class="r num" style="font-weight:700;">75,000원</td><td>100% 신품 생화 40송이~50송이 + 기본 데코</td><td class="c"><button class="btn btn--secondary btn--sm" data-sample="특수 화환 (스탠드)|75,000원|100% 신품 생화 40송이~50송이 + 기본 데코">📷 보기</button></td></tr>
+            <tr><td><span class="badge badge--obit" style="margin-right:8px;">근조</span>근조바구니(기본)</td><td class="r num" style="font-weight:700;">70,000원</td><td>100% 신품 생화로 제작한 빈소용 근조 꽃바구니 (기본형)</td><td class="c"><button class="btn btn--secondary btn--sm" data-sample="근조바구니(기본)|70,000원|100% 신품 생화로 제작한 빈소용 근조 꽃바구니 (기본형)">📷 보기</button></td></tr>
+            <tr><td><span class="badge badge--obit" style="margin-right:8px;">근조</span>근조바구니(고급)</td><td class="r num" style="font-weight:700;">85,000원</td><td>100% 신품 생화로 제작한 빈소용 근조 꽃바구니 (고급형)</td><td class="c"><button class="btn btn--secondary btn--sm" data-sample="근조바구니(고급)|85,000원|100% 신품 생화로 제작한 빈소용 근조 꽃바구니 (고급형)">📷 보기</button></td></tr>
+            <tr><td><span class="badge badge--obit" style="margin-right:8px;">근조</span>근조쌀화환(10kg)</td><td class="r num" style="font-weight:700;">90,000원</td><td>3단화환 형태에 쌀 10kg을 더한 근조 쌀화환</td><td class="c"><button class="btn btn--secondary btn--sm" data-sample="근조쌀화환(10kg)|90,000원|3단화환 형태에 쌀 10kg을 더한 근조 쌀화환">📷 보기</button></td></tr>
+            <tr><td><span class="badge badge--obit" style="margin-right:8px;">근조</span>근조쌀화환(20kg)</td><td class="r num" style="font-weight:700;">130,000원</td><td>3단화환 형태에 쌀 20kg을 더한 근조 쌀화환</td><td class="c"><button class="btn btn--secondary btn--sm" data-sample="근조쌀화환(20kg)|130,000원|3단화환 형태에 쌀 20kg을 더한 근조 쌀화환">📷 보기</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ 모달: 샘플 사진 ═══ -->
+<div class="overlay" id="mSample">
+  <div class="modal" style="width:480px;">
+    <div class="modal__head"><div><h3 id="smTitle">상품 샘플</h3></div><button class="modal__x" data-close>✕</button></div>
+    <div class="sample">📷 샘플 이미지</div>
+    <div class="sm-meta"><b id="smName">—</b><span class="num" id="smPrice">—</span></div>
+    <p class="sm-desc" id="smDesc">—</p>
+    <div class="modal__acts"><button class="btn btn--primary" data-close style="width:100%;">닫기</button></div>
+  </div>
+</div>
+
+<script src="hds.js"></script>
+<script>
+HDS.shell("products");
+HDS.initModals();
+document.getElementById("prodTbl").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-sample]"); if (!b) return;
+  const [name, price, desc] = b.dataset.sample.split("|");
+  document.getElementById("smTitle").textContent = name;
+  document.getElementById("smName").textContent = name;
+  document.getElementById("smPrice").textContent = price;
+  document.getElementById("smDesc").textContent = desc;
+  document.getElementById("mSample").classList.add("show");
+});
+</script>
+</body>
+</html>

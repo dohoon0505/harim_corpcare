@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HDS 리스킨 시안 — 6개 페이지 + 모달</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
+<link rel="stylesheet" href="hds.css" />
+<style>
+  .hub{max-width:960px; margin:0 auto; padding:56px 40px 100px;}
+  .hub-cover{background:var(--ink-900); color:#fff; border-radius:var(--r-tile); padding:38px 42px; margin-bottom:28px;}
+  .hub-cover .k{font-size:11px; letter-spacing:3px; color:var(--o-400); font-weight:700;}
+  .hub-cover h1{font-size:26px; font-weight:700; margin:10px 0 8px; letter-spacing:-.02em;}
+  .hub-cover p{font-size:13.5px; color:#b8b8c0;}
+  .grid{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+  .pg{display:block; background:#fff; border:1px solid var(--g-200); border-radius:var(--r-tile); padding:20px 22px; transition:all .14s; box-shadow:var(--sh-card);}
+  .pg:hover{border-color:var(--o-400); transform:translateY(-2px);}
+  .pg .no{font-size:11px; font-weight:700; color:var(--o-500); letter-spacing:1px;}
+  .pg b{display:block; font-size:16.5px; font-weight:700; color:var(--t-strong); margin:6px 0 4px;}
+  .pg p{font-size:12.5px; color:var(--t-mut); line-height:1.6;}
+  .pg .modals{margin-top:10px; display:flex; flex-wrap:wrap; gap:6px;}
+  .links{margin-top:22px; font-size:12.5px; color:var(--t-mut); line-height:1.9;}
+  .links code{background:var(--g-50); border-radius:4px; padding:1px 6px; font-size:11.5px;}
+</style>
+</head>
+<body>
+<div class="hub">
+  <div class="hub-cover">
+    <div class="k">HDS RESKIN · 6 PAGES + MODALS</div>
+    <h1>전 페이지 HDS 리스킨 시안</h1>
+    <p>현재 구조·플로우는 그대로 두고, 디자인 시스템(HDS) 토큰과 컴포넌트로만 통일한 시안입니다.
+    카드를 눌러 각 페이지를 열어보세요 — 사이드바로 페이지 간 이동이 되고, 모달도 실제로 동작합니다.</p>
+  </div>
+
+  <div class="grid">
+    <a class="pg" href="01-order.html">
+      <span class="no">01</span><b>경조화환 주문</b>
+      <p>담당자 선택 게이트 → 주문서(간편접수 배너 · 상품 선택 행 · 배송지 · 리본 정보 · 우측 알림/요약)</p>
+      <div class="modals"><span class="badge badge--neutral">리본 문구 모달</span><span class="badge badge--neutral">보내는분 모달</span><span class="badge badge--neutral">간편접수 모달</span><span class="badge badge--neutral">접수 완료 모달</span></div>
+    </a>
+    <a class="pg" href="02-orders.html">
+      <span class="no">02</span><b>실시간 주문내역</b>
+      <p>상태 세그먼트 · 기간 칩 · 3중 검색 · 누락 안내 배너 · 상태 배지 테이블</p>
+      <div class="modals"><span class="badge badge--neutral">주문 상세 모달</span></div>
+    </a>
+    <a class="pg" href="03-invoice.html">
+      <span class="no">03</span><b>거래명세서 조회</b>
+      <p>A4 명세서 문서(기존 규격 불변) + 우측 다운로드/공개링크/기간·요약/동의 레일</p>
+      <div class="modals"><span class="badge badge--neutral">기간 변경 모달</span><span class="badge badge--neutral">발급 동의 모달</span></div>
+    </a>
+    <a class="pg" href="04-settlement.html">
+      <span class="no">04</span><b>정산회계 간편조회</b>
+      <p>회사정보 그리드 · 정산 프로세스 배너 · 청구 문서 테이블(발급/정산 상태 배지)</p>
+      <div class="modals"><span class="badge badge--neutral">회사정보 수정 모달</span></div>
+    </a>
+    <a class="pg" href="05-profile.html">
+      <span class="no">05</span><b>프로필 저장공간</b>
+      <p>발송인 프로필 · 담당자 저장공간 테이블 · 정산담당 지정 · 수정/삭제 액션</p>
+      <div class="modals"><span class="badge badge--neutral">프로필 등록 모달</span><span class="badge badge--neutral">담당자 등록 모달</span><span class="badge badge--neutral">삭제 확인 모달</span></div>
+    </a>
+    <a class="pg" href="06-products.html">
+      <span class="no">06</span><b>상품 규격 안내</b>
+      <p>상품 규격 테이블(무드 배지로 축하/근조/특수 구분) · 샘플사진 보기</p>
+      <div class="modals"><span class="badge badge--neutral">샘플 사진 모달</span></div>
+    </a>
+  </div>
+
+  <p class="links">
+    기준 문서: <code>mockups/design-system.html</code> (컴포넌트 가이드) · <code>PLAN_디자인시스템_적용.md</code> (적용 계획)<br/>
+    이 시안들은 실제 코드(<code>js/</code>·<code>css/</code>)를 수정하지 않은 별도 사본입니다. A4 명세서 문서 규격은 기존과 동일합니다.
+  </p>
+</div>
+</body>
+</html>

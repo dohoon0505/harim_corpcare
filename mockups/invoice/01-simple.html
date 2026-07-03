@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>거래명세서 조회</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
+<style>
+  /* ============================================================
+     거래명세서 시안 1 — 주문 시안 07(토스 무드)과 동일 토큰
+     좌: 명세서 문서 미리보기 · 우: 조회 필터 + 요약 + 액션
+     ============================================================ */
+  :root{
+    --blue:#3182f6; --blue-dark:#1b64da; --blue-soft:#e8f3ff; --blue-soft-2:#f0f7ff;
+    --ink:#191f28; --g700:#333d4b; --g600:#4e5968; --g500:#6b7684; --g400:#8b95a1;
+    --g300:#b0b8c1; --g200:#d1d6db; --g100:#e5e8eb; --g50:#f2f4f6; --g25:#f9fafb;
+    --red:#f04452; --red-soft:#fdeef0; --green:#03b26c; --green-soft:#e6f6ef;
+    --r-md:12px; --r-lg:16px;
+    --font:"Pretendard",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{background:#fff;}
+  body{
+    font-family:var(--font); color:var(--ink); font-size:15px; line-height:1.6;
+    -webkit-font-smoothing:antialiased; letter-spacing:-.02em;
+  }
+  button{font-family:inherit; letter-spacing:inherit; cursor:pointer; border:none; background:none; color:inherit;}
+  .num{font-variant-numeric:tabular-nums; font-feature-settings:"tnum";}
+  ::selection{background:var(--blue-soft);}
+  :focus-visible{outline:2px solid var(--blue); outline-offset:2px; border-radius:6px;}
+
+  .wrap{max-width:1250px; padding:56px 40px 100px; margin:0;}
+
+  /* ── 헤더 ── */
+  .head h1{font-size:26px; font-weight:700; letter-spacing:-.03em; display:flex; align-items:center; gap:10px;}
+  .head .sub{font-size:16px; color:var(--g500); margin-top:10px;}
+
+  /* ── 레이아웃 ── */
+  .layout{display:flex; gap:28px; align-items:flex-start; margin-top:40px;}
+
+  /* ════════ 좌: A4 명세서 문서 (기존 invoice-doc 규격 그대로) ════════ */
+  .doc{flex:0 0 794px; width:794px;}
+  .a4-frame{
+    border:1px solid var(--g100); border-radius:4px; overflow:hidden;
+    box-shadow:0 6px 24px rgba(25,31,40,.08); width:794px;
+  }
+
+  /* ════════ 우: 레일 ════════ */
+  .rail{width:324px; flex:0 0 324px; position:sticky; top:32px; display:flex; flex-direction:column; gap:14px;}
+  .card{background:#fff; border:1px solid var(--g100); border-radius:var(--r-lg); padding:20px 22px;}
+  .card .ct{font-size:13.5px; font-weight:700; color:var(--g600); margin-bottom:12px;}
+
+  /* 기간 드롭다운 (harim mob 스타일 · 아래로 전개) */
+  .dd-row{display:flex; gap:10px;}
+  .dd{position:relative; flex:1;}
+  .dd-trigger{
+    width:100%; height:50px; padding:0 38px 0 15px; text-align:left; font-size:15px; font-weight:600;
+    background:#fff; border:1.5px solid var(--g100); border-radius:var(--r-md);
+    transition:border-color .15s, box-shadow .15s; position:relative; color:var(--ink);
+  }
+  .dd-trigger::after{
+    content:""; position:absolute; right:15px; top:50%; width:8px; height:8px;
+    border-right:1.8px solid var(--g400); border-bottom:1.8px solid var(--g400);
+    transform:translateY(-70%) rotate(45deg); transition:transform .18s;
+  }
+  .dd.open .dd-trigger::after{transform:translateY(-30%) rotate(225deg);}
+  .dd-trigger:hover{border-color:var(--g200);}
+  .dd.open .dd-trigger,.dd-trigger:focus{outline:none; border-color:var(--blue); box-shadow:0 0 0 3px var(--blue-soft);}
+  .dd-panel{
+    display:none; position:absolute; left:0; right:0; top:calc(100% + 6px); z-index:30;
+    background:#fff; border:1px solid var(--g100); border-radius:var(--r-md);
+    box-shadow:0 8px 24px rgba(25,31,40,.12); max-height:264px; overflow-y:auto; padding:5px;
+  }
+  .dd.open .dd-panel{display:block;}
+  .dd-panel::-webkit-scrollbar{width:12px;}
+  .dd-panel::-webkit-scrollbar-thumb{background:var(--g200); border-radius:8px; border:3.5px solid #fff;}
+  .dd-opt{
+    width:100%; display:block; padding:9px 13px; font-size:14.5px; text-align:left;
+    border-radius:8px; color:var(--g700); transition:background .1s;
+  }
+  .dd-opt:hover{background:var(--g50);}
+  .dd-opt.sel{background:var(--blue); color:#fff; font-weight:600;}
+
+  /* 요약 */
+  .sum-amt{display:flex; align-items:baseline; justify-content:space-between; gap:10px;}
+  .sum-amt span{font-size:13.5px; color:var(--g500);}
+  .sum-amt b{font-size:24px; font-weight:700; letter-spacing:-.03em;}
+  .sum-rows{margin-top:14px; border-top:1px solid var(--g50); padding-top:6px;}
+  .srow{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:8px 0; font-size:13px;}
+  .srow .k{color:var(--g500);}
+  .srow .v{font-weight:600; color:var(--g700);}
+  .srow .v.due{color:var(--red);}
+  .chip{font-size:12px; font-weight:600; padding:3px 10px; border-radius:999px;}
+  .chip.need{background:var(--red-soft); color:var(--red);}
+  .chip.done{background:var(--green-soft); color:var(--green);}
+
+  /* 액션 버튼 */
+  .btn{
+    width:100%; height:52px; border-radius:var(--r-md); font-size:15px; font-weight:700;
+    display:flex; align-items:center; justify-content:center; gap:8px; transition:background .15s;
+  }
+  .btn.solid{background:var(--blue); color:#fff;}
+  .btn.solid:hover{background:var(--blue-dark);}
+  .btn.ghost{background:var(--g50); color:var(--g600); font-weight:600;}
+  .btn.ghost:hover{background:var(--g100);}
+  .btn + .btn{margin-top:10px;}
+  .btn .ic{font-size:16px;}
+
+  /* 계산서 발급 동의 */
+  .agree-desc{font-size:13px; color:var(--g500); line-height:1.65; margin-bottom:14px;}
+  .btn.agree{background:#fff; border:1.5px solid var(--blue); color:var(--blue-dark); font-weight:600; height:50px; font-size:14px;}
+  .btn.agree:hover{background:var(--blue-soft-2);}
+  .agree-done{display:none; align-items:center; gap:9px; background:var(--green-soft); border-radius:var(--r-md); padding:13px 16px;}
+  .agree-done .ck{width:22px; height:22px; flex:0 0 22px; border-radius:50%; background:var(--green); color:#fff; display:grid; place-items:center; font-size:12px;}
+  .agree-done b{font-size:13.5px; color:var(--green); display:block;}
+  .agree-done span{font-size:11.5px; color:var(--g500);}
+  .agree-wrap.done .btn.agree{display:none;}
+  .agree-wrap.done .agree-done{display:flex;}
+
+  /* 토스트 */
+  .toast{
+    position:fixed; left:50%; bottom:36px; transform:translateX(-50%) translateY(16px);
+    background:var(--ink); color:#fff; font-size:14px; font-weight:600;
+    padding:13px 22px; border-radius:999px; opacity:0; pointer-events:none;
+    transition:opacity .2s, transform .2s; z-index:60; white-space:nowrap;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+  /* 인쇄: A4 문서만 */
+  @media print{
+    .head,.rail,.toast{display:none!important;}
+    .wrap{padding:0; max-width:none;}
+    .layout{margin:0; display:block;}
+    .a4-frame{border:none; box-shadow:none; border-radius:0;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="head">
+    <h1>거래명세서
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <rect x="4" y="2.5" width="16" height="19" rx="2.5" fill="#e8f3ff"/>
+        <path d="M8 8h8M8 12h8M8 16h5" stroke="#3182f6" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+    </h1>
+    <p class="sub">월별 거래 내역을 확인하고 명세서와 계산서를 발급받을 수 있어요</p>
+  </div>
+
+  <div class="layout">
+
+    <!-- ════════ 좌: A4 문서 미리보기 (기존 invoice-doc 렌더러 규격) ════════ -->
+    <div class="doc">
+      <div class="a4-frame" id="docHost"></div>
+    </div>
+
+    <!-- ════════ 우: 조회 필터 + 요약 + 액션 ════════ -->
+    <aside class="rail">
+      <div class="card">
+        <div class="ct">조회 기간</div>
+        <div class="dd-row">
+          <div class="dd" id="ddYear">
+            <button type="button" class="dd-trigger" aria-haspopup="listbox" aria-expanded="false"></button>
+            <div class="dd-panel" role="listbox"></div>
+          </div>
+          <div class="dd" id="ddMonth">
+            <button type="button" class="dd-trigger" aria-haspopup="listbox" aria-expanded="false"></button>
+            <div class="dd-panel" role="listbox"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="sum-amt"><span id="sumLabel"></span><b class="num" id="sumAmt"></b></div>
+        <div class="sum-rows">
+          <div class="srow"><span class="k">결제 · 정산 대금기한</span><span class="v due" id="sumDue"></span></div>
+          <div class="srow"><span class="k">계산서 발급</span><span class="chip need" id="sumTax">동의 필요</span></div>
+        </div>
+      </div>
+
+      <div>
+        <button class="btn solid" id="btnPdf"><span class="ic">⬇</span><span id="btnPdfLabel"></span></button>
+        <button class="btn ghost" id="btnLink"><span class="ic">🔗</span>공개 링크 복사 <span style="font-weight:400;color:var(--g400);">· 로그인 없이 열람</span></button>
+      </div>
+
+      <div class="card agree-wrap" id="agreeWrap">
+        <div class="ct">계산서 발급 동의</div>
+        <p class="agree-desc">명세서 내용을 확인한 뒤 동의하면, 위 금액으로 세금계산서가 발급돼요. 동의 후에는 내용을 변경할 수 없어요.</p>
+        <button class="btn agree" id="btnAgree">해당 내용으로 계산서 발급에 동의합니다</button>
+        <div class="agree-done">
+          <span class="ck">✓</span>
+          <div><b>계산서 발급 동의 완료</b><span id="agreeDate"></span></div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   목데이터 (기존 invoice.js INVOICE_DATA 승계)
+   ============================================================ */
+const DB = {
+  "2026-04": {
+    due: "2026년 05월 31일", issue: "2026년 05월 01일",
+    rows: [
+      ["2026년 04월 28일", "홍길동", "서울 관악구 신림동 산 56-1 65동 서울대학교 교수회관", "근조 3단화환 (기본)", 75000],
+      ["2026년 04월 25일", "김태권", "서울 동산구 아에린로29 신정기념관내 로얄마크컨벤션 3층 포장홀", "축하 3단화환 (기본)", 75000],
+      ["2026년 04월 21일", "김태권", "경기 마주시 금품억로 190 새디인병원 장례식장 지하1층 특2호실", "근조 3단화환 (기본)", 75000],
+      ["2026년 04월 17일", "채상운", "부산 남구 황령대로 401-9 그랜드드몬트 6층 시그니처룸", "축하 3단화환 (고급)", 90000],
+      ["2026년 04월 14일", "박진찬", "경상북도 예천군 예천읍 양오로 154 (정북아) 예천농협장례식장 3호실", "근조 3단화환 (기본)", 75000],
+      ["2026년 04월 10일", "박진찬", "서울 강남구 논현로 645 렉시미나호텔", "축하 3단화환 (기본)", 75000],
+      ["2026년 04월 07일", "홍길동", "서울 관악구 신림동 산 56-1 65동 서울대학교 교수회관", "근조바구니(기본)", 70000],
+      ["2026년 04월 03일", "김태권", "서울 동산구 아에린로29 신정기념관내 로얄마크컨벤션 3층 포장홀", "축하 3단화환 (기본)", 75000],
+    ],
+  },
+  "2026-03": {
+    due: "2026년 04월 30일", issue: "2026년 04월 01일",
+    rows: [
+      ["2026년 03월 27일", "오임찬", "서울 서초구 반포대로 179 서울성모병원 장례식장", "근조 3단화환 (고급)", 90000],
+      ["2026년 03월 19일", "한다운", "서울 송파구 올림픽로 319 웨딩시그니처 5층", "축하 3단화환 (기본)", 75000],
+      ["2026년 03월 12일", "김현수", "인천 연수구 컨벤시아대로 165 송도컨벤시아", "축하 3단화환 (기본)", 75000],
+      ["2026년 03월 05일", "오임찬", "대전 서구 둔산대로 100 대전예술의전당", "축하 3단화환 (고급)", 90000],
+    ],
+  },
+};
+const BUYER = { address: "서울 중구 퇴계로 100 스테이트타워 남산 3층 주식회사 싱크플로", company: "주식회사 싱크플로", bizNumber: "680-87-02988", ceo: "홍길동", summary: "꽃배달 이용료 청구", invoiceNote: "명세서 조회 후 발급" };
+const SUPPLIER = { company: "도랑플라워", bizNumber: "321-99-01778", ceo: "김도훈", email: "ehgns335@naver.com", fax: "053-715-2699" };
+const ACCOUNT = "NH농협은행 352-2284-9916-83 예금주 김도훈(도랑플라워)";
+const won = (n) => n.toLocaleString("ko-KR") + "원";
+const state = { year: "2026", month: "04", agreed: false };
+const $ = (s) => document.querySelector(s);
+
+/* ============================================================
+   커스텀 드롭다운 (harim mob 스타일 · 주문 시안 07과 동일)
+   ============================================================ */
+function makeDropdown(rootId, { unit, options, get, set }) {
+  const root = $("#" + rootId);
+  const trigger = root.querySelector(".dd-trigger");
+  const panel = root.querySelector(".dd-panel");
+  const renderTrigger = () => { trigger.textContent = get() + unit; };
+  const close = () => { root.classList.remove("open"); trigger.setAttribute("aria-expanded", "false"); };
+  function open() {
+    document.querySelectorAll(".dd.open").forEach((d) => d !== root && d.classList.remove("open"));
+    panel.innerHTML = options().map((v) =>
+      `<button type="button" class="dd-opt ${v === get() ? "sel" : ""}" role="option"
+        aria-selected="${v === get()}" data-v="${v}">${v}${unit}</button>`).join("");
+    root.classList.add("open");
+    trigger.setAttribute("aria-expanded", "true");
+    const sel = panel.querySelector(".dd-opt.sel");
+    if (sel) panel.scrollTop = sel.offsetTop - panel.clientHeight / 2 + sel.offsetHeight / 2;
+  }
+  trigger.addEventListener("click", () => root.classList.contains("open") ? close() : open());
+  panel.addEventListener("click", (e) => {
+    const o = e.target.closest("[data-v]");
+    if (!o) return;
+    set(o.dataset.v); renderTrigger(); close();
+  });
+  document.addEventListener("click", (e) => { if (!root.contains(e.target)) close(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
+  renderTrigger();
+}
+makeDropdown("ddYear", {
+  unit: "년", options: () => ["2024", "2025", "2026"],
+  get: () => state.year, set: (v) => { state.year = v; render(); },
+});
+makeDropdown("ddMonth", {
+  unit: "월", options: () => ["01","02","03","04","05","06","07","08","09","10","11","12"],
+  get: () => state.month, set: (v) => { state.month = v; render(); },
+});
+
+/* ============================================================
+   A4 문서 렌더 — 기존 invoice-doc.js와 동일한 인라인 스타일/규격 (794×1123)
+   ============================================================ */
+const S = {
+  table: "width:100%;border-collapse:collapse;table-layout:fixed;border:1px solid #d4d4d4;font-size:12px;font-family:Pretendard,sans-serif;",
+  th: "background:#f5f5f5;padding:11px 14px;font-weight:600;color:#444;border:1px solid #d4d4d4;text-align:left;vertical-align:middle;line-height:1.4;white-space:nowrap;overflow:hidden;",
+  td: "padding:11px 14px;color:#333;border:1px solid #d4d4d4;vertical-align:middle;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;",
+  infoLabel: "background:#f5f5f5;padding:9px 10px;font-weight:600;color:#444;border:1px solid #d4d4d4;vertical-align:middle;line-height:1.4;white-space:nowrap;overflow:hidden;",
+  infoValue: "padding:9px 10px;color:#333;border:1px solid #d4d4d4;vertical-align:middle;line-height:1.4;word-break:break-all;",
+  address: "padding:11px 14px;color:#333;border:1px solid #d4d4d4;vertical-align:middle;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;",
+  sectionTitle: "margin:0 0 7px;font-size:12px;font-weight:700;color:#222;padding-bottom:5px;border-bottom:2px solid #333;",
+};
+function infoTable(title, rows) {
+  return `
+    <div style="margin-bottom:22px">
+      <p style="${S.sectionTitle}">${title}</p>
+      <table style="${S.table}">
+        <colgroup>
+          <col style="width:100px" /><col /><col style="width:100px" /><col />
+          <col style="width:100px" /><col />
+        </colgroup>
+        <tbody>
+          ${rows.map((cells) =>
+            cells.length === 1
+              ? `<tr><td style="${S.infoLabel}">${cells[0].label}</td><td style="${S.infoValue}" colspan="5">${cells[0].value}</td></tr>`
+              : `<tr>${cells.map((c) =>
+                  `<td style="${S.infoLabel}">${c.label}</td><td style="${S.infoValue}" colspan="${c.valueColSpan ?? 1}">${c.value}</td>`).join("")}</tr>`
+          ).join("")}
+        </tbody>
+      </table>
+    </div>`;
+}
+function invoiceDoc(d) {
+  return `
+    <div class="invoice-doc" style="width:794px;height:1123px;background:#fff;font-family:Pretendard,sans-serif;font-size:12px;color:#333;padding:36px 44px 28px;box-sizing:border-box;display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px">
+        <div>
+          <p style="margin:0 0 4px;font-size:13px;font-weight:700;color:#f15a2a;white-space:nowrap">하림그룹 경조화환 시스템</p>
+          <p style="margin:0;font-size:18px;font-weight:700;color:#222">${d.title}</p>
+        </div>
+        <span style="font-size:12px;font-weight:600;color:#666">${d.period}</span>
+      </div>
+      ${infoTable("공급받는자", [
+        [{ label: "사업장주소", value: d.buyer.address }],
+        [{ label: "회사명", value: d.buyer.company }, { label: "사업자번호", value: d.buyer.bizNumber }, { label: "대표자명", value: d.buyer.ceo }],
+        [{ label: "명세요약", value: d.buyer.summary }, { label: "명세서 발행일", value: d.buyer.issueDate }, { label: "계산서 발행", value: d.buyer.invoiceNote }],
+      ])}
+      ${infoTable("공급자", [
+        [{ label: "회사명", value: d.supplier.company }, { label: "사업자번호", value: d.supplier.bizNumber }, { label: "대표자명", value: d.supplier.ceo }],
+        [{ label: "E-MAIL", value: d.supplier.email, valueColSpan: 3 }, { label: "FAX", value: d.supplier.fax }],
+      ])}
+      <div style="flex:1;min-height:0;margin-bottom:22px">
+        <p style="${S.sectionTitle}">거래내역</p>
+        <table style="${S.table}">
+          <colgroup>
+            <col style="width:148px" /><col style="width:70px" /><col /><col style="width:128px" /><col style="width:92px" />
+          </colgroup>
+          <thead>
+            <tr>
+              <th style="${S.th}">배송요청일시</th>
+              <th style="${S.th}text-align:center;">발송인</th>
+              <th style="${S.th}">배송지 정보</th>
+              <th style="${S.th}">주문상품</th>
+              <th style="${S.th}text-align:center;">결제금액</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${d.items.length === 0
+              ? `<tr><td style="${S.td}text-align:center;color:#999;padding:40px 14px;" colspan="5">해당 월의 거래 내역이 없습니다</td></tr>`
+              : d.items.map((it) => `<tr>
+                  <td style="${S.td}">${it.date}</td>
+                  <td style="${S.td}text-align:center;">${it.sender}</td>
+                  <td style="${S.address}">${it.address}</td>
+                  <td style="${S.td}">${it.product}</td>
+                  <td style="${S.td}text-align:center;">${it.amount}</td>
+                </tr>`).join("")}
+          </tbody>
+        </table>
+      </div>
+      <table style="${S.table}margin-top:auto;flex-shrink:0;">
+        <colgroup><col /><col style="width:185px" /></colgroup>
+        <tbody>
+          <tr>
+            <td style="${S.td}white-space:nowrap;">
+              <span style="font-weight:700;color:#444;margin-right:12px">입금계좌 안내</span>
+              <span>${d.account}</span>
+            </td>
+            <td style="${S.td}background:#f8f8f8;text-align:right;">
+              <span style="font-weight:600;color:#444">정산금액 </span>
+              <span style="font-weight:700;color:#f15a2a;font-size:14px">${d.total}</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>`;
+}
+
+function render() {
+  const key = state.year + "-" + state.month;
+  const data = DB[key];
+  const label = `${state.year}년 ${state.month}월`;
+  const shortLabel = `${state.year.slice(2)}년 ${state.month}월`;
+  const total = data ? data.rows.reduce((a, r) => a + r[4], 0) : 0;
+
+  $("#docHost").innerHTML = invoiceDoc({
+    title: `${shortLabel} 거래명세서`,
+    period: `${label} 귀속`,
+    buyer: { ...BUYER, issueDate: data ? data.issue : "-" },
+    supplier: SUPPLIER,
+    items: data ? data.rows.map((r) => ({ date: r[0], sender: r[1], address: r[2], product: r[3], amount: won(r[4]) })) : [],
+    account: ACCOUNT,
+    total: won(total),
+  });
+
+  $("#sumLabel").textContent = label + " 결제금액";
+  $("#btnPdfLabel").textContent = `${state.year}_${state.month} 거래명세서 다운로드`;
+  $("#sumAmt").textContent = won(total);
+  $("#sumDue").textContent = data ? data.due : "—";
+}
+
+/* ============================================================
+   액션
+   ============================================================ */
+let toastTimer = null;
+function toast(msg) {
+  const t = $("#toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 2000);
+}
+$("#btnPdf").addEventListener("click", () => window.print());
+$("#btnLink").addEventListener("click", () => toast("공개 링크가 복사되었어요 · 로그인 없이 열람할 수 있어요"));
+$("#btnAgree").addEventListener("click", () => {
+  state.agreed = true;
+  $("#agreeWrap").classList.add("done");
+  const tax = $("#sumTax");
+  tax.textContent = "동의 완료";
+  tax.className = "chip done";
+  const d = new Date();
+  $("#agreeDate").textContent = `${d.getFullYear()}. ${String(d.getMonth()+1).padStart(2,"0")}. ${String(d.getDate()).padStart(2,"0")} 동의`;
+  toast("계산서 발급에 동의했어요");
+});
+
+render();
+</script>
+</body>
+</html>
