@@ -1,7 +1,13 @@
 # 정적 SPA(하림그룹 경조화환 시스템)를 GitHub Pages에 배포.
-# Settings → Pages → Source = "GitHub Actions" 필요(전환 완료됨).
-# 별도 빌드 단계 없음(바닐라 HTML/CSS/JS) → 저장소 루트를 그대로 업로드한다.
-# CNAME(커스텀 도메인)·.nojekyll 파일이 루트에 있어 함께 배포된다.
+# Source = "GitHub Actions". build(스테이징+업로드)와 deploy(퍼블리시)를 분리한다.
+#
+# ↳ 분리 이유(배포실패 진단결과): 실패한 '동일 런'을 Re-run 하면 그 런에 github-pages
+#   아티팩트가 매번 추가되어 count>1 이 되고, actions/deploy-pages@v4 가
+#   "Multiple artifacts named github-pages were unexpectedly found" 로 중단된다
+#   (2026-07-03 deb0ef9 실패의 직접 원인). build/deploy 를 나누면 'Re-run failed jobs'가
+#   deploy 잡만 재실행 → 아티팩트 재업로드가 없어 누적이 원천 차단된다.
+#   ※ 재시도 원칙: 실패 시 런을 Re-run 하지 말고 '새 커밋 push' 또는 'Run workflow'로.
+#      서버측 'Deployment failed, try again later'(일시적 백엔드 거부)는 10~15분 후 새 런 1회.
 name: Deploy to GitHub Pages
 
 on:
@@ -21,19 +27,16 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  # ── 빌드: 앱 파일만 _site 로 스테이징 후 Pages 아티팩트 업로드 ──
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Setup Pages
         uses: actions/configure-pages@v5
-      # 앱 런타임 파일만 _site로 복사 → 공개 배포.
-      # 제외: mockups·screenshot·guidelines·제안서 PDF·PROMPT/PLAN 문서·serve.mjs·README 등 개발 산출물.
-      # 포함(필수): CNAME(커스텀 도메인)·.nojekyll·invoice/(공개 거래명세서 뷰어).
+      # 앱 런타임 파일만 공개 배포. 제외: mockups·screenshot·guidelines·제안서 PDF·
+      # PROMPT/PLAN 문서·serve.mjs·README 등 개발 산출물. 포함(필수): CNAME·.nojekyll·invoice/.
       - name: Stage site (앱 파일만)
         run: |
           mkdir -p _site
@@ -42,6 +45,18 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: "_site"
+
+  # ── 배포: 업로드된 단일 아티팩트를 Pages 로 퍼블리시 ──
+  deploy:
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+        with:
+          # 서버측 일시 지연에 조금 더 관대하게(기본 600000ms/10분 → 15분).
+          timeout: 900000
