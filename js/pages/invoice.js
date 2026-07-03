@@ -10,6 +10,7 @@ import { icon } from "../icons.js";
 import { invoiceDoc, printInvoiceDoc } from "../invoice-doc.js";
 import { issueLink, publicInvoiceUrl, SUPPLIER, ACCOUNT } from "../data/invoice-links.js";
 import { pageTitle, makeDropdown } from "../ui.js";
+import { aoaToXlsx } from "../util/xlsx.js";
 
 /* ── 월별 거래명세서 목데이터 (데모: 2026-03·04) ─────────────
    rows: [배송요청일시, 발송인, 배송지, 주문상품, 결제금액(숫자)] */
@@ -56,7 +57,10 @@ function markup() {
 
         <!-- 우: 다운로드 · 공개링크 · 조회 · 동의 -->
         <aside class="rail">
-          <button class="iv-btn iv-btn--primary" data-pdf>${icon("download", { size: 16 })}<span data-pdf-lbl></span></button>
+          <div class="iv-dl-row">
+            <button class="iv-btn iv-btn--primary" data-pdf>${icon("download", { size: 16 })}PDF 다운로드</button>
+            <button class="iv-btn iv-btn--excel" data-excel>${icon("download", { size: 16 })}EXCEL 다운로드</button>
+          </div>
           <button class="iv-btn iv-btn--secondary" data-link>${icon("external-link", { size: 16 })}공개 링크 복사 <span class="iv-btn__sub">· 로그인 없이 열람</span></button>
 
           <div class="iv-card">
@@ -122,7 +126,55 @@ export function mount(root, { nav }) {
     el("[data-sum-lbl]").textContent = `${d._label} 결제금액`;
     el("[data-sum-amt]").textContent = d.total;
     el("[data-sum-due]").textContent = d._due;
-    el("[data-pdf-lbl]").textContent = `${state.year}_${state.month} 거래명세서 다운로드`;
+  }
+
+  /* 현재 선택 월 거래명세서를 .xlsx 파일로 내려받는다 (의존성 없는 xlsx.js 사용).
+     결제금액·합계는 숫자셀로 기록되어 엑셀에서 그대로 합계/편집이 가능하다. */
+  function downloadExcel() {
+    const data = DB[`${state.year}-${state.month}`];
+    const label = `${state.year}년 ${state.month}월`;
+    const total = data ? data.rows.reduce((a, r) => a + r[4], 0) : 0;
+    const rows = [
+      [`거래명세서   ${label} 귀속`],
+      [BUYER.summary],
+      [],
+      ["■ 공급받는자"],
+      ["회사명", BUYER.company, "사업자번호", BUYER.bizNumber, "대표자명", BUYER.ceo],
+      ["소재지", BUYER.address],
+      [],
+      ["■ 공급자"],
+      ["회사명", SUPPLIER.company, "사업자번호", SUPPLIER.bizNumber, "대표자명", SUPPLIER.ceo],
+      ["소재지", SUPPLIER.location, "FAX", SUPPLIER.fax],
+      [],
+      ["■ 거래 내역"],
+      ["배송요청일시", "발송인", "배송지", "주문상품", "결제금액"],
+    ];
+    if (data) {
+      data.rows.forEach((r) => rows.push([r[0], r[1], r[2], r[3], r[4]]));
+      rows.push(["합계", "", "", "", total]);
+    } else {
+      rows.push(["해당 월의 거래 내역이 없습니다", "", "", "", ""]);
+    }
+    rows.push([], ["입금계좌", ACCOUNT], ["결제 · 정산 대금기한", data ? data.due : "—"]);
+
+    try {
+      const bytes = aoaToXlsx(label, rows);
+      const blob = new Blob([bytes], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `거래명세서_${state.year}_${state.month}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1500);
+      toast("EXCEL 파일을 다운로드했습니다");
+    } catch (err) {
+      console.error("EXCEL 생성 오류:", err);
+      alert("EXCEL 생성 중 오류가 발생했습니다. 다시 시도해 주세요.");
+    }
   }
 
   const ddYear = makeDropdown(el('[data-dd="year"]'), {
@@ -156,6 +208,7 @@ export function mount(root, { nav }) {
       try { printInvoiceDoc(docEl, `거래명세서_${state.year}_${state.month}`); }
       catch (err) { console.error("PDF 생성 오류:", err); alert("PDF 생성 중 오류가 발생했습니다. 다시 시도해 주세요."); }
     }),
+    on(root, "click", "[data-excel]", downloadExcel),
     on(root, "click", "[data-link]", () => {
       const token = issueLink({ bizNumber: BUYER.bizNumber, doc: currentDoc() });
       const url = publicInvoiceUrl(token);

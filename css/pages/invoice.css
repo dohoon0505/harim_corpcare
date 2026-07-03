@@ -30,6 +30,11 @@
 .page-invoice .iv-btn--secondary { background: var(--c-surface); border: 1px solid var(--c-border-strong); color: var(--c-text-2); font-weight: 600; }
 .page-invoice .iv-btn--secondary:hover { border-color: var(--c-text-muted); background: var(--c-bg); }
 .page-invoice .iv-btn__sub { font-weight: 400; color: var(--c-text-faint); font-size: 12.5px; }
+/* PDF · EXCEL 다운로드 = 한 줄 반반 배치 (엑셀 = 그린) */
+.page-invoice .iv-dl-row { display: flex; gap: 10px; }
+.page-invoice .iv-dl-row .iv-btn { flex: 1; min-width: 0; }
+.page-invoice .iv-btn--excel { background: var(--c-success-ink); color: var(--c-surface); box-shadow: var(--sh-btn); }
+.page-invoice .iv-btn--excel:hover { filter: brightness(0.92); }
 .page-invoice .iv-btn--agree { height: 48px; background: var(--c-surface); border: 1px solid var(--c-orange); color: var(--c-orange-ink); font-size: 14px; font-weight: 600; }
 .page-invoice .iv-btn--agree:hover { background: var(--c-orange-soft); }
 
