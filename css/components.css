@@ -501,3 +501,64 @@
 .tint-muted {
   color: var(--c-text-muted);
 }
+
+/* ── Modal field component (.ofield) — 모달 폼 필드 ─────────────
+   프로필 등록/수정 · 정산 회사정보 수정 · 계열사 등록/수정 모달이 공유.
+   원래 order.css 전역 정의였으나 08-brand 주문 리디자인 재작성 때 유실 → 복구.
+   모달 렌더 컨텍스트(.modal-panel)로 스코프 → 주문 페이지 .page-order .ofield 와 무충돌. */
+.modal-panel .ofield {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.modal-panel .req {
+  color: var(--c-orange);
+}
+.modal-panel .ofield__lbl {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--fs-14);
+  color: var(--c-text-3);
+  font-weight: var(--fw-medium);
+}
+.modal-panel .ofield__wrap {
+  position: relative;
+}
+.modal-panel .ofield__icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--c-text-faint);
+}
+.modal-panel .ofield__input {
+  width: 100%;
+  border: 1px solid var(--c-border-field);
+  border-radius: var(--r-xl);
+  padding: 11px 13px;
+  font-size: var(--fs-14);
+  color: var(--c-text);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.modal-panel .ofield__input.has-icon {
+  padding-left: 38px;
+}
+.modal-panel .ofield__input::placeholder {
+  color: var(--c-text-faint);
+}
+.modal-panel .ofield__input:hover:not(:focus):not(:disabled):not(.is-readonly) {
+  border-color: var(--c-border-field-strong);
+}
+.modal-panel .ofield__input:focus {
+  border-color: var(--c-indigo);
+  box-shadow: var(--ring-field);
+}
+.modal-panel .ofield__input.is-error {
+  border-color: var(--c-danger);
+}
+.modal-panel .ofield__input.is-error:focus {
+  border-color: var(--c-danger-ink);
+  box-shadow: var(--ring-error);
+}
