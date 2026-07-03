@@ -30,11 +30,11 @@ export const won = (n) => Number(n).toLocaleString("ko-KR") + "원";
 
 /* ── Initial mock data ──────────────────────────────────── */
 const INITIAL_PROFILES = [
-  { no: "01", name: "홍길동", role: "대표이사",   phone: "010-0000-0000", greeting: "(주)올해의경조사 대표이사 홍길동" },
-  { no: "02", name: "정소빈", role: "대표변호사", phone: "010-0000-0000", greeting: "올해표현(유) 대표변호사 정소빈" },
-  { no: "03", name: "임직원", role: "일동",        phone: "010-0000-0000", greeting: "(주)올해의경조사 임직원 일동" },
-  { no: "04", name: "임직원", role: "일동",        phone: "010-0000-0000", greeting: "(주)올해의경조사 임직원 일동" },
-  { no: "05", name: "임직원", role: "일동",        phone: "010-0000-0000", greeting: "(주)올해의경조사 임직원 일동" },
+  { no: "01", name: "홍길동", role: "대표이사",   phone: "010-0000-0000", greeting: "(주)하림지주 대표이사 홍길동" },
+  { no: "02", name: "정소빈", role: "대표변호사", phone: "010-0000-0000", greeting: "(주)하림지주 대표변호사 정소빈" },
+  { no: "03", name: "임직원", role: "일동",        phone: "010-0000-0000", greeting: "(주)하림지주 임직원 일동" },
+  { no: "04", name: "임직원", role: "일동",        phone: "010-0000-0000", greeting: "(주)하림지주 임직원 일동" },
+  { no: "05", name: "임직원", role: "일동",        phone: "010-0000-0000", greeting: "(주)하림지주 임직원 일동" },
 ];
 
 const INITIAL_CONTACTS = [
@@ -44,7 +44,7 @@ const INITIAL_CONTACTS = [
 ];
 
 /* ── Reactive store ─────────────────────────────────────── */
-const KEY = "yeop.store.v3"; // v3: 계열사 시드 교체(하림그룹 8개사)로 재시드
+const KEY = "yeop.store.v4"; // v4: 프로필 명의(greeting) 하림 브랜딩 교체로 재시드
 const subs = new Set();
 
 let state = {

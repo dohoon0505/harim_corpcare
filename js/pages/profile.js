@@ -96,7 +96,7 @@ export function mount(root, { nav }) {
     const profiles = store.get().profiles;
     const nextNo = String(profiles.length + 1).padStart(2, "0");
     const form = { no: nextNo, name: "", role: "", phone: "", greeting: "" };
-    const auto = () => (form.name || form.role ? `올해의경조사 ${form.role} ${form.name}`.trim() : "");
+    const auto = () => (form.name || form.role ? `(주)하림지주 ${form.role} ${form.name}`.trim() : "");
     const valid = () => !!(form.name && form.role && form.phone);
 
     const body = () => html`
