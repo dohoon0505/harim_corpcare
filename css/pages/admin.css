@@ -120,46 +120,131 @@
   margin-left: 12px;
 }
 
-/* ── 정산회계: 기간 정산액 요약 (총/입금완료/미입금) ─────── */
-.settle-sum {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-}
-.settle-sumcard {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 16px 18px;
+/* ══ 분리정산 대시보드 (adash) ══════════════════════════════
+   색상은 tokens.css 토큰만 참조. 숫자는 .num(tabular-nums). */
+.page-admin .num { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+.adash { display: flex; flex-direction: column; gap: 14px; }
+.adash-card {
   background: var(--c-surface);
   border: 1px solid var(--c-border);
-  border-radius: var(--r-md);
+  border-radius: 14px;
+  padding: 18px 20px;
+  box-shadow: var(--sh-card);
+  min-width: 0;
 }
-.settle-sumcard__lbl {
-  font-size: var(--fs-13);
-  color: var(--c-text-muted);
-  font-weight: var(--fw-medium);
+.adash-card__head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+.adash-card__head b { font-size: var(--fs-15); font-weight: var(--fw-bold); color: var(--c-text-strong); }
+.adash-card__hint { font-size: var(--fs-12); color: var(--c-text-muted); }
+
+/* ── ① KPI 카드 4개 ── */
+.adash-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.adash-kpi {
+  display: flex; flex-direction: column; gap: 7px;
+  padding: 18px 20px; background: var(--c-surface);
+  border: 1px solid var(--c-border); border-radius: 14px; box-shadow: var(--sh-card);
+  min-width: 0;
 }
-.settle-sumcard__val {
-  font-size: var(--fs-22);
-  font-weight: var(--fw-bold);
-  color: var(--c-text-strong);
-  letter-spacing: -0.01em;
+.adash-kpi__lbl { font-size: var(--fs-13); color: var(--c-text-muted); font-weight: var(--fw-medium); }
+.adash-kpi__val { font-size: 23px; font-weight: var(--fw-bold); color: var(--c-text-strong); letter-spacing: -0.02em; white-space: nowrap; }
+.adash-kpi__val.is-warn { color: var(--c-danger-ink); }
+.adash-delta { font-size: var(--fs-12); font-weight: var(--fw-semibold); }
+.adash-delta--up { color: var(--c-danger-ink); }   /* 증가=적 (금융 관례) */
+.adash-delta--down { color: var(--c-blue); }        /* 감소=청 */
+.adash-delta--flat { color: var(--c-text-muted); font-weight: var(--fw-normal); }
+
+/* ── 대시보드 행 레이아웃 ── */
+.adash-row { display: grid; gap: 14px; }
+.adash-row--main { grid-template-columns: 1.05fr 1.3fr; }
+.adash-row--sub { grid-template-columns: 1.25fr 1fr 1fr; }
+@media (max-width: 1180px) {
+  .adash-kpis { grid-template-columns: repeat(2, 1fr); }
+  .adash-row--main, .adash-row--sub { grid-template-columns: 1fr; }
 }
-.settle-sumcard--ok {
-  background: var(--c-success-bg);
-  border-color: var(--c-success);
+
+/* ── ② 인사이트 + 6개월 막대차트 ── */
+.adash-insight__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.adash-insight__headline { font-size: 19px; font-weight: var(--fw-bold); color: var(--c-text-strong); line-height: 1.45; letter-spacing: -0.01em; }
+.adash-insight__headline .up { color: var(--c-danger-ink); }
+.adash-insight__headline .down { color: var(--c-blue); }
+.adash-insight__sub { margin-top: 7px; font-size: var(--fs-12); color: var(--c-text-muted); }
+.adash-insight__face { font-size: 34px; line-height: 1; }
+.adash-bars { display: flex; align-items: flex-end; gap: 10px; margin-top: 22px; padding-top: 4px; }
+.adash-bar { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; }
+.adash-bar__val { font-size: var(--fs-12); font-weight: var(--fw-semibold); color: var(--c-text-faint); }
+.adash-bar__col { width: 68%; max-width: 44px; border-radius: 8px; background: var(--ch-bar-rest); }
+.adash-bar__lbl { font-size: var(--fs-12); color: var(--c-text-muted); }
+.adash-bar.is-cur .adash-bar__col { background: var(--c-blue); }
+.adash-bar.is-cur .adash-bar__val { color: var(--c-blue); font-weight: var(--fw-bold); }
+.adash-bar.is-cur .adash-bar__lbl { color: var(--c-blue); font-weight: var(--fw-semibold); }
+
+/* ── ③-a 계열사별 가로 막대 순위 ── */
+.adash-ranks { display: flex; flex-direction: column; gap: 9px; }
+.adash-rank { display: grid; grid-template-columns: 22px 92px 1fr 96px 46px; align-items: center; gap: 9px; }
+.adash-rank__no {
+  width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center;
+  font-size: 11px; font-weight: var(--fw-bold); color: var(--c-text-muted); background: var(--c-surface-3);
 }
-.settle-sumcard--ok .settle-sumcard__val {
-  color: var(--c-success-ink);
+.adash-rank__no.is-top { background: var(--c-orange-soft); color: var(--c-orange-ink); }
+.adash-rank__name { font-size: var(--fs-13); font-weight: var(--fw-semibold); color: var(--c-text-2); }
+.adash-rank__track { height: 8px; border-radius: 999px; background: var(--c-surface-2); overflow: hidden; }
+.adash-rank__bar { display: block; height: 100%; border-radius: 999px; background: var(--c-blue); }
+.adash-rank__amt { font-size: var(--fs-12); color: var(--c-text-3); text-align: right; white-space: nowrap; }
+.adash-rank__share { font-size: var(--fs-12); font-weight: var(--fw-semibold); color: var(--c-text-muted); text-align: right; }
+
+/* ── ③-b 항목별 도넛 + 범례 ── */
+/* 폭이 부족하면(1181~1400px 구간) 범례가 도넛 아래로 자동 줄바꿈 */
+.adash-donut { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+.adash-donut__svg { flex: 0 0 140px; }
+.adash-donut__t1 { font-size: 10px; fill: var(--c-text-muted); font-family: var(--font-sans); }
+.adash-donut__t2 { font-size: 14px; font-weight: 700; fill: var(--c-text-strong); font-family: var(--font-sans); }
+.adash-legend { flex: 1 1 240px; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.adash-legend__row { display: grid; grid-template-columns: 10px 1fr 40px 88px 44px; align-items: center; gap: 8px; font-size: var(--fs-12); }
+.adash-legend__dot { width: 9px; height: 9px; border-radius: 3px; }
+.adash-legend__name { color: var(--c-text-2); font-weight: var(--fw-semibold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.adash-legend__cnt { color: var(--c-text-muted); text-align: right; }
+.adash-legend__amt { color: var(--c-text-3); text-align: right; white-space: nowrap; }
+.adash-legend__share { color: var(--c-text-muted); font-weight: var(--fw-semibold); text-align: right; }
+
+/* ── ④ 정산 진행 현황 ── */
+.adash-progress { display: flex; flex-direction: column; gap: 12px; }
+.adash-progress__track { height: 10px; border-radius: 999px; background: var(--c-surface-2); overflow: hidden; }
+.adash-progress__fill { height: 100%; border-radius: 999px; background: var(--c-success); }
+.adash-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.adash-step {
+  display: flex; flex-direction: column; gap: 3px; padding: 9px 11px;
+  border: 1px solid var(--c-border); border-radius: var(--r-lg); background: var(--c-surface-hover);
 }
-.settle-sumcard--warn {
-  background: var(--c-danger-bg);
-  border-color: #f3c0c0;
+.adash-step.is-done { background: var(--c-success-bg); border-color: var(--c-success); }
+.adash-step.is-done .adash-step__val { color: var(--c-success-ink); }
+.adash-step__lbl { font-size: 11.5px; color: var(--c-text-muted); white-space: nowrap; }
+.adash-step__val { font-size: var(--fs-14); font-weight: var(--fw-bold); color: var(--c-text-2); }
+.adash-progress__amts { display: flex; justify-content: space-between; gap: 10px; font-size: var(--fs-12); color: var(--c-text-muted); }
+.adash-progress__amts b { color: var(--c-text-2); font-weight: var(--fw-bold); }
+.adash-progress__amts .is-warn b { color: var(--c-danger-ink); }
+
+/* ── ④-b 월간 분석 리포트 ── */
+.adash-report { display: flex; flex-direction: column; gap: 14px; }
+.adash-report__body { display: flex; gap: 12px; align-items: flex-start; flex: 1; }
+.adash-report__icon {
+  flex: 0 0 40px; width: 40px; height: 40px; border-radius: 12px;
+  background: var(--c-orange-soft); color: var(--c-orange-ink);
+  display: grid; place-items: center;
 }
-.settle-sumcard--warn .settle-sumcard__val {
-  color: var(--c-danger-ink);
+.adash-report__title { display: block; font-size: var(--fs-14); font-weight: var(--fw-bold); color: var(--c-text-strong); }
+.adash-report__desc { margin-top: 5px; font-size: var(--fs-12); color: var(--c-text-muted); line-height: 1.6; }
+.adash-report__preview {
+  margin-top: 9px; padding: 8px 11px; border-left: 3px solid var(--c-orange);
+  background: var(--c-orange-soft); border-radius: 0 var(--r-md) var(--r-md) 0;
+  font-size: var(--fs-12); color: var(--c-text-3); line-height: 1.55;
 }
+.adash-report__btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; height: 46px; border-radius: var(--r-xl);
+  background: var(--c-dark); color: var(--c-surface);
+  font-size: var(--fs-14); font-weight: var(--fw-bold);
+  transition: background 0.15s;
+}
+.adash-report__btn:hover { background: var(--c-dark-hover); }
 
 /* ── 정산회계: 공개 링크 복사 버튼 ──────────────────────── */
 .settle-linkbtn {

@@ -111,6 +111,10 @@
   --ring-error: 0 0 0 3px rgba(244, 67, 54, 0.1);
   --ring-field: 0 0 0 3px rgba(79, 70, 229, 0.14); /* indigo focus ring */
 
+  /* ── Charts (admin 대시보드 인포그래픽) ─────────────────── */
+  --ch-purple: #8b5cf6;      /* 도넛 5번째 세그먼트 (blue/orange/success/warn 은 기존 토큰 재사용) */
+  --ch-bar-rest: #ececf1;    /* 막대차트 비선택 월 */
+
   /* ── Text field (design-system Text Field component) ───── */
   --c-indigo: #4f46e5;          /* interactive-brand — field focus */
   --c-indigo-hover: #4338ca;

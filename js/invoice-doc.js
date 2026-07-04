@@ -10,7 +10,7 @@
        account, total }
    assetBase: prefix for the logo image ("./assets/" in-app, "../assets/" under /invoice/).
    ============================================================ */
-import { html } from "./dom.js";
+import { html, escapeHtml } from "./dom.js";
 
 const S = {
   table: "width:100%;border-collapse:collapse;table-layout:fixed;border:1px solid #d4d4d4;font-size:12px;font-family:Pretendard,sans-serif;",
@@ -135,7 +135,7 @@ export function printInvoiceDoc(el, title) {
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>${title}</title>
+  <title>${escapeHtml(title)}</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
   <style>
     @page { size: A4; margin: 0; }
