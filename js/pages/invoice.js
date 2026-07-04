@@ -6,7 +6,6 @@
    연·월 드롭다운은 ui.js 공용 makeDropdown() 재사용(페이지 내 재구현 없음).
    ============================================================ */
 import { setHTML, on, qs, html } from "../dom.js";
-import { icon } from "../icons.js";
 import { invoiceDoc, printInvoiceDoc } from "../invoice-doc.js";
 import { issueLink, publicInvoiceUrl, SUPPLIER, ACCOUNT } from "../data/invoice-links.js";
 import { pageTitle, makeDropdown, simpleModal } from "../ui.js";
@@ -81,37 +80,59 @@ function markup() {
         <!-- 좌: A4 문서 미리보기 (invoice-doc.js 렌더) -->
         <div class="doc"><div class="a4-frame" data-doc-host></div></div>
 
-        <!-- 우: 조회(리모컨) · 다운로드 · 공개링크 · 동의 -->
-        <aside class="rail">
-          <div class="iv-card">
-            <div class="iv-card__head"><b>거래명세서 조회</b></div>
-            <div class="iv-card__body">
-              <div class="dd-row">
-                <div class="dd" data-dd="year"><button type="button" class="dd-trigger" aria-haspopup="listbox" aria-expanded="false"></button><div class="dd-panel" role="listbox"></div></div>
-                <div class="dd" data-dd="month"><button type="button" class="dd-trigger" aria-haspopup="listbox" aria-expanded="false"></button><div class="dd-panel" role="listbox"></div></div>
-              </div>
-              <div class="iv-summary">
-                <div class="sum-amt"><span data-sum-lbl></span><b class="num" data-sum-amt>0원</b></div>
-                <div class="srow srow--gap"><span class="k">결제 · 정산 대금기한</span><span class="v due num" data-sum-due>—</span></div>
-                <div class="srow"><span class="k">계산서 발급</span><span class="iv-badge iv-badge--err" data-sum-tax>동의 필요</span></div>
-              </div>
+        <!-- 우: 단일 통합 리모컨 (기간 · 금액 · 프로세스 · 액션 · 동의 · 푸터) -->
+        <aside class="remote">
+          <!-- ① 기간 헤더 + 월 스테퍼 + 연·월 드롭다운 -->
+          <div class="rm-period">
+            <div class="rm-period__top">
+              <button class="rm-step" data-prev aria-label="이전 달">‹</button>
+              <div class="rm-period__label"><b data-period-lbl></b><span>귀속 명세서</span></div>
+              <button class="rm-step" data-next aria-label="다음 달">›</button>
+            </div>
+            <div class="rm-period__dds">
+              <div class="dd" data-dd="year"><button type="button" class="dd-trigger" aria-haspopup="listbox" aria-expanded="false"></button><div class="dd-panel" role="listbox"></div></div>
+              <div class="dd" data-dd="month"><button type="button" class="dd-trigger" aria-haspopup="listbox" aria-expanded="false"></button><div class="dd-panel" role="listbox"></div></div>
             </div>
           </div>
 
-          <!-- 다운로드 · 공개 링크 (조회 리모컨 아래) · 3버튼 한 줄, 아이콘은 유지 -->
-          <div class="iv-dl-row">
-            <button class="iv-btn iv-btn--primary" data-pdf>${icon("download", { size: 16 })}PDF</button>
-            <button class="iv-btn iv-btn--excel" data-excel>${icon("download", { size: 16 })}EXCEL</button>
-            <button class="iv-btn iv-btn--secondary" data-link>${icon("external-link", { size: 16 })}COPY</button>
+          <!-- ② 금액 요약 (차분한 텍스트 라인) -->
+          <div class="rm-hero">
+            <p class="lbl" data-hero-lbl></p>
+            <p class="amt num" data-hero-amt>0원</p>
+            <div class="due"><span>결제 · 정산 대금기한</span><b class="num" data-hero-due>—</b></div>
           </div>
 
-          <div class="iv-card agree-wrap" data-agree-wrap>
-            <div class="iv-card__body">
-              <p class="agree-desc">명세서 내용을 확인한 뒤 동의하면 위 금액으로 세금계산서가 발급됩니다. 동의 후에는 내용을 변경할 수 없습니다.</p>
-              <button class="iv-btn iv-btn--agree" data-agree>해당 내용으로 계산서 발급에 동의합니다</button>
-              <div class="agree-done" tabindex="-1"><span class="ck">✓</span><div><b>계산서 발급 동의 완료</b><span data-agree-date></span></div></div>
+          <!-- ③ 정산 프로세스 3스텝 -->
+          <div class="rm-flow">
+            <div class="rm-node done"><span class="dot">✓</span><span>명세서 확인</span></div>
+            <div class="rm-link"></div>
+            <div class="rm-node cur" data-node-agree><span class="dot">2</span><span>계산서 동의</span></div>
+            <div class="rm-link"></div>
+            <div class="rm-node" data-node-pay><span class="dot">3</span><span>입금 완료</span></div>
+          </div>
+
+          <!-- ④ 액션 (PDF · EXCEL · 열람링크) · 아이콘 없음 -->
+          <div class="rm-actions">
+            <div class="rm-actions__row">
+              <button class="rm-btn rm-btn--primary" data-pdf>PDF 다운로드</button>
+              <button class="rm-btn rm-btn--dark" data-excel>EXCEL 다운로드</button>
+            </div>
+            <button class="rm-btn rm-btn--secondary" data-link>거래명세서 열람링크 <span class="rm-btn__sub">· 링크만으로 접속이 가능해요</span></button>
+          </div>
+
+          <!-- ⑤ 계산서 발급 동의 (조용한 섹션) -->
+          <div class="rm-agree" data-agree-wrap>
+            <div class="pending">
+              <p>명세서 내용을 확인한 뒤 동의하면 <b>위 금액으로 세금계산서가 발급</b>됩니다. 동의 후에는 내용을 변경할 수 없습니다.</p>
+              <button data-agree>해당 내용으로 계산서 발급에 동의합니다</button>
+            </div>
+            <div class="complete" tabindex="-1">
+              <span class="ck">✓</span>
+              <div><b>계산서 발급 동의 완료</b><span data-agree-date></span></div>
             </div>
           </div>
+
+          <div class="rm-foot">동의 후 입금이 확인되면 정산이 완료됩니다 · 문의 02-0000-0000</div>
         </aside>
       </div>
 
@@ -146,13 +167,25 @@ export function mount(root, { nav }) {
     };
   }
 
-  /* 기간 변경 시 문서·요약·다운로드 라벨을 함께 갱신 (동의 상태는 유지) */
+  /* 스테퍼·드롭다운 어느 쪽으로 바꿔도 문서·기간 라벨·금액·기한·트리거가 함께 갱신.
+     (동의 상태는 유지) */
   function render() {
     const d = docData();
     el("[data-doc-host]").innerHTML = invoiceDoc(d);
-    el("[data-sum-lbl]").textContent = `${d._label} 결제금액`;
-    el("[data-sum-amt]").textContent = d.total;
-    el("[data-sum-due]").textContent = d._due;
+    el("[data-period-lbl]").textContent = d._label;
+    el("[data-hero-lbl]").textContent = `${d._label} 결제금액`;
+    el("[data-hero-amt]").textContent = d.total;
+    el("[data-hero-due]").textContent = d._due;
+    ddYear.renderTrigger();
+    ddMonth.renderTrigger();
+  }
+  /* 월 스테퍼: 연 경계를 넘어가면 연도까지 함께 이동 */
+  function stepMonth(delta) {
+    let m = Number(state.month) + delta, y = Number(state.year);
+    if (m < 1) { m = 12; y -= 1; } else if (m > 12) { m = 1; y += 1; }
+    state.year = String(y);
+    state.month = pad2(m);
+    render();
   }
 
   /* 현재 선택 월 거래명세서를 서식이 정리된 .xlsx 로 내려받는다 (의존성 없는 xlsx.js).
@@ -258,16 +291,18 @@ export function mount(root, { nav }) {
     return { title: d.title, period: d.period, buyer: d.buyer, supplier: d.supplier, items: d.items, account: d.account, total: d.total };
   }
 
-  /* 계산서 발급 동의 적용 (재확인 모달에서 '동의하고 발급' 클릭 시 실행) */
+  /* 계산서 발급 동의 적용 (재확인 모달에서 '동의하고 발급' 클릭 시 실행)
+     → 동의 섹션 완료 라인 + 프로세스 스텝(2 done → 3 cur) 전환 */
   function applyAgree() {
     if (state.agreed) return;
     state.agreed = true;
     el("[data-agree-wrap]").classList.add("done");
-    const tax = el("[data-sum-tax]");
-    tax.textContent = "동의 완료";
-    tax.className = "iv-badge iv-badge--ok";
     const dt = new Date();
     el("[data-agree-date]").textContent = `${dt.getFullYear()}. ${pad2(dt.getMonth() + 1)}. ${pad2(dt.getDate())} 동의`;
+    const nodeAgree = el("[data-node-agree]"), nodePay = el("[data-node-pay]");
+    nodeAgree.className = "rm-node done";
+    nodeAgree.querySelector(".dot").textContent = "✓";
+    nodePay.className = "rm-node cur";
     toast("계산서 발급에 동의했습니다");
   }
 
@@ -296,7 +331,7 @@ export function mount(root, { nav }) {
       confirmModal.close();
       /* close()가 (이미 숨겨진) 동의 버튼으로 포커스를 되돌려 body 로 흘리므로,
          드러난 '동의 완료' 블록으로 포커스를 옮겨 키보드·스크린리더 맥락을 유지한다. */
-      const done = el(".agree-done");
+      const done = el(".rm-agree .complete");
       if (done) done.focus();
     });
   }
@@ -311,10 +346,12 @@ export function mount(root, { nav }) {
     on(root, "click", "[data-link]", () => {
       const token = issueLink({ bizNumber: BUYER.bizNumber, doc: currentDoc() });
       const url = publicInvoiceUrl(token);
-      const ok = () => toast("공개 링크가 복사되었습니다 · 로그인 없이 열람 가능");
-      if (navigator.clipboard?.writeText) navigator.clipboard.writeText(url).then(ok).catch(() => window.prompt("공개 링크 (복사하세요)", url));
-      else window.prompt("공개 링크 (복사하세요)", url);
+      const ok = () => toast("거래명세서 열람링크가 복사되었습니다 · 링크만으로 접속이 가능해요");
+      if (navigator.clipboard?.writeText) navigator.clipboard.writeText(url).then(ok).catch(() => window.prompt("거래명세서 열람링크 (복사하세요)", url));
+      else window.prompt("거래명세서 열람링크 (복사하세요)", url);
     }),
+    on(root, "click", "[data-prev]", () => stepMonth(-1)),
+    on(root, "click", "[data-next]", () => stepMonth(1)),
     on(root, "click", "[data-agree]", openAgreeConfirm),
   ];
 
