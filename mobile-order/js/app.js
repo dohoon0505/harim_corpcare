@@ -924,9 +924,14 @@
     root.appendChild(progressWrap);
     root.appendChild(el("div", { style: { padding: "8px 20px 0", display: "flex", justifyContent: "space-between", fontSize: "12px", color: "var(--sm-content-tertiary)" } }, el("span", null, "입력 진행"), doneText));
     root.appendChild(formEl);
+    // 긴급·야간배송 안내: 영업시간 외(18:30~09:00)에만 노출 (정상 영업 09:00~18:30 에는 숨김)
+    const noticeNow = new Date();
+    const noticeMins = noticeNow.getHours() * 60 + noticeNow.getMinutes();
+    const bizOpen = noticeMins >= 9 * 60 && noticeMins < 18 * 60 + 30;
     root.appendChild(el("div", { class: "notice" },
       el("h5", null, "NOTICE"), el("h6", null, "주문 시 꼭 확인해주세요"),
       el("ul", null,
+        bizOpen ? false : el("li", null, "긴급·야간배송 시 우선 신청을 해주시고, 전화문의를 통해 가능유무를 확인 부탁드립니다."),
         el("li", null, "배송완료 이후에 사진을 발송해 드려요."),
         el("li", null, "18:30 이후 주문은 익일 오전 중 배송돼요."),
         el("li", null, "일부 지역에서 배송비가 발생할 수 있어요."),
