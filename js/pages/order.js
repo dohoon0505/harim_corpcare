@@ -42,7 +42,17 @@ const BIZ = { openH: 9, closeH: 18, closeM: 30 };
 const pad2 = (n) => String(n).padStart(2, "0");
 const hourOptions = () => Array.from({ length: BIZ.closeH - BIZ.openH + 1 }, (_, i) => pad2(BIZ.openH + i));
 const minOptions = (hour) => (+hour === BIZ.closeH ? ["00", "10", "20", "30"] : ["00", "10", "20", "30", "40", "50"]);
-const inBizHours = (d) => { const t = d.getHours() * 60 + d.getMinutes(); return t >= BIZ.openH * 60 && t <= BIZ.closeH * 60 + BIZ.closeM; };
+/* 배송 시간대 구분:
+   beforeOpen 00:00~09:00 · biz 09:00~18:30 · evening 18:30~20:00(야간) · night 20:00~24:00
+   즉시배송 버튼은 biz/beforeOpen 에는 '즉시배송', evening/night 에는 '익일 빠른배송'으로 전환. */
+const NIGHT_CLOSE = 20 * 60; // 야간배송 마감 20:00
+const timePhase = (d) => {
+  const t = d.getHours() * 60 + d.getMinutes();
+  if (t < BIZ.openH * 60) return "beforeOpen";
+  if (t <= BIZ.closeH * 60 + BIZ.closeM) return "biz";
+  if (t <= NIGHT_CLOSE) return "evening";
+  return "night";
+};
 const DOW = ["일", "월", "화", "수", "목", "금", "토"];
 const fmtYMD = (d) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
 
@@ -130,9 +140,11 @@ function markup() {
           </div>
           <div class="sec-gap">
             <div class="sec-label">배송 일시</div>
-            <div class="seg">
+            <div class="seg seg--deliv">
               <button data-seg="sched" class="sel">날짜 · 시간 지정</button>
               <button data-seg="imm">즉시배송</button>
+              <button data-seg="urgent">긴급배송</button>
+              <button data-seg="night">야간배송</button>
             </div>
             <div class="dt-row" data-dt-row>
               <div class="dd datepick" data-dd-date>
@@ -157,8 +169,7 @@ function markup() {
               </div>
             </div>
             <div class="imm-note" data-imm-note></div>
-            <div class="biz-note" data-biz-note></div>
-            <p class="dt-info">배송 시간은 <b>09:00 ~ 18:30</b> 사이에서 지정할 수 있어요 · <b>오전 11시 이전</b> 접수 건은 당일 배송할 수 있어요</p>
+            <p class="dt-info" data-dt-info>배송 시간은 <b>09:00 ~ 18:30</b> 사이에서 지정할 수 있어요 · <b>오전 11시 이전</b> 접수 건은 당일 배송할 수 있어요</p>
           </div>
           <div class="cta-row">
             <button class="btn-back" data-goto="1">이전</button>
@@ -247,7 +258,7 @@ export function mount(root, { nav }) {
     occ: null, viaUrl: false,
     product: null, ribbon: "", sender: "",
     addr: "", toName: "", toPhone: "",
-    immediate: false, date: "", hour: "09", min: "00",
+    deliv: "sched", date: "", hour: "09", min: "00",
     manager: 0,
     notify: { recipient: true, sender: true, manager: true },
   };
@@ -263,7 +274,7 @@ export function mount(root, { nav }) {
 
   const valid = {
     1: () => !!(state.occ && state.product),
-    2: () => !!(state.addr && state.toName && state.toPhone && (state.immediate || state.date)),
+    2: () => !!(state.addr && state.toName && state.toPhone && (state.deliv !== "sched" || state.date)),
     3: () => !!(state.ribbon && state.sender),
   };
 
@@ -375,28 +386,43 @@ export function mount(root, { nav }) {
     min: dpMin, max: dpMax,
   });
 
-  function setImmediate(on_) {
-    state.immediate = on_;
-    $('[data-seg="imm"]').classList.toggle("sel", on_);
-    $('[data-seg="sched"]').classList.toggle("sel", !on_);
-    $("[data-dt-row]").classList.toggle("dim", on_);
-    const note = $("[data-imm-note]");
-    if (on_) {
-      const d = new Date(Date.now() + 4 * 36e5);
-      note.textContent = `영업시간 내 접수 건은 4시간 이내(${pad2(d.getHours())}:${pad2(d.getMinutes())} 전)에 배송해 드려요.`;
-      note.classList.add("show");
-    } else note.classList.remove("show");
+  function setDeliv(mode) {
+    state.deliv = mode;
+    $$("[data-seg]").forEach((b) => b.classList.toggle("sel", b.dataset.seg === mode));
+    $("[data-dt-row]").classList.toggle("dim", mode !== "sched");
+    $("[data-dt-info]").classList.toggle("hide", mode !== "sched");
+    renderDelivNote();
     refreshCtas();
   }
+  /* 선택한 배송 모드의 안내문구 (모드·시간대별) */
+  function renderDelivNote() {
+    const note = $("[data-imm-note]");
+    const ph = timePhase(new Date());
+    let lines = [], tone = "ok";
+    if (state.deliv === "imm") {
+      if (ph === "evening" || ph === "night") lines = ["금일 영업시간이 종료되어 다음 날 오전에 배송됩니다."];
+      else if (ph === "beforeOpen") lines = ["영업 시작(09:00) 후 순차 배송되어 오늘 낮 12시 30분경 배송돼요."];
+      else { const d = new Date(Date.now() + 4 * 36e5); lines = [`영업시간 내 접수 건은 4시간 이내(${pad2(d.getHours())}:${pad2(d.getMinutes())} 전)에 배송해 드려요.`]; }
+    } else if (state.deliv === "urgent") {
+      lines = ["2시간 내 긴급하게 배송 요청 시 선택해주세요.", "최대 1만원의 비용이 추가로 발생합니다."]; tone = "warn";
+    } else if (state.deliv === "night") {
+      lines = ["18:30 이후 야간 배송이 필요한 경우 선택해주세요.", "화훼 농가와 배송 인프라 확인 후 가능유무를 안내드립니다."]; tone = "warn";
+    }
+    if (!lines.length) { note.classList.remove("show"); setHTML(note, ""); return; }
+    note.className = `imm-note imm-note--${tone} show`;
+    setHTML(note, html`${lines.map((l, i) => html`<span class="imm-note__line ${i ? "is-sub" : ""}">${l}</span>`)}`);
+  }
+  /* 시간대에 따라 즉시배송 라벨 전환 + 긴급/야간 신청 가능여부 갱신 (1분 주기) */
   function applyBizRule() {
-    const okBiz = inBizHours(new Date());
-    $('[data-seg="imm"]').disabled = !okBiz;
-    const biz = $("[data-biz-note]");
-    if (!okBiz) {
-      if (state.immediate) setImmediate(false);
-      biz.textContent = "지금은 영업시간이 아니에요. 즉시배송은 영업시간(09:00 ~ 18:30)에만 접수할 수 있어요.";
-      biz.classList.add("show");
-    } else biz.classList.remove("show");
+    const ph = timePhase(new Date());
+    $('[data-seg="imm"]').textContent = ph === "evening" || ph === "night" ? "익일 빠른배송" : "즉시배송";
+    const urgentOk = ph === "biz";
+    const nightOk = ph === "biz" || ph === "evening";
+    const ub = $('[data-seg="urgent"]'), nb = $('[data-seg="night"]');
+    ub.disabled = !urgentOk; ub.title = urgentOk ? "" : "긴급배송은 09:00 ~ 18:30 에만 신청할 수 있어요";
+    nb.disabled = !nightOk; nb.title = nightOk ? "" : "야간배송은 18:30 ~ 20:00 배송 건에 한해 신청할 수 있어요";
+    if ((state.deliv === "urgent" && !urgentOk) || (state.deliv === "night" && !nightOk)) setDeliv("sched");
+    else renderDelivNote();
   }
 
   /* ── STEP 3 · 리본문구 · 보내는분 (텍스트 입력 + 간편선택 모달) ── */
@@ -457,9 +483,19 @@ export function mount(root, { nav }) {
 
   /* ── STEP 4 · 확인 · 접수 ── */
   function dateLabel() {
-    if (state.immediate) return "즉시배송";
-    const d = new Date(state.date + "T00:00:00");
-    return `${d.getMonth() + 1}월 ${d.getDate()}일 (${DOW[d.getDay()]}) ${state.hour}:${state.min}`;
+    if (state.deliv === "sched") {
+      const d = new Date(state.date + "T00:00:00");
+      return `${d.getMonth() + 1}월 ${d.getDate()}일 (${DOW[d.getDay()]}) ${state.hour}:${state.min}`;
+    }
+    if (state.deliv === "urgent") return "긴급배송 · 2시간 내";
+    if (state.deliv === "night") return "야간배송 · 18:30 ~ 20:00";
+    const ph = timePhase(new Date()); // imm
+    if (ph === "evening" || ph === "night") {
+      const t = new Date(); t.setDate(t.getDate() + 1);
+      return `익일 빠른배송 · ${t.getMonth() + 1}월 ${t.getDate()}일 (${DOW[t.getDay()]}) 12:30`;
+    }
+    if (ph === "beforeOpen") return "즉시배송 · 오늘 12:30";
+    return "즉시배송";
   }
   function renderManagers() {
     const contacts = store.get().contacts;
@@ -502,7 +538,7 @@ export function mount(root, { nav }) {
   function resetAll() {
     Object.assign(state, {
       step: 1, maxStep: 1, occ: null, viaUrl: false, product: null, ribbon: "", sender: "",
-      addr: "", toName: "", toPhone: "", immediate: false, hour: "09", min: "00", manager: 0,
+      addr: "", toName: "", toPhone: "", deliv: "sched", hour: "09", min: "00", manager: 0,
       notify: { recipient: true, sender: true, manager: true },
     });
     dpMin.setTime(Date.now()); dpMin.setHours(0, 0, 0, 0);
@@ -515,7 +551,7 @@ export function mount(root, { nav }) {
     $$("[data-occ]").forEach((b) => b.classList.remove("sel"));
     setHTML($("[data-prod-list]"), "");
     $$("[data-nt]").forEach((t) => t.classList.add("on"));
-    setImmediate(false);
+    setDeliv("sched");
     ddHour.renderTrigger(); ddMin.renderTrigger(); dpDate.renderTrigger();
     updateCnt(); updateSenderCnt(); applyBizRule();
     go(1);
@@ -544,8 +580,7 @@ export function mount(root, { nav }) {
   });
   bind("input", "[data-f-toname]", (e, t) => { state.toName = t.value.trim(); refreshCtas(); });
   bind("input", "[data-f-tophone]", (e, t) => onPhone(t));
-  bind("click", '[data-seg="imm"]', () => setImmediate(true));
-  bind("click", '[data-seg="sched"]', () => setImmediate(false));
+  bind("click", "[data-seg]", (e, t) => { if (!t.disabled) setDeliv(t.dataset.seg); });
   bind("click", "[data-ribbon-pick]", openRibbonPick);
   bind("input", "[data-ribbon-input]", (e, t) => {
     state.ribbon = t.value.trim();

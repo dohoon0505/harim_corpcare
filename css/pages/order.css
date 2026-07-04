@@ -104,12 +104,18 @@
 .page-order .auto-chip.show { display: inline-block; }
 
 /* ── 배송 일시 ── */
-.page-order .seg { display: inline-flex; background: var(--c-surface-2); border: 1px solid var(--c-border); border-radius: 999px; padding: 3px; margin-bottom: 16px; }
-.page-order .seg button { padding: 9px 18px; border-radius: 999px; font-size: 14px; font-weight: 600; color: var(--c-text-muted); transition: all 0.15s; }
+.page-order .seg { display: inline-flex; flex-wrap: wrap; gap: 2px; background: var(--c-surface-2); border: 1px solid var(--c-border); border-radius: 999px; padding: 3px; margin-bottom: 16px; }
+.page-order .seg button { padding: 9px 16px; border-radius: 999px; font-size: 14px; font-weight: 600; color: var(--c-text-muted); transition: all 0.15s; white-space: nowrap; }
 .page-order .seg button.sel { background: var(--c-surface); color: var(--c-text-strong); box-shadow: 0 1px 4px rgba(17, 17, 24, 0.1); }
 .page-order .seg button:disabled { color: var(--c-text-faint); cursor: not-allowed; }
+.page-order .seg button:disabled.sel { background: transparent; box-shadow: none; }
+@media (max-width: 620px) {
+  .page-order .seg--deliv { display: grid; grid-template-columns: 1fr 1fr; width: 100%; border-radius: var(--r-lg); gap: 4px; }
+  .page-order .seg--deliv button { border-radius: var(--r-md); }
+}
 .page-order .dt-row { display: flex; gap: 12px; }
 .page-order .dt-row.dim { opacity: 0.4; pointer-events: none; }
+.page-order .dt-info.hide { display: none; }
 
 /* ── 커스텀 드롭다운 (harim mob 원형 · 선택 행 블루) ── */
 .page-order .dd { position: relative; min-width: 104px; }
@@ -150,10 +156,12 @@
 
 .page-order .dt-info { margin-top: 14px; font-size: 13.5px; color: var(--c-text-muted); }
 .page-order .dt-info b { color: var(--c-success-ink); font-weight: 600; }
-.page-order .imm-note { display: none; margin-top: 14px; font-size: 13.5px; color: var(--c-success-ink); background: var(--c-success-bg); border-radius: var(--r-lg); padding: 10px 14px; }
+.page-order .imm-note { display: none; margin-top: 14px; font-size: 13.5px; border-radius: var(--r-lg); padding: 11px 14px; }
 .page-order .imm-note.show { display: block; }
-.page-order .biz-note { display: none; margin-top: 14px; font-size: 13.5px; color: var(--c-text-4); background: var(--c-surface-2); border-radius: var(--r-lg); padding: 10px 14px; }
-.page-order .biz-note.show { display: block; }
+.page-order .imm-note--ok { color: var(--c-success-ink); background: var(--c-success-bg); }
+.page-order .imm-note--warn { color: var(--c-warn-soft-ink); background: var(--c-warn-soft-bg); }
+.page-order .imm-note__line { display: block; }
+.page-order .imm-note__line.is-sub { margin-top: 4px; font-size: 12.5px; opacity: 0.9; }
 
 /* ── 리본 문구 · 보내는분 (텍스트 입력 + 간편선택 버튼) ── */
 .page-order .rib-field { display: flex; gap: 10px; align-items: stretch; }
