@@ -219,7 +219,7 @@ export function mount(root, { nav }) {
     } else {
       clearClientId();
     }
-    nav(role === "admin" ? "#/admin" : "#/app");
+    nav(role === "admin" ? "#/admin/settlement" : "#/app");
   });
 
   const offInput = on(form, "input", "input", () => clearError());

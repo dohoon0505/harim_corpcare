@@ -1,5 +1,5 @@
 /* ============================================================
-   admin-settlement.js — 계열사 정산지원 (대시보드)
+   admin-settlement.js — 통합정산시스템 (대시보드)
    ① 상단 필터: 한 줄 통합 바(.fbar) — 연·월 커스텀 드롭다운(ui.js makeDropdown) +
       이번달/저번달 오렌지 퀵칩 + 정산 상태 세그먼트 + 우측 검색.
    ② KPI 카드(증감 배지) · 인사이트(막대) · 계열사 랭킹 · 항목 도넛 · 정산 진행 · 리포트 카드.
@@ -128,8 +128,8 @@ export function mount(root, { nav }) {
   }
 
   /* ── ③ 계열사별 이용 랭킹 (가로 막대 · 오렌지) ── */
+  /* 막대 길이 = 전체 대비 이용 비중(share%) — 우측에 표기된 % 와 시각적으로 일치. */
   function affiliateCard(r) {
-    const top = r.affiliates[0]?.total || 1;
     return html`
       <div class="acard">
         <div class="acard__head"><b>계열사별 이용 현황</b>${r.affiliates.length > 3 ? html`<span class="acard__hint">상위 3사 ${r.top3Share}%</span>` : ""}</div>
@@ -139,7 +139,7 @@ export function mount(root, { nav }) {
               <div class="rank">
                 <span class="rank__no ${i < 3 ? "top" : ""}">${i + 1}</span>
                 <span class="rank__name">${a.name}</span>
-                <span class="rank__track"><span class="rank__bar" style="width:${Math.max(4, Math.round((a.total / top) * 100))}%"></span></span>
+                <span class="rank__track"><span class="rank__bar" style="width:${Math.max(4, a.share)}%"></span></span>
                 <span class="rank__amt num">${won(a.total)}</span>
                 <span class="rank__share num">${a.share}%</span>
               </div>
@@ -281,7 +281,7 @@ export function mount(root, { nav }) {
     html`
       <div class="page-admin">
         <div class="admin-inner">
-          ${pageTitle({ imgSrc: "./assets/nav-accounting.png", title: "계열사 정산지원" })}
+          ${pageTitle({ imgSrc: "./assets/nav-accounting.png", title: "통합정산시스템" })}
           <div class="fbar">
             <span class="fbar__lbl">조회 기간</span>
             <div class="dd" data-dd="year"><button type="button" class="dd-trigger" aria-haspopup="listbox" aria-expanded="false"></button><div class="dd-panel" role="listbox"></div></div>

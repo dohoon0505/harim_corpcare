@@ -162,7 +162,7 @@ export function reportDoc(r, generatedAt) {
 
       <!-- 푸터 -->
       <p style="margin-top:auto;padding-top:14px;border-top:1px solid ${C.divider};font-size:10.5px;color:${C.faint};display:flex;justify-content:space-between">
-        <span>본 리포트는 계열사 정산지원 데이터로부터 자동 생성된 분석 자료입니다.</span>
+        <span>본 리포트는 통합정산시스템 데이터로부터 자동 생성된 분석 자료입니다.</span>
         <span>하림그룹 경조화환 시스템 · 관리자 콘솔</span>
       </p>
     </div>

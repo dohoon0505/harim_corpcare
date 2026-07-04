@@ -35,7 +35,7 @@ const ADMIN_MENU = [
   {
     group: "계열사 관리",
     items: [
-      { label: "계열사 정산지원", hash: "#/admin/settlement", icon: "nav-accounting.png" },
+      { label: "통합정산시스템", hash: "#/admin/settlement", icon: "nav-accounting.png" },
       { label: "계열사 접속관리", hash: "#/admin", icon: "nav-profile.png" },
     ],
   },
