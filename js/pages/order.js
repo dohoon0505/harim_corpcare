@@ -384,7 +384,7 @@ export function mount(root, { nav }) {
           /* 부고: 즉시배송 세팅 → 바로 리본문구(STEP 3) 이동 */
           setDeliv("imm");
           refreshCtas();
-          showToast("부고장을 확인했어요 · 장례식장·고인 정보 자동입력 + 즉시배송으로 설정했어요");
+          showToast("부고장 정보를 성공적으로 불러왔어요");
           go(3);
         } else {
           /* 청첩: 예식 시간으로 배송일시 세팅 → 측근 선택 위해 배송지(STEP 2) 이동 */
@@ -393,7 +393,7 @@ export function mount(root, { nav }) {
           setDeliv("sched");
           dpDate.renderTrigger(); ddHour.renderTrigger(); ddMin.renderTrigger();
           refreshCtas();
-          showToast("청첩장을 확인했어요 · 예식장·예식시간 자동입력 · 신랑측/신부측 측근을 선택해 주세요");
+          showToast("청첩장 정보를 성공적으로 불러왔어요");
           go(2);
         }
         return;
