@@ -236,7 +236,7 @@ function markup() {
             <button class="btn-back" data-goto="3">이전</button>
             <button class="btn-next" data-submit>주문 접수하기</button>
           </div>
-          <p class="cta-hint">배송 시작 후 문구변경 시 비용이 청구될 수 있어요 · 문의 02-0000-0000</p>
+          <p class="cta-hint">배송 시작 후 문구변경 시 비용이 청구될 수 있어요 · 문의 0000-0000</p>
         </section>
 
         <!-- 완료 -->

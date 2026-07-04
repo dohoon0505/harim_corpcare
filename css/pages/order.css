@@ -183,7 +183,8 @@
 
 /* ── 간편선택 모달 (리본 문구 · 보내는분) · 모달 레이어(.page-order 밖) ── */
 .modal-panel--pick { max-width: 30rem; }
-.modal-panel--pick .modal-body { padding: 18px 24px 24px; }
+/* 리본문구 픽커 모달은 푸터가 없어 hm__body(기본 하단 4px)로는 바닥이 붙어 보임 → 하단 여백 보정 */
+.modal-panel--pick .hm__body { padding: 18px 24px 22px; }
 .modal-panel--pick .pick-intro { font-size: 13px; color: var(--c-text-muted); line-height: 1.6; margin-bottom: 16px; }
 .modal-panel--pick .pick-group + .pick-group { margin-top: 18px; }
 .modal-panel--pick .pick-group__label { font-size: 12.5px; font-weight: 600; color: var(--c-text-muted); margin-bottom: 9px; }

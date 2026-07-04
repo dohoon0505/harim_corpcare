@@ -38,14 +38,19 @@ export const INITIAL_CLIENTS = [
    대시보드 인포그래픽·월간 분석 리포트의 원천 데이터.
    시드 고정 PRNG(mulberry32)로 결정적 생성 → 새로고침해도 값이 흔들리지 않는다.
    정산금액(CLIENT_SETTLEMENTS)은 이 이용 내역의 합계에서 파생 → 표·차트·리포트 정합. */
+/* 항목별 이용 비중은 개별 상품 단위(상품 규격 안내 = store.js ALL_PRODUCTS 와 동일). */
 export const USAGE_CATEGORIES = [
-  { key: "근조화환",   unit: 85000 },
-  { key: "축하화환",   unit: 85000 },
-  { key: "특수화환",   unit: 75000 },
-  { key: "근조바구니", unit: 65000 },
-  { key: "꽃바구니",   unit: 80000 },
+  { key: "축하 3단화환 (기본)",    unit: 70000 },
+  { key: "축하 3단화환 (고급)",    unit: 100000 },
+  { key: "근조 3단화환 (기본)",    unit: 70000 },
+  { key: "근조 3단화환 (고급)",    unit: 100000 },
+  { key: "특수화환 (오브제)",       unit: 70000 },
+  { key: "특수화환 (스탠드)",       unit: 70000 },
+  { key: "특수화환 (10KG 쌀화환)",  unit: 90000 },
+  { key: "근조바구니",              unit: 65000 },
+  { key: "꽃바구니",                unit: 80000 },
 ];
-const CAT_WEIGHTS = [0.42, 0.3, 0.1, 0.11, 0.07]; // 카테고리 이용 비중(대략)
+const CAT_WEIGHTS = [0.2, 0.1, 0.28, 0.14, 0.04, 0.03, 0.03, 0.11, 0.07]; // 상품별 이용 비중(대략, 합=1)
 
 const mulberry32 = (a) => () => {
   a |= 0; a = (a + 0x6d2b79f5) | 0;
@@ -67,9 +72,10 @@ function usageFor(ci, m) {
     orders += count;
     total += count * cat.unit;
   });
-  if (orders === 0) { // 최소 1건 보장(빈 월 방지)
-    items["근조화환"] = { count: 1, amount: USAGE_CATEGORIES[0].unit };
-    orders = 1; total = USAGE_CATEGORIES[0].unit;
+  if (orders === 0) { // 최소 1건 보장(빈 월 방지) — 근조 3단화환 (기본)
+    const f = USAGE_CATEGORIES[2];
+    items[f.key] = { count: 1, amount: f.unit };
+    orders = 1; total = f.unit;
   }
   return { items, orders, total };
 }

@@ -58,7 +58,7 @@
 /* ③ 정산 프로세스 3스텝 (저대비 · 솔리드·그림자 금지) */
 .page-invoice .rm-flow { display: flex; align-items: center; padding: 14px 20px; border-bottom: 1px solid var(--c-divider); }
 .page-invoice .rm-node { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; }
-.page-invoice .rm-node .dot { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; font-weight: 700; background: var(--c-surface); color: var(--c-text-faint); border: 1.5px solid var(--c-border); }
+.page-invoice .rm-node .dot { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; line-height: 1; font-size: 11px; font-weight: 700; background: var(--c-surface); color: var(--c-text-faint); border: 1.5px solid var(--c-border); }
 .page-invoice .rm-node span { font-size: 11px; color: var(--c-text-muted); font-weight: 500; white-space: nowrap; }
 .page-invoice .rm-node.done .dot { border-color: var(--c-success-ink); color: var(--c-success-ink); }
 .page-invoice .rm-node.done span { color: var(--c-success-ink); }

@@ -132,7 +132,7 @@ export function mount(root, { nav }) {
   function affiliateCard(r) {
     return html`
       <div class="acard">
-        <div class="acard__head"><b>계열사별 이용 현황</b>${r.affiliates.length > 3 ? html`<span class="acard__hint">상위 3사 ${r.top3Share}%</span>` : ""}</div>
+        <div class="acard__head"><b>계열사별 이용 현황</b>${r.affiliates[0] ? html`<span class="acard__hint">최다 이용 계열사: ${r.affiliates[0].name}</span>` : ""}</div>
         <div class="acard__body" style="padding-top:12px;">
           ${r.affiliates.map(
             (a, i) => html`
