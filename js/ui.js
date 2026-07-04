@@ -203,10 +203,13 @@ export function simpleModal({ title, subtitle, body, footer, size = "sm", panelC
    rootEl 은 .dd-trigger + .dd-panel 을 포함해야 한다. 값 목록은 options() 로 지연 평가.
    문서 click/ESC 로 바깥 닫힘을 등록하며, 한 번에 하나의 .dd 만 열린다. destroy() 로
    모든 리스너 해제(페이지 cleanup 에서 호출). 거래명세서 등 다른 페이지 재사용 예정. */
-export function makeDropdown(root, { unit = "", options, get, set } = {}) {
+export function makeDropdown(root, { unit = "", options, get, set, label } = {}) {
   const trigger = root.querySelector(".dd-trigger");
   const panel = root.querySelector(".dd-panel");
-  const renderTrigger = () => { trigger.textContent = get() + unit; };
+  /* 표시 텍스트: label 이 있으면 값→라벨 매핑(값≠표시, 예: 담당자 index→"이름 · 직위"),
+     없으면 기존처럼 값+단위. label 미전달 시 완전 하위호환. */
+  const fmt = (v) => (label ? label(v) : v + unit);
+  const renderTrigger = () => { trigger.textContent = fmt(get()); };
   const close = () => {
     if (!root.classList.contains("open")) return;
     root.classList.remove("open");
@@ -215,7 +218,7 @@ export function makeDropdown(root, { unit = "", options, get, set } = {}) {
   function open() {
     document.querySelectorAll(".dd.open").forEach((d) => { if (d !== root) d.classList.remove("open"); });
     panel.innerHTML = options()
-      .map((v) => `<button type="button" class="dd-opt ${v === get() ? "sel" : ""}" role="option" aria-selected="${v === get()}" data-v="${v}">${v}${unit}</button>`)
+      .map((v) => `<button type="button" class="dd-opt ${v === get() ? "sel" : ""}" role="option" aria-selected="${v === get()}" data-v="${v}">${fmt(v)}</button>`)
       .join("");
     root.classList.add("open");
     trigger.setAttribute("aria-expanded", "true");

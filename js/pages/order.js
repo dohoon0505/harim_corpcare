@@ -218,7 +218,10 @@ function markup() {
           <div class="opt-box">
             <div class="opt-row">
               <div class="ol">주문 담당자<small>주문 처리 상황을 안내받을 담당자예요</small></div>
-              <select data-mgr-select></select>
+              <div class="dd dd--mgr" data-dd-mgr>
+                <button type="button" class="dd-trigger" aria-haspopup="listbox" aria-expanded="false"></button>
+                <div class="dd-panel" role="listbox"></div>
+              </div>
             </div>
             <div class="opt-row">
               <div class="ol">배송완료 알림<small>배송이 끝나면 문자로 알려드려요</small></div>
@@ -242,9 +245,13 @@ function markup() {
           <h2>주문이 접수되었어요</h2>
           <p class="d-sub">배송이 시작되면 알림으로 알려드릴게요.<br />진행 상황은 실시간 주문내역에서 확인할 수 있어요.</p>
           <div class="done-box" data-done-box></div>
+          <div class="done-redirect" data-redirect>
+            <p class="done-redirect__label"><b class="num" data-redirect-n>5</b>초 후 <b>실시간 주문내역</b>으로 이동합니다</p>
+            <div class="done-progress"><span class="done-progress__fill" data-redirect-bar></span></div>
+          </div>
           <div class="done-cta">
-            <button class="ghost" data-done-new>새 주문 작성하기</button>
-            <button class="solid" data-done-orders>주문내역 보기</button>
+            <button class="btn-back" data-done-new>새 주문 작성하기</button>
+            <button class="btn-next" data-done-orders>지금 주문내역 보기</button>
           </div>
         </section>
       </div>
@@ -385,6 +392,13 @@ export function mount(root, { nav }) {
     get: () => state.date, set: (v) => { state.date = v; refreshCtas(); },
     min: dpMin, max: dpMax,
   });
+  /* 주문 담당자 — 공용 커스텀 드롭다운(index→"이름 · 직위" label 매핑) */
+  const ddMgr = makeDropdown($("[data-dd-mgr]"), {
+    options: () => store.get().contacts.map((_, i) => String(i)),
+    get: () => String(state.manager),
+    set: (v) => { state.manager = +v; },
+    label: (v) => { const c = store.get().contacts[+v]; return c ? `${c.name} · ${c.role}` : "담당자 없음"; },
+  });
 
   function setDeliv(mode) {
     state.deliv = mode;
@@ -511,10 +525,51 @@ export function mount(root, { nav }) {
     if (ph === "beforeOpen") return "즉시배송 · 오늘 12:30";
     return "즉시배송";
   }
-  function renderManagers() {
-    const contacts = store.get().contacts;
-    setHTML($("[data-mgr-select]"), html`${contacts.map((c, i) => html`<option value="${i}">${c.name} · ${c.role}</option>`)}`);
+  /* 주문 접수 재확인 모달 — '계산서 발급동의'와 동일 패턴(되돌릴 수 없어 한 번 더 확인). */
+  let submitModal = null;
+  function openSubmitConfirm() {
+    if (submitModal) return;
+    const body = html`
+      <div class="hm-info"><span><b>${state.product.product}</b> · <b class="num">${state.product.price}</b>으로 주문을 접수합니다. 접수 후에는 리본문구·보내는분을 수정할 수 없어요.</span></div>
+    `;
+    const footer = html`
+      <button class="hm-btn hm-btn--secondary" data-action="close">취소</button>
+      <button class="hm-btn hm-btn--primary" data-confirm>주문 접수하기</button>
+    `;
+    submitModal = simpleModal({ title: "이대로 주문을 접수할까요?", size: "sm", body, footer, onClose: () => { submitModal = null; } });
+    submitModal.panel.addEventListener("click", (e) => {
+      if (!e.target.closest("[data-confirm]")) return;
+      submitModal.close();
+      submit();
+    });
   }
+
+  /* 접수 완료 후 프로그래스바(n초) → 실시간 주문내역 자동 이동. */
+  const REDIRECT_SEC = 5;
+  let redirectTimer = null, redirectTick = null;
+  function cancelRedirect() {
+    if (redirectTimer) { clearTimeout(redirectTimer); redirectTimer = null; }
+    if (redirectTick) { clearInterval(redirectTick); redirectTick = null; }
+  }
+  function startRedirect() {
+    cancelRedirect();
+    const bar = $("[data-redirect-bar]"), nEl = $("[data-redirect-n]");
+    let remain = REDIRECT_SEC;
+    if (nEl) nEl.textContent = String(remain);
+    if (bar) {
+      bar.style.transition = "none"; bar.style.width = "0%";
+      void bar.offsetWidth; // reflow → 0%에서 트랜지션 시작
+      bar.style.transition = `width ${REDIRECT_SEC}s linear`;
+      bar.style.width = "100%";
+    }
+    redirectTick = setInterval(() => {
+      remain -= 1;
+      if (nEl) nEl.textContent = String(Math.max(0, remain));
+      if (remain <= 0) { clearInterval(redirectTick); redirectTick = null; }
+    }, 1000);
+    redirectTimer = setTimeout(() => { cancelRedirect(); nav("#/app/orders"); }, REDIRECT_SEC * 1000);
+  }
+
   function renderConfirm() {
     const p = state.product;
     setHTML($("[data-cf-list]"), html`
@@ -527,8 +582,11 @@ export function mount(root, { nav }) {
       <div class="cf-row"><span class="cl">배송 일시</span>
         <span class="cv">${dateLabel()}</span>
         <button class="edit" data-goto="2">변경</button></div>
-      <div class="cf-row"><span class="cl">리본 문구</span>
-        <span class="cv">${state.ribbon}<small>보내는분 · ${state.sender}</small></span>
+      <div class="cf-row"><span class="cl">리본문구</span>
+        <span class="cv">${state.ribbon}</span>
+        <button class="edit" data-goto="3">변경</button></div>
+      <div class="cf-row"><span class="cl">보내는분</span>
+        <span class="cv">${state.sender}</span>
         <button class="edit" data-goto="3">변경</button></div>
     `);
     $("[data-cf-amount]").textContent = p.price;
@@ -546,10 +604,12 @@ export function mount(root, { nav }) {
     $$("[data-panel]").forEach((p) => p.classList.remove("on"));
     $('[data-panel="done"]').classList.add("on");
     scrollTop();
+    startRedirect();
   }
 
   /* ── 새 주문 작성하기: 페이지 재로드 없이 초기화 ── */
   function resetAll() {
+    cancelRedirect();
     Object.assign(state, {
       step: 1, maxStep: 1, occ: null, viaUrl: false, product: null, ribbon: "", sender: "",
       addr: "", toName: "", toPhone: "", deliv: "sched", hour: "09", min: "00", manager: 0,
@@ -566,7 +626,7 @@ export function mount(root, { nav }) {
     setHTML($("[data-prod-list]"), "");
     $$("[data-nt]").forEach((t) => t.classList.add("on"));
     setDeliv("sched");
-    ddHour.renderTrigger(); ddMin.renderTrigger(); dpDate.renderTrigger();
+    ddHour.renderTrigger(); ddMin.renderTrigger(); dpDate.renderTrigger(); ddMgr.renderTrigger();
     updateCnt(); updateSenderCnt(); applyBizRule();
     go(1);
   }
@@ -605,18 +665,16 @@ export function mount(root, { nav }) {
     state.sender = t.value.trim();
     updateSenderCnt(); refreshCtas();
   });
-  bind("change", "[data-mgr-select]", (e, t) => { state.manager = +t.value; });
   bind("click", "[data-nt]", (e, t) => {
     const k = t.dataset.nt;
     state.notify[k] = !state.notify[k];
     t.classList.toggle("on", state.notify[k]);
   });
-  bind("click", "[data-submit]", submit);
+  bind("click", "[data-submit]", openSubmitConfirm);
   bind("click", "[data-done-new]", resetAll);
-  bind("click", "[data-done-orders]", () => nav("#/app/orders"));
+  bind("click", "[data-done-orders]", () => { cancelRedirect(); nav("#/app/orders"); });
 
   /* ── 초기 렌더 ── */
-  renderManagers();
   updateCnt();
   updateSenderCnt();
   refreshCtas();
@@ -625,8 +683,10 @@ export function mount(root, { nav }) {
 
   return () => {
     clearInterval(bizTimer);
+    cancelRedirect();
     closePick();
-    ddHour.destroy(); ddMin.destroy(); dpDate.destroy();
+    if (submitModal) submitModal.close();
+    ddHour.destroy(); ddMin.destroy(); dpDate.destroy(); ddMgr.destroy();
     offs.forEach((off) => off());
   };
 }

@@ -220,8 +220,10 @@
 .page-order .opt-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 9px 0; }
 .page-order .opt-row .ol { font-size: 14px; color: var(--c-text-2); flex: 0 0 auto; }
 .page-order .opt-row .ol small { display: block; font-size: 12px; color: var(--c-text-muted); }
-.page-order .opt-row select { height: 40px; padding: 0 12px; font-size: 14px; border: 1px solid var(--c-border-input); border-radius: var(--r-lg); background: var(--c-surface); font-weight: 600; color: var(--c-text-2); }
-.page-order .opt-row select:focus { outline: none; border-color: var(--c-indigo); }
+/* 주문 담당자 커스텀 드롭다운(공용 .dd · 컴팩트 높이 · 패널은 위로 전개) */
+.page-order .dd--mgr { min-width: 200px; flex: 0 0 auto; }
+.page-order .dd--mgr .dd-trigger { height: 44px; padding: 0 38px 0 14px; font-size: 14px; font-weight: 600; color: var(--c-text-2); }
+.page-order .dd--mgr .dd-trigger::after { right: 14px; }
 .page-order .toggles { display: flex; gap: 8px; }
 .page-order .tg { display: inline-flex; align-items: center; gap: 5px; padding: 7px 14px; border-radius: 999px; font-size: 13px; font-weight: 600; background: var(--c-surface); border: 1px solid var(--c-border); color: var(--c-text-faint); transition: all 0.13s; }
 .page-order .tg svg { display: none; width: 13px; height: 13px; flex: 0 0 auto; }
@@ -247,8 +249,12 @@
 .page-order .done-box .cf-row { border-bottom: 1px solid var(--c-divider); }
 .page-order .done-box .cf-row:last-child { border-bottom: none; }
 .page-order .done-amount { color: var(--c-orange-ink); }
-.page-order .done-cta { display: flex; gap: 10px; margin-top: 36px; max-width: 480px; }
-.page-order .done-cta .ghost { flex: 1; height: 54px; border-radius: var(--r-lg); background: var(--c-surface); border: 1px solid var(--c-border-strong); font-size: 15px; font-weight: 600; color: var(--c-text-2); }
-.page-order .done-cta .ghost:hover { background: var(--c-bg); }
-.page-order .done-cta .solid { flex: 1; height: 54px; border-radius: var(--r-lg); background: var(--c-orange); color: var(--c-surface); font-size: 15px; font-weight: 700; box-shadow: var(--sh-btn); }
-.page-order .done-cta .solid:hover { background: var(--c-orange-hover); }
+/* 접수 완료 → 실시간 주문내역 자동 이동 프로그래스바(n초) */
+.page-order .done-redirect { margin-top: 28px; }
+.page-order .done-redirect__label { font-size: 13.5px; color: var(--c-text-muted); margin-bottom: 10px; }
+.page-order .done-redirect__label b { color: var(--c-text-2); font-weight: 700; }
+.page-order .done-redirect__label b.num { color: var(--c-orange-ink); }
+.page-order .done-progress { height: 6px; border-radius: 999px; background: var(--c-surface-2); overflow: hidden; }
+.page-order .done-progress__fill { display: block; height: 100%; width: 0; border-radius: 999px; background: var(--c-orange); }
+/* 하단 버튼: 본 플로우와 동일 규격(.btn-back/.btn-next 재사용) */
+.page-order .done-cta { display: flex; gap: 10px; margin-top: 24px; }

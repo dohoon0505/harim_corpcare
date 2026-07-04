@@ -3,10 +3,10 @@
    계열사 계정 목록 + 상세/수정/생성/삭제 (승인제도 없음, 필터 없음).
    store.clients(영속). 접속 아이디 수정 가능.
    ============================================================ */
-import { html, setHTML, on, qs, el } from "../dom.js";
+import { html, setHTML, on, qs, qsa, el } from "../dom.js";
 import { icon } from "../icons.js";
 import { store } from "../store.js";
-import { pageTitle, tableGrid, openModal, simpleModal } from "../ui.js";
+import { pageTitle, tableGrid, openModal, simpleModal, makeDropdown } from "../ui.js";
 
 const STATUS_OPTS = ["활성", "정지"];
 
@@ -116,9 +116,10 @@ export function mount(root, { nav }) {
       return html`
         <div class="hm-field">
           <label>${f.label}</label>
-          <select class="hm-input" data-cf="${f.key}">
-            ${f.options.map((o) => html`<option value="${o}" ${form[f.key] === o ? "selected" : ""}>${o}</option>`)}
-          </select>
+          <div class="dd" data-dd-cf="${f.key}">
+            <button type="button" class="dd-trigger" aria-haspopup="listbox" aria-expanded="false"></button>
+            <div class="dd-panel" role="listbox"></div>
+          </div>
         </div>
       `;
     }
@@ -168,12 +169,23 @@ export function mount(root, { nav }) {
         <button class="hm-btn hm-btn--primary" data-action="save" ${isValid() ? "" : "disabled"}>${isEdit ? "저장" : "등록"}</button>
       </div>
     `;
-    activeModal = openModal({ panelClass: "modal-panel--lg", body, onClose: () => {} });
+    const ddCfs = [];
+    activeModal = openModal({ panelClass: "modal-panel--lg", body, onClose: () => { ddCfs.forEach((d) => d.destroy()); } });
     const saveBtn = () => qs(activeModal.panel, "[data-action='save']");
     const syncSave = () => { const b = saveBtn(); if (b) b.disabled = !isValid(); };
 
+    /* select 필드는 공용 커스텀 드롭다운으로 (모달 닫힐 때 destroy) */
+    qsa(activeModal.panel, "[data-dd-cf]").forEach((elc) => {
+      const key = elc.dataset.ddCf;
+      const f = FIELDS.find((x) => x.key === key);
+      ddCfs.push(makeDropdown(elc, {
+        options: () => f.options,
+        get: () => form[key],
+        set: (v) => { form[key] = v; syncSave(); },
+      }));
+    });
+
     on(activeModal.panel, "input", "[data-cf]", (e, t) => { form[t.dataset.cf] = t.value; syncSave(); });
-    on(activeModal.panel, "change", "select[data-cf]", (e, t) => { form[t.dataset.cf] = t.value; syncSave(); });
     on(activeModal.panel, "click", "[data-action='close']", () => closeModal());
     on(activeModal.panel, "click", "[data-action='save']", () => {
       if (!isValid()) return;

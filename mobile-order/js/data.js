@@ -54,5 +54,5 @@ const RECENT_SENDERS = [
 ];
 const AFFILIATES = ["하림", "팜스코", "선진", "제일사료", "팬오션", "NS쇼핑"];
 Object.assign(window, { CATEGORIES, SECTIONS, HOME_SECTIONS, FAQS, FAQ_CATEGORIES, ORDER_HISTORY, RECENT_SENDERS, AFFILIATES });
-const SITE_INFO = { phone: "010-7615-2699", kakaoChannel: "", ogTitle: "하림그룹 경조화환 통합 운영 시스템", ogDescription: "하림그룹 임직원을 위한 경조화환 간편처리 시스템입니다", ogImage: "./img/cover.png" };
+const SITE_INFO = { phone: "0000-0000", kakaoChannel: "", ogTitle: "하림그룹 경조화환 통합 운영 시스템", ogDescription: "하림그룹 임직원을 위한 경조화환 간편처리 시스템입니다", ogImage: "./img/cover.png" };
 Object.assign(window, { SITE_INFO });

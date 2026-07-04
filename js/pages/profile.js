@@ -5,7 +5,7 @@
 import { html, setHTML, on, qs } from "../dom.js";
 import { icon } from "../icons.js";
 import { store } from "../store.js";
-import { pageTitle, tableGrid, openModal, simpleModal } from "../ui.js";
+import { pageTitle, tableGrid, openModal, simpleModal, makeDropdown } from "../ui.js";
 
 const MSG_RECEIVE = "모든 배송완료 마다에 메세지를 수신합니다";
 const MSG_NONE = "메세지를 수신하지 않습니다.";
@@ -208,10 +208,10 @@ export function mount(root, { nav }) {
       ${isContact
         ? html`<div class="hm-field">
             <label>메세지 수신여부</label>
-            <select class="hm-input" data-pf="message">
-              <option value="${MSG_RECEIVE}" ${form.message === MSG_RECEIVE ? "selected" : ""}>수신함</option>
-              <option value="${MSG_NONE}" ${form.message === MSG_NONE ? "selected" : ""}>수신 안 함</option>
-            </select>
+            <div class="dd" data-dd-msg>
+              <button type="button" class="dd-trigger" aria-haspopup="listbox" aria-expanded="false"></button>
+              <div class="dd-panel" role="listbox"></div>
+            </div>
           </div>`
         : field({ label: "고정문구", key: "greeting", value: form.greeting })}
     `;
@@ -219,9 +219,17 @@ export function mount(root, { nav }) {
       <button class="hm-btn hm-btn--secondary" data-action="close">취소</button>
       <button class="hm-btn hm-btn--primary" data-action="save">저장</button>
     `;
-    activeModal = simpleModal({ title: isContact ? "담당자 수정" : "프로필 수정", size: "sm", body, footer, onClose: () => {} });
+    let ddMsg = null;
+    activeModal = simpleModal({ title: isContact ? "담당자 수정" : "프로필 수정", size: "sm", body, footer, onClose: () => { if (ddMsg) { ddMsg.destroy(); ddMsg = null; } } });
+    if (isContact) {
+      ddMsg = makeDropdown(qs(activeModal.panel, "[data-dd-msg]"), {
+        options: () => [MSG_RECEIVE, MSG_NONE],
+        get: () => form.message,
+        set: (v) => { form.message = v; },
+        label: (v) => (v === MSG_RECEIVE ? "수신함" : "수신 안 함"),
+      });
+    }
     on(activeModal.panel, "input", "[data-pf]", (e, t) => { form[t.dataset.pf] = t.value; });
-    on(activeModal.panel, "change", "[data-pf='message']", (e, t) => { form.message = t.value; });
     on(activeModal.panel, "click", "[data-action='save']", () => {
       if (isContact) store.setContacts((prev) => prev.map((c) => (c.no === form.no ? form : c)));
       else store.setProfiles((prev) => prev.map((p) => (p.no === form.no ? form : p)));
