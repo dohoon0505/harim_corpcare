@@ -391,8 +391,22 @@ export function mount(root, { nav }) {
     $$("[data-seg]").forEach((b) => b.classList.toggle("sel", b.dataset.seg === mode));
     $("[data-dt-row]").classList.toggle("dim", mode !== "sched");
     $("[data-dt-info]").classList.toggle("hide", mode !== "sched");
+    if (mode === "imm") applyImmSlot();
     renderDelivNote();
     refreshCtas();
+  }
+  /* 즉시/익일 빠른배송 선택 시 날짜·시간 픽커를 실제 배송 슬롯으로 세팅:
+     영업 후(evening/night) → 익일 12:30 · 영업 전(beforeOpen) → 당일 12:30.
+     (영업시간 즉시배송은 '4시간 내'라 특정 시각을 지정하지 않는다.) */
+  function applyImmSlot() {
+    const ph = timePhase(new Date());
+    if (ph === "biz") return;
+    const base = new Date();
+    if (ph === "evening" || ph === "night") base.setDate(base.getDate() + 1);
+    state.date = fmtYMD(base);
+    state.hour = "12";
+    state.min = "30";
+    dpDate.renderTrigger(); ddHour.renderTrigger(); ddMin.renderTrigger();
   }
   /* 선택한 배송 모드의 안내문구 (모드·시간대별) */
   function renderDelivNote() {
@@ -422,7 +436,7 @@ export function mount(root, { nav }) {
     ub.disabled = !urgentOk; ub.title = urgentOk ? "" : "긴급배송은 09:00 ~ 18:30 에만 신청할 수 있어요";
     nb.disabled = !nightOk; nb.title = nightOk ? "" : "야간배송은 18:30 ~ 20:00 배송 건에 한해 신청할 수 있어요";
     if ((state.deliv === "urgent" && !urgentOk) || (state.deliv === "night" && !nightOk)) setDeliv("sched");
-    else renderDelivNote();
+    else { if (state.deliv === "imm") applyImmSlot(); renderDelivNote(); }
   }
 
   /* ── STEP 3 · 리본문구 · 보내는분 (텍스트 입력 + 간편선택 모달) ── */
