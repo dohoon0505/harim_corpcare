@@ -21,7 +21,7 @@ let error = "";
 
 const headerBar = (withDownload = false) => html`
   <header class="pubinv__header">
-    <span class="pubinv__brand">하림그룹 경조화환 시스템 · 거래명세서</span>
+    <span class="pubinv__brand">하림그룹 경조화환 ERP · 거래명세서</span>
     ${withDownload
       ? html`<button class="pubinv__dl" data-action="download">${raw(PDF_ICON)} PDF 다운로드</button>`
       : ""}

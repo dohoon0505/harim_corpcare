@@ -59,7 +59,7 @@ function buildShell(variant = "enterprise") {
     html`
       <header class="shell__header">
         <div class="shell__brand">
-          <span class="shell__logo-text">하림그룹 경조화환 시스템</span>
+          <span class="shell__logo-text">하림그룹 경조화환 ERP</span>
           <span class="shell__sep"></span>
           <div class="badge badge--company">
             <img src="./assets/company.png" alt="" />

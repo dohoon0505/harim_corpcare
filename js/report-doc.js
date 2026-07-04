@@ -114,7 +114,7 @@ export function reportDoc(r, generatedAt) {
       <!-- 헤더 -->
       <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px;padding-bottom:14px;border-bottom:1px solid ${C.divider}">
         <div>
-          <p style="margin:0 0 5px;font-size:13px;font-weight:700;color:${C.orange};white-space:nowrap">하림그룹 경조화환 시스템 · ADMIN</p>
+          <p style="margin:0 0 5px;font-size:13px;font-weight:700;color:${C.orange};white-space:nowrap">하림그룹 경조화환 ERP · ADMIN</p>
           <p style="margin:0;font-size:20px;font-weight:700;color:${C.ink}">${r.label} 계열사 이용 분석 리포트</p>
         </div>
         <div style="text-align:right">
@@ -163,7 +163,7 @@ export function reportDoc(r, generatedAt) {
       <!-- 푸터 -->
       <p style="margin-top:auto;padding-top:14px;border-top:1px solid ${C.divider};font-size:10.5px;color:${C.faint};display:flex;justify-content:space-between">
         <span>본 리포트는 통합정산시스템 데이터로부터 자동 생성된 분석 자료입니다.</span>
-        <span>하림그룹 경조화환 시스템 · 관리자 콘솔</span>
+        <span>하림그룹 경조화환 ERP · 관리자 콘솔</span>
       </p>
     </div>
   `;

@@ -55,7 +55,7 @@ export function mount(root, { nav }) {
         <!-- 좌측 다크 브랜드 패널 -->
         <aside class="auth__brand">
           <div class="auth__brand-logo">
-            <span class="auth__brand-logo-text">하림그룹 경조화환 시스템</span>
+            <span class="auth__brand-logo-text">하림그룹 경조화환 ERP</span>
           </div>
           <div class="auth__brand-body">
             <p class="auth__eyebrow">Enterprise Service</p>
@@ -79,7 +79,7 @@ export function mount(root, { nav }) {
         <div class="auth__panel">
           <div class="auth__panel-inner">
             <div class="auth__topbar">
-              <span class="auth__topbar-logo-text">하림그룹 경조화환 시스템</span>
+              <span class="auth__topbar-logo-text">하림그룹 경조화환 ERP</span>
               <button type="button" class="auth__topbar-link" data-action="register">
                 회원가입 ${icon("arrow-right", { size: 11 })}
               </button>
