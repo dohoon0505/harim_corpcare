@@ -100,6 +100,16 @@
 .page-order .ofield input::placeholder { color: var(--c-text-faint); }
 .page-order .ofield input:focus { outline: none; border-color: var(--c-indigo); box-shadow: var(--ring-field); }
 .page-order .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+/* 받는분 성함 + 측근(청첩 전용) 한 줄 배치 */
+.page-order .toname-row { display: flex; gap: 8px; align-items: stretch; }
+.page-order .toname-row input[type="text"] { flex: 1; min-width: 0; }
+.page-order .side-dd { flex: 0 0 120px; min-width: 120px; }
+.page-order .side-dd[hidden] { display: none; }
+.page-order .side-dd .dd-trigger { padding: 0 34px 0 14px; font-size: 14.5px; font-weight: 600; color: var(--c-text-2); }
+.page-order .side-dd .dd-panel { top: calc(100% + 6px); bottom: auto; } /* 상단 필드 → 아래로 전개 */
+/* 측근 필수 라벨 배지 */
+.page-order .side-req { display: inline-block; margin-left: 6px; font-size: 11px; font-weight: 600; color: var(--c-orange-ink); background: var(--c-orange-soft); padding: 1px 8px; border-radius: 999px; vertical-align: 1px; }
+.page-order .side-req[hidden] { display: none; }
 .page-order .auto-chip { display: none; font-size: 12px; font-weight: 600; color: var(--c-success-ink); background: var(--c-success-bg); padding: 3px 10px; border-radius: 999px; margin-left: 8px; vertical-align: 2px; }
 .page-order .auto-chip.show { display: inline-block; }
 
@@ -259,3 +269,7 @@
 .page-order .done-progress__fill { display: block; height: 100%; width: 0; border-radius: 999px; background: var(--c-orange); }
 /* 하단 버튼: 본 플로우와 동일 규격(.btn-back/.btn-next 재사용) */
 .page-order .done-cta { display: flex; gap: 10px; margin-top: 24px; }
+
+/* ── 안내 토스트 (불러오기 결과 등) ── */
+.page-order .o-toast { position: fixed; left: 50%; bottom: 32px; transform: translateX(-50%) translateY(14px); max-width: 460px; width: max-content; background: var(--c-dark); color: var(--c-surface); font-size: 14px; font-weight: 600; line-height: 1.55; padding: 13px 22px; border-radius: 12px; opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.2s; z-index: 80; box-shadow: var(--sh-pop); text-align: center; }
+.page-order .o-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }

@@ -24,16 +24,18 @@ const COMMON_PHRASES = [
   { group: "결혼 축하", phrases: ["축 결혼(祝 結婚)", "화혼을 진심으로 축하드립니다", "행복한 새 출발을 축하합니다"] },
 ];
 
-/* 부고장·청첩장 URL 데모 DB (경조사별) — 불러오기 시 배송지 자동입력 */
+/* 부고장·청첩장 URL 데모 DB (경조사별) — 실제 AI 파싱 도입 전, 불러오기 시 임의값 자동입력.
+   obit: 배송지=장례식장 · 받는분=고인명(故) · 즉시배송.
+   wed : 배송지=예식장 · 받는분=혼주 · 배송일시=예식시간(dayOffset 일 뒤 hour:min). */
 const MOCK_URL_DB = {
   obit: {
-    "kakao.com":    { addr: "서울특별시 강남구 테헤란로 152 강남파이낸스센터 3층", toName: "김○○ 상주" },
-    "naeil.com":    { addr: "경기도 성남시 분당구 판교로 289 판교오피스 빌딩",     toName: "이○○ 상주" },
-    "mobile.co.kr": { addr: "서울특별시 중구 세종대로 110 서울시청 본관 2층",       toName: "박○○ 상주" },
+    "kakao.com":    { addr: "서울특별시 종로구 대학로 101 서울대학교병원 장례식장 3호실", toName: "故 김영수", toPhone: "010-3921-4400" },
+    "naeil.com":    { addr: "경기도 성남시 분당구 야탑로 59 분당차병원 장례식장 특2호실",  toName: "故 이정호", toPhone: "010-2277-8130" },
+    "mobile.co.kr": { addr: "서울특별시 서초구 반포대로 222 서울성모병원 장례식장 7호실",  toName: "故 박순자", toPhone: "010-5540-9902" },
   },
   wed: {
-    "wedding.me":      { addr: "서울특별시 서초구 강남대로 373 홀리데이인 강남",     toName: "최○○ 신랑측" },
-    "weddingbook.com": { addr: "서울특별시 마포구 백범로 235 서울창업허브 컨벤션홀", toName: "정○○ 신부측" },
+    "wedding.me":      { addr: "서울특별시 서초구 강남대로 373 홀리데이인 서울 강남 3층 그랜드볼룸", toName: "혼주 최영호", toPhone: "010-8845-1120", dayOffset: 14, hour: "11", min: "00" },
+    "weddingbook.com": { addr: "서울특별시 마포구 백범로 235 서울가든호텔 2층 다이아몬드홀",       toName: "혼주 정미경", toPhone: "010-6612-7788", dayOffset: 21, hour: "13", min: "30" },
   },
 };
 
@@ -129,8 +131,15 @@ function markup() {
             </div>
             <div class="grid2">
               <div class="ofield">
-                <label>받는분 성함</label>
-                <input type="text" data-f-toname placeholder="예) 김○○ 상주" />
+                <label>받는분 성함 <span class="side-req" data-side-req hidden>측근 필수</span></label>
+                <div class="toname-row">
+                  <input type="text" data-f-toname placeholder="예) 故 김○○ · 혼주 김○○" />
+                  <!-- 청첩(wed) 전용: 측근(신랑측/신부측) 필수선택 -->
+                  <div class="dd side-dd" data-dd-side hidden>
+                    <button type="button" class="dd-trigger" aria-haspopup="listbox" aria-expanded="false"></button>
+                    <div class="dd-panel" role="listbox"></div>
+                  </div>
+                </div>
               </div>
               <div class="ofield">
                 <label>받는분 연락처</label>
@@ -255,6 +264,7 @@ function markup() {
           </div>
         </section>
       </div>
+      <div class="o-toast" data-toast></div>
     </div>
   `;
 }
@@ -264,7 +274,7 @@ export function mount(root, { nav }) {
     step: 1, maxStep: 1,
     occ: null, viaUrl: false,
     product: null, ribbon: "", sender: "",
-    addr: "", toName: "", toPhone: "",
+    addr: "", toName: "", toPhone: "", side: "", // side: 측근(신랑측/신부측) — 청첩 전용 필수
     deliv: "sched", date: "", hour: "09", min: "00",
     manager: 0,
     notify: { recipient: true, sender: true, manager: true },
@@ -281,7 +291,7 @@ export function mount(root, { nav }) {
 
   const valid = {
     1: () => !!(state.occ && state.product),
-    2: () => !!(state.addr && state.toName && state.toPhone && (state.deliv !== "sched" || state.date)),
+    2: () => !!(state.addr && state.toName && state.toPhone && (state.deliv !== "sched" || state.date) && (state.occ !== "wed" || state.side)),
     3: () => !!(state.ribbon && state.sender),
   };
 
@@ -323,13 +333,19 @@ export function mount(root, { nav }) {
       state.occ = occ;
       state.product = null;
       state.ribbon = "";
+      state.side = "";
       $("[data-ribbon-input]").value = "";
       updateCnt();
+      ddSide.renderTrigger();
     }
     $$("[data-occ]").forEach((b) => b.classList.toggle("sel", b.dataset.occ === occ));
     $("[data-prod-hint]").textContent = OCC[occ].label + " 상품";
     $("[data-ub-title]").textContent = OCC[occ].urlTitle;
     $("[data-url-input]").placeholder = OCC[occ].urlPh;
+    /* 청첩(wed) 전용: 받는분 성함 우측 측근(신랑측/신부측) 선택 노출 */
+    const isWed = occ === "wed";
+    $("[data-dd-side]").toggleAttribute("hidden", !isWed);
+    $("[data-side-req]").toggleAttribute("hidden", !isWed);
     renderProducts(); refreshCtas();
     reveal("url");
   }
@@ -353,14 +369,33 @@ export function mount(root, { nav }) {
       const hit = Object.keys(MOCK_URL_DB[occ]).find((d) => url.includes(d));
       if (hit) {
         const d = MOCK_URL_DB[occ][hit];
-        msg.className = "url-msg ok";
-        msg.textContent = (occ === "obit" ? "부고장" : "청첩장") + "을 확인했어요. 배송지 정보를 자동으로 입력했어요.";
         setOcc(occ);
-        state.addr = d.addr; state.toName = d.toName; state.viaUrl = true;
+        /* 배송지·받는분·연락처 자동입력 (실 AI 파싱 도입 전 임의값) */
+        state.addr = d.addr; state.toName = d.toName; state.toPhone = d.toPhone; state.viaUrl = true;
         $("[data-f-addr]").value = d.addr;
         $("[data-f-toname]").value = d.toName;
+        $("[data-f-tophone]").value = d.toPhone;
         $("[data-auto-chip]").classList.add("show");
-        revealProducts();
+        /* 상품 미선택 시 표준 3단화환 기본 선택(데모) */
+        if (!state.product) { state.product = occProducts(occ)[0] || null; renderProducts(); }
+        msg.className = "url-msg ok";
+        msg.textContent = (occ === "obit" ? "부고장" : "청첩장") + "을 확인했어요. 정보를 자동으로 입력했어요.";
+        if (occ === "obit") {
+          /* 부고: 즉시배송 세팅 → 바로 리본문구(STEP 3) 이동 */
+          setDeliv("imm");
+          refreshCtas();
+          showToast("부고장을 확인했어요 · 장례식장·고인 정보 자동입력 + 즉시배송으로 설정했어요");
+          go(3);
+        } else {
+          /* 청첩: 예식 시간으로 배송일시 세팅 → 측근 선택 위해 배송지(STEP 2) 이동 */
+          const base = new Date(dpMin); base.setDate(base.getDate() + d.dayOffset);
+          state.date = fmtYMD(base); state.hour = d.hour; state.min = d.min;
+          setDeliv("sched");
+          dpDate.renderTrigger(); ddHour.renderTrigger(); ddMin.renderTrigger();
+          refreshCtas();
+          showToast("청첩장을 확인했어요 · 예식장·예식시간 자동입력 · 신랑측/신부측 측근을 선택해 주세요");
+          go(2);
+        }
         return;
       }
     }
@@ -399,6 +434,25 @@ export function mount(root, { nav }) {
     set: (v) => { state.manager = +v; },
     label: (v) => { const c = store.get().contacts[+v]; return c ? `${c.name} · ${c.role}` : "담당자 없음"; },
   });
+  /* 측근(신랑측/신부측) — 청첩 전용 필수선택(빈 값이면 "측근 선택" placeholder) */
+  const SIDES = ["신랑측", "신부측"];
+  const ddSide = makeDropdown($("[data-dd-side]"), {
+    options: () => SIDES,
+    get: () => state.side,
+    set: (v) => { state.side = v; refreshCtas(); },
+    label: (v) => v || "측근 선택",
+  });
+
+  /* 안내 토스트(불러오기 결과 등) */
+  let toastTimer = null;
+  function showToast(text) {
+    const el = $("[data-toast]");
+    if (!el) return;
+    el.textContent = text;
+    el.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove("show"), 3400);
+  }
 
   function setDeliv(mode) {
     state.deliv = mode;
@@ -529,6 +583,17 @@ export function mount(root, { nav }) {
   let submitModal = null;
   function openSubmitConfirm() {
     if (submitModal) return;
+    /* 접수 게이트: 미완료·무효 스텝이 있으면(예: 청첩 측근 미선택, 상품 미선택) 접수를 막고
+       해당 스텝으로 이동 + 안내. 비정상 경로(탭 점프 등)로 무효 접수/크래시 방지. */
+    for (const s of [1, 2, 3]) {
+      if (!valid[s]()) {
+        go(s);
+        showToast(s === 2 && state.occ === "wed" && !state.side
+          ? "신랑측/신부측 측근을 선택해 주세요"
+          : "필수 항목을 모두 입력해 주세요");
+        return;
+      }
+    }
     const body = html`
       <div class="hm-info"><span><b>${state.product.product}</b> · <b class="num">${state.product.price}</b>으로 주문을 접수합니다. 접수 후에는 리본문구·보내는분을 수정할 수 없어요.</span></div>
     `;
@@ -572,12 +637,13 @@ export function mount(root, { nav }) {
 
   function renderConfirm() {
     const p = state.product;
+    if (!p) return; // 상품 미선택 방어(경조사 전환 후 탭 점프 등 비정상 경로)
     setHTML($("[data-cf-list]"), html`
       <div class="cf-row"><span class="cl">경조사 · 상품</span>
         <span class="cv">${p.product}<small>${OCC[state.occ].label}</small></span>
         <button class="edit" data-goto="1">변경</button></div>
       <div class="cf-row"><span class="cl">배송지</span>
-        <span class="cv">${state.addr}<small>${state.toName} · ${state.toPhone}</small></span>
+        <span class="cv">${state.addr}<small>${state.toName}${state.occ === "wed" && state.side ? ` (${state.side})` : ""} · ${state.toPhone}</small></span>
         <button class="edit" data-goto="2">변경</button></div>
       <div class="cf-row"><span class="cl">배송 일시</span>
         <span class="cv">${dateLabel()}</span>
@@ -612,7 +678,7 @@ export function mount(root, { nav }) {
     cancelRedirect();
     Object.assign(state, {
       step: 1, maxStep: 1, occ: null, viaUrl: false, product: null, ribbon: "", sender: "",
-      addr: "", toName: "", toPhone: "", deliv: "sched", hour: "09", min: "00", manager: 0,
+      addr: "", toName: "", toPhone: "", side: "", deliv: "sched", hour: "09", min: "00", manager: 0,
       notify: { recipient: true, sender: true, manager: true },
     });
     dpMin.setTime(Date.now()); dpMin.setHours(0, 0, 0, 0);
@@ -623,10 +689,12 @@ export function mount(root, { nav }) {
     $("[data-auto-chip]").classList.remove("show");
     $$("[data-reveal]").forEach((r) => r.classList.remove("show"));
     $$("[data-occ]").forEach((b) => b.classList.remove("sel"));
+    $("[data-dd-side]").setAttribute("hidden", "");
+    $("[data-side-req]").setAttribute("hidden", "");
     setHTML($("[data-prod-list]"), "");
     $$("[data-nt]").forEach((t) => t.classList.add("on"));
     setDeliv("sched");
-    ddHour.renderTrigger(); ddMin.renderTrigger(); dpDate.renderTrigger(); ddMgr.renderTrigger();
+    ddHour.renderTrigger(); ddMin.renderTrigger(); dpDate.renderTrigger(); ddMgr.renderTrigger(); ddSide.renderTrigger();
     updateCnt(); updateSenderCnt(); applyBizRule();
     go(1);
   }
@@ -684,9 +752,10 @@ export function mount(root, { nav }) {
   return () => {
     clearInterval(bizTimer);
     cancelRedirect();
+    clearTimeout(toastTimer);
     closePick();
     if (submitModal) submitModal.close();
-    ddHour.destroy(); ddMin.destroy(); dpDate.destroy(); ddMgr.destroy();
+    ddHour.destroy(); ddMin.destroy(); dpDate.destroy(); ddMgr.destroy(); ddSide.destroy();
     offs.forEach((off) => off());
   };
 }
