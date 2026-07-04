@@ -87,13 +87,6 @@ export function mount(root, { nav }) {
 
             <div class="auth__form-wrap">
               <div class="auth__form-col">
-                <!-- 모바일 전용: 간편주문 바로가기 (같은 오리진 /mobile-order/ 이동) -->
-                <a class="auth__mobile-order" href="${MOBILE_ORDER_URL}">
-                  ${icon("phone", { size: 17 })}
-                  <span>모바일 간편주문</span>
-                  ${icon("arrow-right", { size: 15 })}
-                </a>
-
                 <div class="auth__title">
                   <h1>로그인</h1>
                   <p>아이디와 비밀번호를 입력해주세요</p>
@@ -156,6 +149,13 @@ export function mount(root, { nav }) {
                     계열사 담당자 가입
                   </button>
                 </div>
+
+                <!-- 모바일 전용: 간편주문 바로가기 — 계열사 담당자 가입 버튼 아래 배치 (같은 오리진 /mobile-order/) -->
+                <a class="auth__mobile-order" href="${MOBILE_ORDER_URL}">
+                  ${icon("phone", { size: 17 })}
+                  <span>모바일 간편주문</span>
+                  ${icon("arrow-right", { size: 15 })}
+                </a>
               </div>
             </div>
           </div>

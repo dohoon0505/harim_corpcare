@@ -163,7 +163,7 @@
   gap: 8px;
   width: 100%;
   padding: 15px 16px;
-  margin-bottom: 24px;
+  margin-top: 20px; /* 계열사 담당자 가입 버튼 아래 배치 → 위쪽 간격 */
   border-radius: var(--r-md);
   background: var(--c-dark);
   color: #fff;
