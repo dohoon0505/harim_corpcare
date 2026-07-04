@@ -51,6 +51,7 @@
   --c-danger: #f44336;
   --c-danger-bg: #ffebee;
   --c-danger-ink: #c62828;
+  --c-danger-ink-strong: #a82020; /* danger 솔리드 버튼 hover */
   --c-warn: #ff9800;
   --c-warn-soft-bg: #fff3e0;
   --c-warn-soft-ink: #e65100;
@@ -104,7 +105,8 @@
   --sh-header: 0 1px 4px rgba(0, 0, 0, 0.06);
   --sh-card: 0 1px 6px rgba(0, 0, 0, 0.04);
   --sh-btn: 0 2px 8px rgba(241, 90, 42, 0.28);
-  --sh-modal: 0 10px 40px rgba(0, 0, 0, 0.18);
+  --sh-modal: 0 16px 50px rgba(17, 17, 24, 0.22);
+  --c-modal-dim: rgba(17, 17, 24, 0.45); /* 모달 오버레이 잉크 딤 */
   --sh-pop: 0 8px 28px rgba(17, 17, 24, 0.14); /* dropdown/calendar popover (order 08-brand) */
   --ring: 0 0 0 3px rgba(241, 90, 42, 0.09);
   --ring-blue: 0 0 0 3px rgba(65, 105, 225, 0.12);

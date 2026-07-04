@@ -111,24 +111,23 @@ export function mount(root, { nav }) {
   };
 
   // ── create/edit modal ──────────────────────────────────
-  function field(f, form) {
+  function field(f, form, isEdit) {
     if (f.type === "select") {
       return html`
-        <div class="ofield">
-          <label class="ofield__lbl">${f.label}</label>
-          <select class="select" data-cf="${f.key}">
+        <div class="hm-field">
+          <label>${f.label}</label>
+          <select class="hm-input" data-cf="${f.key}">
             ${f.options.map((o) => html`<option value="${o}" ${form[f.key] === o ? "selected" : ""}>${o}</option>`)}
           </select>
         </div>
       `;
     }
+    // 접속 아이디는 수정 시 변경 불가 → 비활성 입력
+    const locked = isEdit && f.key === "accountId";
     return html`
-      <div class="ofield">
-        <label class="ofield__lbl" for="cf-${f.key}">${f.label}${f.required ? html`<span class="req">*</span>` : ""}</label>
-        <div class="ofield__wrap">
-          ${icon(f.icon, { size: 14, cls: "ofield__icon" })}
-          <input class="ofield__input has-icon" id="cf-${f.key}" data-cf="${f.key}" type="text" value="${form[f.key] ?? ""}" placeholder="${f.placeholder ?? f.label}" />
-        </div>
+      <div class="hm-field">
+        <label for="cf-${f.key}">${f.label}${f.required ? html`<span class="req">*</span>` : ""}</label>
+        <input class="hm-input" id="cf-${f.key}" data-cf="${f.key}" type="text" value="${form[f.key] ?? ""}" placeholder="${f.placeholder ?? f.label}" ${locked ? "disabled" : ""} />
       </div>
     `;
   }
@@ -146,36 +145,32 @@ export function mount(root, { nav }) {
       let i = 0;
       while (i < FIELDS.length) {
         const f = FIELDS[i];
-        if (f.section) { out.push(html`<div class="cedit__section"><span>${f.section}</span></div>`); i++; continue; }
+        if (f.section) { out.push(html`<div class="hm-section">${f.section}</div>`); i++; continue; }
         if (f.grid && FIELDS[i + 1] && FIELDS[i + 1].grid) {
-          out.push(html`<div class="cedit__grid2">${field(f, form)}${field(FIELDS[i + 1], form)}</div>`);
+          out.push(html`<div class="hm-grid2">${field(f, form, isEdit)}${field(FIELDS[i + 1], form, isEdit)}</div>`);
           i += 2;
-        } else { out.push(field(f, form)); i++; }
+        } else { out.push(field(f, form, isEdit)); i++; }
       }
       return out;
     };
 
     const body = html`
-      <div class="cedit">
-        <div class="cedit__head">
-          <div class="cedit__head-icon">${icon(isEdit ? "building2" : "user-plus", { size: 18 })}</div>
-          <div>
-            <h2>${isEdit ? "계열사 정보 수정" : "신규 계열사 등록"}</h2>
-            <p>${isEdit ? "계열사 계정·회사·담당자 정보를 수정합니다." : "신규 계열사 계정과 정보를 등록합니다."}</p>
-          </div>
+      <div class="hm__head">
+        <div>
+          <h3>${isEdit ? "계열사 정보 수정" : "신규 계열사 등록"}</h3>
+          <p>${isEdit ? "계열사 계정·회사·담당자 정보를 수정합니다." : "신규 계열사 계정과 정보를 등록합니다."}</p>
         </div>
-        <div class="cedit__body">${fieldsHtml()}</div>
-        <div class="cedit__foot">
-          <button class="btn-cancel" data-action="close">취소</button>
-          <button class="cedit__save ${isValid() ? "is-on" : ""}" data-action="save" ${isValid() ? "" : "disabled"}>
-            ${icon(isEdit ? "pencil" : "user-plus", { size: 14 })} ${isEdit ? "저장" : "등록"}
-          </button>
-        </div>
+        <button class="hm__x" data-action="close" aria-label="닫기">${icon("x", { size: 14 })}</button>
+      </div>
+      <div class="hm__body">${fieldsHtml()}</div>
+      <div class="hm__foot">
+        <button class="hm-btn hm-btn--secondary" data-action="close">취소</button>
+        <button class="hm-btn hm-btn--primary" data-action="save" ${isValid() ? "" : "disabled"}>${isEdit ? "저장" : "등록"}</button>
       </div>
     `;
-    activeModal = openModal({ panelClass: "modal-panel--cedit", body, onClose: () => {} });
+    activeModal = openModal({ panelClass: "modal-panel--lg", body, onClose: () => {} });
     const saveBtn = () => qs(activeModal.panel, "[data-action='save']");
-    const syncSave = () => { const b = saveBtn(); if (b) { b.disabled = !isValid(); b.classList.toggle("is-on", isValid()); } };
+    const syncSave = () => { const b = saveBtn(); if (b) b.disabled = !isValid(); };
 
     on(activeModal.panel, "input", "[data-cf]", (e, t) => { form[t.dataset.cf] = t.value; syncSave(); });
     on(activeModal.panel, "change", "select[data-cf]", (e, t) => { form[t.dataset.cf] = t.value; syncSave(); });
@@ -187,8 +182,8 @@ export function mount(root, { nav }) {
       const b = saveBtn();
       if (b) {
         b.disabled = true;
-        b.classList.add("is-saved");
-        setHTML(b, html`${icon("check-circle", { size: 15 })} ${isEdit ? "저장 완료!" : "등록 완료!"}`);
+        b.className = "hm-btn hm-btn--ok";
+        setHTML(b, html`${icon("check", { size: 15 })} ${isEdit ? "저장 완료!" : "등록 완료!"}`);
       }
       saveTimer = setTimeout(() => { saveTimer = null; closeModal(); render(); }, 900);
     });
@@ -196,19 +191,12 @@ export function mount(root, { nav }) {
 
   function openDelete(client) {
     closeModal();
-    const body = html`
-      <div class="pdel">
-        <div class="pdel__msg">
-          <p><strong>${client.companyName}</strong> 계열사를 삭제하시겠습니까?</p>
-          <p class="pdel__sub">계정(아이디·비밀번호)·정산·주문 정보가 모두 삭제되며 복구할 수 없습니다.</p>
-        </div>
-        <div class="pdel__foot">
-          <button class="btn-cancel" data-action="close">취소</button>
-          <button class="pdel__del" data-action="do-del">삭제</button>
-        </div>
-      </div>
+    const body = html`<div class="hm-warn"><span><b>삭제한 계정은 되돌릴 수 없습니다.</b> 계정(아이디·비밀번호)·정산·주문 정보가 모두 삭제됩니다.</span></div>`;
+    const footer = html`
+      <button class="hm-btn hm-btn--secondary" data-action="close">취소</button>
+      <button class="hm-btn hm-btn--danger" data-action="do-del">삭제</button>
     `;
-    activeModal = simpleModal({ title: "계열사 삭제", body, onClose: () => {} });
+    activeModal = simpleModal({ title: `${client.companyName} 계열사를 삭제할까요?`, subtitle: client.accountId, size: "sm", body, footer, onClose: () => {} });
     on(activeModal.panel, "click", "[data-action='do-del']", () => {
       store.removeClient(client.id);
       closeModal();

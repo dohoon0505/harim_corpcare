@@ -277,19 +277,17 @@ export function mount(root, { nav }) {
     if (state.agreed || confirmModal) return;
     const d = docData();
     const body = html`
-      <p class="confirm-dialog__msg">
-        <b class="num">${d._label} · ${d.total}</b> 기준으로 세금계산서를 발급합니다.<br />
-        동의 후에는 명세서 내용을 변경할 수 없습니다. 계속하시겠습니까?
-      </p>
-      <div class="confirm-dialog__actions">
-        <button class="confirm-dialog__btn confirm-dialog__btn--ghost" data-action="close">취소</button>
-        <button class="confirm-dialog__btn confirm-dialog__btn--primary" data-confirm>동의하고 발급</button>
-      </div>
+      <div class="hm-info"><span><b class="num">${d._label} 결제금액 ${d.total}</b>으로 세금계산서가 발급됩니다. 동의 후에는 명세서 내용을 변경할 수 없습니다.</span></div>
+    `;
+    const footer = html`
+      <button class="hm-btn hm-btn--secondary" data-action="close">취소</button>
+      <button class="hm-btn hm-btn--primary" data-confirm>동의하고 발급</button>
     `;
     confirmModal = simpleModal({
-      title: "세금계산서 발급 동의",
-      panelClass: "modal-panel--confirm",
+      title: "계산서 발급에 동의할까요?",
+      size: "sm",
       body,
+      footer,
       onClose: () => { confirmModal = null; },
     });
     confirmModal.panel.addEventListener("click", (e) => {

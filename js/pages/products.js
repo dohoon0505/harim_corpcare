@@ -57,26 +57,28 @@ export function mount(root, { nav }) {
     /* 세로형(2:3) 샘플 사진을 좌측 고정 배치, 상품 정보는 우측 —
        사진을 자르지 않고 보여주면서 모달 세로 길이를 사진 높이로 고정한다. */
     const body = html`
-      <div class="psample msplit">
+      <div class="msplit">
         <button class="msplit__media msplit__media--btn" data-action="zoom" aria-label="샘플 사진 크게 보기">
           <img src="${imgUrl}" alt="${product.product} 샘플 사진" />
           <span class="msplit__zoomhint">${icon("search", { size: 12 })}크게 보기</span>
         </button>
         <div class="msplit__body">
-          <div class="psample__head">
-            <div><p class="psample__cat">${product.category}</p><h3>${product.product}</h3></div>
-            <button class="modal-close" data-action="close" aria-label="닫기">${icon("x", { size: 18 })}</button>
+          <div class="hm__head">
+            <div><p class="hm-eyebrow">${product.category}</p><h3>${product.product}</h3></div>
+            <button class="hm__x" data-action="close" aria-label="닫기">${icon("x", { size: 14 })}</button>
           </div>
-          <div class="psample__body msplit__scroll">
-            <div class="psample__price-row"><span>상품금액</span><span class="psample__price">${product.price}</span></div>
-            <p class="psample__desc">${product.description}</p>
-            <div class="psample__note"><p>※ 실제 상품은 사진과 다를 수 있으며, 계절 및 산지 사정에 따라 품종이 변경될 수 있습니다.</p></div>
+          <div class="msplit__scroll">
+            <div class="hm-dl">
+              <div class="row"><span class="k">상품금액</span><span class="v amt num">${product.price}</span></div>
+              <div class="row"><span class="k">상품설명</span><span class="v">${product.description}</span></div>
+            </div>
+            <p class="hm-help" style="margin-top:14px;">※ 실제 상품은 사진과 다를 수 있으며, 계절·산지 사정에 따라 품종이 변경될 수 있습니다.</p>
           </div>
-          <div class="psample__foot"><button class="psample__close-btn" data-action="close">닫기</button></div>
+          <div class="hm__foot"><button class="hm-btn hm-btn--primary" data-action="close">닫기</button></div>
         </div>
       </div>
     `;
-    activeModal = openModal({ panelClass: "modal-panel--sample", body, onClose: () => {} });
+    activeModal = openModal({ panelClass: "modal-panel--split", body, onClose: () => {} });
     on(activeModal.panel, "click", "[data-action='close']", () => closeModal());
     on(activeModal.panel, "click", "[data-action='zoom']", () =>
       openLightbox({ src: imgUrl, alt: `${product.product} 샘플 사진`, caption: `${product.product} — ${product.price}` })

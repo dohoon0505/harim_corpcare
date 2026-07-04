@@ -213,49 +213,39 @@ export function mount(root, { nav }) {
       ["주문금액", order.amount],
     ];
     const head = html`
-      <div class="odetail__head">
-        <div class="odetail__head-l">
-          <div><p class="odetail__sub">주문 상세정보</p><h3>${order.product}</h3></div>
-        </div>
-        <div class="odetail__head-r">
-          <span class="odetail__badge" style="background:${sc.bg};color:${sc.text}">${order.status}</span>
-          <button class="modal-close" data-action="close" aria-label="닫기">${icon("x", { size: 18 })}</button>
+      <div class="hm__head">
+        <div><p class="hm-eyebrow">주문 상세정보</p><h3>${order.product}</h3></div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="hm-badge" style="background:${sc.bg};color:${sc.text}">${order.status}</span>
+          <button class="hm__x" data-action="close" aria-label="닫기">${icon("x", { size: 14 })}</button>
         </div>
       </div>
     `;
-    const rowsBlock = html`
-      <div class="odetail__rows msplit__scroll">
-        ${rows.map(
-          ([label, value]) => html`<div class="odetail__row">
-            <div class="odetail__row-l">${label}</div>
-            <div class="odetail__row-v ${label === "주문금액" ? "is-amount" : ""}">${value}</div>
-          </div>`
-        )}
+    const dl = html`
+      <div class="hm-dl">
+        ${rows.map(([label, value]) => {
+          const vClass = label === "주문금액" ? "v amt num" : label === "배송요청일시" ? "v num" : "v";
+          return html`<div class="row"><span class="k">${label}</span><span class="${vClass}">${value}</span></div>`;
+        })}
       </div>
     `;
-    const foot = html`<div class="odetail__foot"><button class="odetail__close-btn" data-action="close">닫기</button></div>`;
+    const foot = html`<div class="hm__foot"><button class="hm-btn hm-btn--primary" data-action="close">닫기</button></div>`;
 
     /* 사진 보유: 세로형(2:3) 현장사진을 좌측 고정 배치, 정보는 우측 —
        사진 비율을 유지하면서도 모달 세로 길이가 늘어나지 않는다. */
     const body = order.hasPhoto
       ? html`
-          <div class="odetail msplit">
+          <div class="msplit">
             <button class="msplit__media msplit__media--btn" data-action="zoom" aria-label="배송 사진 크게 보기">
               <img src="${deliveryPhoto(order)}" alt="배송 완료 현장사진" />
               <span class="msplit__zoomhint">${icon("search", { size: 12 })}크게 보기</span>
             </button>
-            <div class="msplit__body">${head}${rowsBlock}${foot}</div>
+            <div class="msplit__body">${head}<div class="msplit__scroll">${dl}</div>${foot}</div>
           </div>
         `
-      : html`
-          <div class="odetail">
-            ${head}
-            <div class="odetail__nophoto"><div class="odetail__nophoto-in">${icon("camera", { size: 18 })}<span>등록된 사진이 없습니다</span></div></div>
-            ${rowsBlock}${foot}
-          </div>
-        `;
+      : html`${head}<div class="hm__body">${dl}</div>${foot}`;
     activeModal = openModal({
-      panelClass: `modal-panel--detail ${order.hasPhoto ? "modal-panel--detail-photo" : ""}`,
+      panelClass: order.hasPhoto ? "modal-panel--split" : "",
       body,
       onClose: () => {},
     });

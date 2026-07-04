@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ADMIN · 계열사 분리정산 — 필터 · 카드 · 리포트 신규 디자인</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
+<style>
+  :root{
+    --c-orange:#f15a2a; --c-orange-hover:#d94e24; --c-orange-ink:#d94000; --c-orange-soft:#fff1ec;
+    --c-blue:#4169e1; --c-blue-soft:#f0f3fd;
+    --c-dark:#111118; --c-dark-hover:#2b2b33;
+    --c-bg:#f9f9f9; --c-surface-2:#f5f5f7;
+    --c-border:#e0e0e0; --c-border-strong:#d8d8d8; --c-border-input:#e3e3e3; --c-divider:#e8e8e8;
+    --c-text-strong:#111; --c-text:#222; --c-text-2:#444; --c-text-3:#555;
+    --c-text-muted:#888; --c-text-faint:#aaa;
+    --c-success:#2e7d32; --c-success-bg:#e8f5e9;
+    --c-danger:#c62828; --c-danger-bg:#ffebee;
+    --c-warn:#c87000; --c-warn-bg:#fffae6;
+    --c-indigo:#4f46e5;
+    --r-md:6px; --r-lg:8px; --r-xl:10px;
+    --sh-card:0 1px 6px rgba(17,17,24,.04);
+    --sh-btn:0 2px 8px rgba(241,90,42,.28);
+    --sh-pop:0 8px 28px rgba(17,17,24,.14);
+    --ring-field:0 0 0 3px rgba(79,70,229,.14);
+    --font:"Pretendard",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:var(--font); background:var(--c-bg); color:var(--c-text); font-size:15px; line-height:1.6; -webkit-font-smoothing:antialiased; letter-spacing:-.011em;}
+  button{font-family:inherit; letter-spacing:inherit; cursor:pointer; border:none; background:none; color:inherit;}
+  input{font-family:inherit; letter-spacing:inherit; color:var(--c-text);}
+  .num{font-variant-numeric:tabular-nums; font-feature-settings:"tnum";}
+
+  .wrap{max-width:1300px; margin:0 auto; padding:28px 32px 100px;}
+  .pagetitle{display:flex; align-items:center; gap:9px; font-size:22px; font-weight:700; color:var(--c-text-strong); letter-spacing:-.02em; margin-bottom:18px;}
+  .note{font-size:12px; color:var(--c-text-muted); margin:6px 2px 16px;}
+  .note b{color:var(--c-orange-ink);}
+
+  /* ══ ① 상단 필터 — 신규 디자인 (한 줄 통합 바 + 커스텀 드롭다운) ══ */
+  .fbar{display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+    background:#fff; border:1px solid var(--c-border); border-radius:12px;
+    box-shadow:var(--sh-card); padding:14px 18px;}
+  .fbar__lbl{font-size:12.5px; font-weight:600; color:var(--c-text-3); flex:0 0 auto;}
+  .fbar__div{width:1px; height:26px; background:var(--c-divider);}
+  .dd{position:relative; width:118px;}
+  .dd-trigger{width:100%; height:42px; padding:0 34px 0 14px; text-align:left; font-size:14px; font-weight:600;
+    background:#fff; border:1px solid var(--c-border-input); border-radius:var(--r-lg);
+    transition:border-color .15s, box-shadow .15s; position:relative; color:var(--c-text-strong);}
+  .dd-trigger::after{content:""; position:absolute; right:13px; top:50%; width:7px; height:7px;
+    border-right:1.6px solid var(--c-text-muted); border-bottom:1.6px solid var(--c-text-muted);
+    transform:translateY(-70%) rotate(45deg); transition:transform .18s;}
+  .dd.open .dd-trigger::after{transform:translateY(-30%) rotate(225deg);}
+  .dd-trigger:hover{border-color:var(--c-border-strong);}
+  .dd.open .dd-trigger{border-color:var(--c-indigo); box-shadow:var(--ring-field);}
+  .dd-panel{display:none; position:absolute; left:0; right:0; top:calc(100% + 6px); z-index:30;
+    background:#fff; border:1px solid var(--c-border); border-radius:var(--r-lg);
+    box-shadow:var(--sh-pop); max-height:250px; overflow-y:auto; padding:5px;}
+  .dd.open .dd-panel{display:block;}
+  .dd-opt{width:100%; display:block; padding:8px 12px; font-size:13.5px; text-align:left; border-radius:var(--r-md); color:var(--c-text-2);}
+  .dd-opt:hover{background:var(--c-surface-2);}
+  .dd-opt.sel{background:var(--c-blue); color:#fff; font-weight:600;}
+  .qchip{height:42px; padding:0 14px; border-radius:var(--r-lg); border:1px solid var(--c-border);
+    background:#fff; font-size:13px; font-weight:600; color:var(--c-text-3); transition:all .13s;}
+  .qchip:hover{border-color:var(--c-orange); color:var(--c-orange-ink);}
+  .qchip.on{background:var(--c-orange-soft); border-color:var(--c-orange); color:var(--c-orange-ink);}
+  .seg{display:inline-flex; background:var(--c-surface-2); border:1px solid var(--c-border); border-radius:999px; padding:3px;}
+  .seg button{padding:7px 16px; border-radius:999px; font-size:13px; font-weight:600; color:var(--c-text-muted); transition:all .13s;}
+  .seg button.sel{background:#fff; color:var(--c-text-strong); box-shadow:0 1px 4px rgba(17,17,24,.1);}
+  .fsearch{position:relative; margin-left:auto; width:240px;}
+  .fsearch input{width:100%; height:42px; padding:0 14px 0 36px; font-size:13.5px; background:#fff;
+    border:1px solid var(--c-border-input); border-radius:var(--r-lg); transition:border-color .15s, box-shadow .15s;}
+  .fsearch input::placeholder{color:var(--c-text-faint);}
+  .fsearch input:focus{outline:none; border-color:var(--c-indigo); box-shadow:var(--ring-field);}
+  .fsearch svg{position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--c-text-faint); pointer-events:none;}
+
+  /* ══ ② adash 카드 — 신규 디자인 ══ */
+  .adash{display:flex; flex-direction:column; gap:14px; margin-top:16px;}
+  .row-main{display:grid; grid-template-columns:1.05fr 1.3fr; gap:14px;}
+  .row-sub{display:grid; grid-template-columns:1.25fr 1fr 1fr; gap:14px;}
+  /* 신규 카드: 헤더가 구분선 위 캡션 형태 → 본문 여백 확대 */
+  .acard{background:#fff; border:1px solid var(--c-border); border-radius:12px; box-shadow:var(--sh-card); min-width:0; overflow:hidden;}
+  .acard__head{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:15px 22px; border-bottom:1px solid var(--c-divider);}
+  .acard__head b{font-size:14px; font-weight:700; color:var(--c-text-strong);}
+  .acard__hint{font-size:11.5px; font-weight:600; color:var(--c-text-muted); background:var(--c-surface-2); padding:3px 10px; border-radius:999px;}
+  .acard__body{padding:20px 22px;}
+  /* KPI */
+  .kpis{display:grid; grid-template-columns:repeat(4,1fr); gap:12px;}
+  .kpi{background:#fff; border:1px solid var(--c-border); border-radius:12px; box-shadow:var(--sh-card); padding:18px 20px 16px; min-width:0;}
+  .kpi__lbl{font-size:12.5px; color:var(--c-text-muted); font-weight:500;}
+  .kpi__val{font-size:24px; font-weight:700; color:var(--c-text-strong); letter-spacing:-.02em; margin-top:6px; white-space:nowrap;}
+  .kpi__val.warn{color:var(--c-danger);}
+  .kpi__delta{display:inline-flex; align-items:center; gap:4px; margin-top:9px; font-size:11.5px; font-weight:700; padding:2.5px 9px; border-radius:999px;}
+  .kpi__delta.up{background:var(--c-danger-bg); color:var(--c-danger);}
+  .kpi__delta.down{background:var(--c-blue-soft); color:var(--c-blue);}
+  .kpi__delta.flat{background:var(--c-surface-2); color:var(--c-text-muted); font-weight:500;}
+  /* 인사이트 */
+  .headline{font-size:19px; font-weight:700; color:var(--c-text-strong); line-height:1.5;}
+  .headline .up{color:var(--c-danger);}
+  .bars{display:flex; align-items:flex-end; gap:14px; margin-top:22px; height:140px;}
+  .bar{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; gap:6px; height:100%;}
+  .bar__v{font-size:11px; color:var(--c-text-muted); font-weight:600;}
+  .bar__c{width:100%; max-width:44px; border-radius:7px 7px 3px 3px; background:#ececf1;}
+  .bar.cur .bar__c{background:var(--c-orange);}
+  .bar.cur .bar__v,.bar.cur .bar__l{color:var(--c-orange-ink); font-weight:700;}
+  .bar__l{font-size:11px; color:var(--c-text-muted);}
+  /* 랭킹 */
+  .rank{display:flex; align-items:center; gap:10px; padding:9px 0;}
+  .rank__no{width:22px; height:22px; flex:0 0 22px; border-radius:50%; background:var(--c-surface-2); color:var(--c-text-muted); font-size:11.5px; font-weight:700; display:grid; place-items:center;}
+  .rank__no.top{background:var(--c-orange-soft); color:var(--c-orange-ink);}
+  .rank__name{flex:0 0 84px; font-size:13px; font-weight:600; color:var(--c-text-2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .rank__track{flex:1; height:8px; border-radius:4px; background:var(--c-surface-2); overflow:hidden;}
+  .rank__bar{height:100%; border-radius:4px; background:var(--c-orange); opacity:.85;}
+  .rank__amt{flex:0 0 86px; text-align:right; font-size:12.5px; font-weight:700; color:var(--c-text-strong);}
+  .rank__share{flex:0 0 42px; text-align:right; font-size:11.5px; color:var(--c-text-muted);}
+  /* 진행 현황 */
+  .prog__track{height:10px; border-radius:5px; background:var(--c-surface-2); overflow:hidden;}
+  .prog__fill{height:100%; border-radius:5px; background:var(--c-success);}
+  .steps{display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-top:16px;}
+  .step{background:var(--c-bg); border:1px solid var(--c-divider); border-radius:var(--r-lg); padding:10px 12px;}
+  .step b{display:block; font-size:11.5px; color:var(--c-text-muted); font-weight:600;}
+  .step span{font-size:14px; font-weight:700; color:var(--c-text-2);}
+  .step.done{background:var(--c-success-bg); border-color:transparent;}
+  .step.done span{color:var(--c-success);}
+  .prog__amts{display:flex; justify-content:space-between; margin-top:14px; font-size:12px; color:var(--c-text-muted);}
+  .prog__amts b{color:var(--c-text-2);}
+  .prog__amts .warn b{color:var(--c-danger);}
+
+  /* ══ ③ 리포트 카드 — 신규 v2 (라이트 · 다른 카드와 같은 골격 + 문서 미리보기 리스트) ══ */
+  .report{background:#fff; border:1px solid var(--c-border); border-radius:12px; box-shadow:var(--sh-card);
+    display:flex; flex-direction:column; min-width:0;}
+  .report__head{display:flex; align-items:center; justify-content:space-between; gap:10px;
+    padding:15px 22px; border-bottom:1px solid var(--c-divider);}
+  .report__head b{font-size:14px; font-weight:700; color:var(--c-text-strong);}
+  .report__hint{font-size:11.5px; font-weight:600; color:var(--c-orange-ink); background:var(--c-orange-soft);
+    padding:3px 10px; border-radius:999px;}
+  .report__body{padding:16px 22px 0; flex:1;}
+  .report__desc{font-size:12px; color:var(--c-text-muted); line-height:1.65;}
+  .report__list{margin-top:12px; border-top:1px solid var(--c-divider);}
+  .report__row{display:flex; align-items:center; justify-content:space-between; gap:10px;
+    padding:9px 2px; border-bottom:1px solid var(--c-divider); font-size:12.5px; color:var(--c-text-2);}
+  .report__row b{font-weight:600; color:var(--c-text-2);}
+  .report__row span{font-size:11px; color:var(--c-text-faint);}
+  .report__quote{margin-top:12px; padding:10px 13px; background:var(--c-bg);
+    border-left:2px solid var(--c-border-strong); border-radius:0 var(--r-md) var(--r-md) 0;
+    font-size:12px; color:var(--c-text-3); line-height:1.6;}
+  .report__btn{display:flex; align-items:center; justify-content:center; margin:16px 22px 20px;
+    height:46px; border-radius:var(--r-xl); background:var(--c-orange); color:#fff;
+    font-size:14px; font-weight:700; box-shadow:var(--sh-btn); transition:background .15s;}
+  .report__btn:hover{background:var(--c-orange-hover);}
+
+  /* ══ ④ A4 리포트 여백 개선안 미리보기 ══ */
+  .a4wrap{display:flex; gap:20px; align-items:flex-start; margin-top:16px;}
+  .a4frame{width:794px; flex:0 0 794px; background:#fff; border:1px solid var(--c-border); border-radius:4px; box-shadow:var(--sh-card);}
+  .a4notes{flex:1; display:flex; flex-direction:column; gap:10px;}
+  .a4note{background:#fff; border:1px solid var(--c-border); border-radius:12px; padding:14px 16px; font-size:12.5px; color:var(--c-text-2); line-height:1.7;}
+  .a4note b{display:block; color:var(--c-text-strong); margin-bottom:3px; font-size:13px;}
+  .a4note code{background:var(--c-surface-2); border-radius:4px; padding:1px 6px; font-size:11px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1 class="pagetitle">계열사 분리정산 <span style="font-size:12px; font-weight:600; color:var(--c-text-faint); margin-left:6px;">ADMIN · 신규 디자인 시안</span></h1>
+
+  <!-- ══ ① 상단 필터 신규 ══ -->
+  <div class="fbar">
+    <span class="fbar__lbl">조회 기간</span>
+    <div class="dd" id="ddYear"><button class="dd-trigger">2026년</button><div class="dd-panel"></div></div>
+    <div class="dd" style="width:98px;" id="ddMonth"><button class="dd-trigger">07월</button><div class="dd-panel"></div></div>
+    <button class="qchip on">이번달</button>
+    <button class="qchip">저번달</button>
+    <span class="fbar__div"></span>
+    <span class="fbar__lbl">정산 상태</span>
+    <span class="seg" id="seg"><button class="sel">전체</button><button>미완료</button><button>정산완료</button></span>
+    <div class="fsearch"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="m20 20-3.5-3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><input placeholder="계열사명 검색" /></div>
+  </div>
+  <p class="note">필터 신규안: 2줄 패널 → <b>한 줄 통합 바</b>. 네이티브 셀렉트 → 커스텀 드롭다운(인디고 포커스·블루 선택 행), 이번달/저번달은 오렌지 퀵 칩, 상태는 세그먼트, 검색은 우측 정렬 인라인.</p>
+
+  <div class="adash">
+    <!-- KPI (adash-card 신규: delta 배지화) -->
+    <div class="kpis">
+      <div class="kpi"><span class="kpi__lbl">총 이용금액</span><div class="kpi__val num">5,000,000원</div><span class="kpi__delta up">▲ 450,000원</span></div>
+      <div class="kpi"><span class="kpi__lbl">주문 건수</span><div class="kpi__val num">64건</div><span class="kpi__delta down">▼ 3건</span></div>
+      <div class="kpi"><span class="kpi__lbl">이용 계열사</span><div class="kpi__val num">8곳</div><span class="kpi__delta flat">전체 8곳 중</span></div>
+      <div class="kpi"><span class="kpi__lbl">미입금액</span><div class="kpi__val num warn">5,000,000원</div><span class="kpi__delta flat">정산 완료율 0%</span></div>
+    </div>
+
+    <div class="row-main">
+      <!-- 인사이트 -->
+      <div class="acard">
+        <div class="acard__head"><b>월간 인사이트</b><span class="acard__hint">최근 6개월 · 만원</span></div>
+        <div class="acard__body">
+          <p class="headline">총 이용금액이 지난달보다<br /><span class="up num">450,000원</span> 늘었어요</p>
+          <div class="bars">
+            <div class="bar"><span class="bar__v num">380</span><span class="bar__c" style="height:62%"></span><span class="bar__l">2월</span></div>
+            <div class="bar"><span class="bar__v num">420</span><span class="bar__c" style="height:70%"></span><span class="bar__l">3월</span></div>
+            <div class="bar"><span class="bar__v num">330</span><span class="bar__c" style="height:54%"></span><span class="bar__l">4월</span></div>
+            <div class="bar"><span class="bar__v num">470</span><span class="bar__c" style="height:78%"></span><span class="bar__l">5월</span></div>
+            <div class="bar"><span class="bar__v num">455</span><span class="bar__c" style="height:74%"></span><span class="bar__l">6월</span></div>
+            <div class="bar cur"><span class="bar__v num">500</span><span class="bar__c" style="height:92%"></span><span class="bar__l">7월</span></div>
+          </div>
+        </div>
+      </div>
+      <!-- 계열사 랭킹 -->
+      <div class="acard">
+        <div class="acard__head"><b>계열사별 이용 현황</b><span class="acard__hint">상위 3사 38%</span></div>
+        <div class="acard__body" style="padding-top:12px;">
+          <div class="rank"><span class="rank__no top">1</span><span class="rank__name">하림지주</span><span class="rank__track"><span class="rank__bar" style="width:100%"></span></span><span class="rank__amt num">800,000원</span><span class="rank__share num">16%</span></div>
+          <div class="rank"><span class="rank__no top">2</span><span class="rank__name">하림산업</span><span class="rank__track"><span class="rank__bar" style="width:94%"></span></span><span class="rank__amt num">750,000원</span><span class="rank__share num">15%</span></div>
+          <div class="rank"><span class="rank__no top">3</span><span class="rank__name">NS홈쇼핑</span><span class="rank__track"><span class="rank__bar" style="width:88%"></span></span><span class="rank__amt num">700,000원</span><span class="rank__share num">14%</span></div>
+          <div class="rank"><span class="rank__no">4</span><span class="rank__name">팜스코</span><span class="rank__track"><span class="rank__bar" style="width:81%"></span></span><span class="rank__amt num">650,000원</span><span class="rank__share num">13%</span></div>
+          <div class="rank"><span class="rank__no">5</span><span class="rank__name">선진</span><span class="rank__track"><span class="rank__bar" style="width:75%"></span></span><span class="rank__amt num">600,000원</span><span class="rank__share num">12%</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row-sub">
+      <!-- 항목 비중 (자리) -->
+      <div class="acard">
+        <div class="acard__head"><b>항목별 이용 비중</b></div>
+        <div class="acard__body" style="display:flex; gap:18px; align-items:center;">
+          <svg width="124" height="124" viewBox="0 0 124 124" aria-hidden="true">
+            <circle cx="62" cy="62" r="44" fill="none" stroke="#ececf1" stroke-width="24"/>
+            <circle cx="62" cy="62" r="44" fill="none" stroke="#f15a2a" stroke-width="24" stroke-dasharray="152 124" transform="rotate(-90 62 62)"/>
+            <circle cx="62" cy="62" r="44" fill="none" stroke="#4169e1" stroke-width="24" stroke-dasharray="83 193" stroke-dashoffset="-152" transform="rotate(-90 62 62)"/>
+            <text x="62" y="60" text-anchor="middle" font-size="10" fill="#888">총 이용</text>
+            <text x="62" y="76" text-anchor="middle" font-size="12" font-weight="700" fill="#111">500만</text>
+          </svg>
+          <div style="flex:1; font-size:12.5px;">
+            <div style="display:flex; justify-content:space-between; padding:5px 0;"><span>● <b>3단화환</b></span><span class="num" style="color:var(--c-text-muted);">55% · 275만</span></div>
+            <div style="display:flex; justify-content:space-between; padding:5px 0;"><span style="color:var(--c-blue);">● <b style="color:var(--c-text);">쌀화환</b></span><span class="num" style="color:var(--c-text-muted);">30% · 150만</span></div>
+            <div style="display:flex; justify-content:space-between; padding:5px 0;"><span style="color:var(--c-text-faint);">● 기타</span><span class="num" style="color:var(--c-text-muted);">15% · 75만</span></div>
+          </div>
+        </div>
+      </div>
+      <!-- 정산 진행 -->
+      <div class="acard">
+        <div class="acard__head"><b>정산 진행 현황</b><span class="acard__hint">입금 기준 0%</span></div>
+        <div class="acard__body">
+          <div class="prog__track"><div class="prog__fill" style="width:4%"></div></div>
+          <div class="steps">
+            <div class="step"><b>명세서 동의</b><span class="num">0/8</span></div>
+            <div class="step"><b>계산서 발급</b><span class="num">0/8</span></div>
+            <div class="step"><b>입금 완료</b><span class="num">0/8</span></div>
+          </div>
+          <div class="prog__amts"><span>입금완료 <b class="num">0원</b></span><span class="warn">미입금 <b class="num">5,000,000원</b></span></div>
+        </div>
+      </div>
+      <!-- ══ 리포트 카드 신규 v2 (라이트 · 문서 목차 리스트 · 아이콘 없음) ══ -->
+      <div class="report">
+        <div class="report__head"><b>월간 분석 리포트</b><span class="report__hint">A4 · PDF</span></div>
+        <div class="report__body">
+          <p class="report__desc">2026년 7월 이용·정산 데이터를 분석한 리포트를 생성합니다.</p>
+          <div class="report__list">
+            <div class="report__row"><b>계열사별 이용 순위</b><span>전월 대비 증감 포함</span></div>
+            <div class="report__row"><b>항목별 구성 변화</b><span>비중 · 건수</span></div>
+            <div class="report__row"><b>정산 현황 · 코멘트</b><span>자동 분석 3건</span></div>
+          </div>
+          <p class="report__quote">"총 이용금액이 전월 대비 9.9% 증가했으며, 하림지주가 3개월 연속 1위를 유지했습니다."</p>
+        </div>
+        <button class="report__btn">PDF 리포트 다운로드</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ ④ A4 리포트 여백 개선안 ══ -->
+  <h2 style="font-size:17px; font-weight:700; color:var(--c-text-strong); margin:44px 0 4px;">A4 분석 리포트 — 기존 디자인 유지 · 레이아웃(여백)만 조정</h2>
+  <p class="note">구성·표 스타일·도넛·코멘트 형식은 <b>현행 report-doc.js 그대로</b>입니다. 조정한 것은 여백뿐: <b>문서 패딩 36/48 → 42/52 · 섹션 간격 16~19 → 28 · 섹션 타이틀 아래 6 → 10 · 셀 패딩 5~6/10 → 9/12 · 코멘트 행간 1.6 → 1.8 · KPI 패딩 10/14 → 14/16</b>.</p>
+  <div class="a4wrap">
+    <div class="a4frame">
+      <div style="padding:42px 52px 30px; font-size:12px; color:#333; display:flex; flex-direction:column; min-height:1000px;">
+        <!-- 헤더 (기존 그대로) -->
+        <div style="display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:28px; padding-bottom:14px; border-bottom:1px solid #e8e8e8;">
+          <div>
+            <p style="margin:0 0 5px; font-size:13px; font-weight:700; color:#f15a2a;">하림그룹 경조화환 시스템 · ADMIN</p>
+            <p style="margin:0; font-size:20px; font-weight:700; color:#222;">2026년 07월 계열사 이용 분석 리포트</p>
+          </div>
+          <div style="text-align:right;">
+            <p style="margin:0; font-size:12px; font-weight:600; color:#666;">2026년 07월 귀속</p>
+            <p style="margin:4px 0 0; font-size:11px; color:#999;">생성 2026. 07. 04 10:00</p>
+          </div>
+        </div>
+
+        <!-- KPI 4박스 (기존 스타일 · 패딩 14/16) -->
+        <div style="display:flex; gap:10px; margin-bottom:28px;">
+          <div style="flex:1; border:1px solid #d4d4d4; border-radius:8px; padding:14px 16px;">
+            <p style="margin:0 0 6px; font-size:11px; color:#666;">총 이용금액</p>
+            <p style="margin:0; font-size:16px; font-weight:700; color:#222;" class="num">5,000,000원</p>
+            <p style="margin:6px 0 0; font-size:10.5px;">지난달보다 <span style="color:#c62828; font-weight:600;">▲ 450,000원</span></p>
+          </div>
+          <div style="flex:1; border:1px solid #d4d4d4; border-radius:8px; padding:14px 16px;">
+            <p style="margin:0 0 6px; font-size:11px; color:#666;">주문 건수</p>
+            <p style="margin:0; font-size:16px; font-weight:700; color:#222;" class="num">64건</p>
+            <p style="margin:6px 0 0; font-size:10.5px;">지난달보다 <span style="color:#1e56c9; font-weight:600;">▼ 3건</span></p>
+          </div>
+          <div style="flex:1; border:1px solid #d4d4d4; border-radius:8px; padding:14px 16px;">
+            <p style="margin:0 0 6px; font-size:11px; color:#666;">이용 계열사</p>
+            <p style="margin:0; font-size:16px; font-weight:700; color:#222;" class="num">8곳</p>
+            <p style="margin:6px 0 0; font-size:10.5px; color:#666;">전체 8곳 중</p>
+          </div>
+          <div style="flex:1; border:1px solid #d4d4d4; border-radius:8px; padding:14px 16px;">
+            <p style="margin:0 0 6px; font-size:11px; color:#666;">정산 완료율</p>
+            <p style="margin:0; font-size:16px; font-weight:700; color:#222;" class="num">0%</p>
+            <p style="margin:6px 0 0; font-size:10.5px; color:#666;">미입금 5,000,000원</p>
+          </div>
+        </div>
+
+        <!-- 계열사별 이용 현황 (기존 6컬럼 표) -->
+        <div style="margin-bottom:28px;">
+          <p style="margin:0 0 10px; font-size:12px; font-weight:700; color:#222; padding-bottom:4px; border-bottom:2px solid #333;">계열사별 이용 현황</p>
+          <table style="width:100%; border-collapse:collapse; table-layout:fixed; border:1px solid #d4d4d4; font-size:11.5px;">
+            <colgroup><col style="width:44px"/><col/><col style="width:70px"/><col style="width:118px"/><col style="width:62px"/><col style="width:124px"/></colgroup>
+            <thead><tr>
+              <th style="background:#f5f5f5; padding:9px 12px; font-weight:600; color:#444; border:1px solid #d4d4d4;">순위</th>
+              <th style="background:#f5f5f5; padding:9px 12px; font-weight:600; color:#444; border:1px solid #d4d4d4;">계열사</th>
+              <th style="background:#f5f5f5; padding:9px 12px; font-weight:600; color:#444; border:1px solid #d4d4d4;">주문</th>
+              <th style="background:#f5f5f5; padding:9px 12px; font-weight:600; color:#444; border:1px solid #d4d4d4;">이용금액</th>
+              <th style="background:#f5f5f5; padding:9px 12px; font-weight:600; color:#444; border:1px solid #d4d4d4;">비중</th>
+              <th style="background:#f5f5f5; padding:9px 12px; font-weight:600; color:#444; border:1px solid #d4d4d4;">전월 대비</th>
+            </tr></thead>
+            <tbody>
+              <tr><td style="padding:9px 12px; border:1px solid #d4d4d4; text-align:center;">1</td><td style="padding:9px 12px; border:1px solid #d4d4d4;">하림지주</td><td style="padding:9px 12px; border:1px solid #d4d4d4; text-align:center;" class="num">11건</td><td style="padding:9px 12px; border:1px solid #d4d4d4; text-align:right;" class="num">800,000원</td><td style="padding:9px 12px; border:1px solid #d4d4d4; text-align:center;" class="num">16%</td><td style="padding:9px 12px; border:1px solid #d4d4d4; text-align:center;"><span style="color:#c62828; font-weight:600;">▲ 50,000원</span></td></tr>
+              <tr style="background:#fafbfc;"><td style="padding:9px 12px; border:1px solid #d4d4d4; text-align:center;">2</td><td style="padding:9px 12px; border:1px solid #d4d4d4;">하림산업</td><td style="padding:9px 12px; border:1px solid #d4d4d4; text-align:center;" class="num">10건</td><td style="padding:9px 12px; border:1px solid #d4d4d4; text-align:right;" class="num">750,000원</td><td style="padding:9px 12px; border:1px solid #d4d4d4; text-align:center;" class="num">15%</td><td style="padding:9px 12px; border:1px solid #d4d4d4; text-align:center;"><span style="color:#1e56c9; font-weight:600;">▼ 30,000원</span></td></tr>
+              <tr><td style="padding:9px 12px; border:1px solid #d4d4d4; text-align:center;">3</td><td style="padding:9px 12px; border:1px solid #d4d4d4;">NS홈쇼핑</td><td style="padding:9px 12px; border:1px solid #d4d4d4; text-align:center;" class="num">9건</td><td style="padding:9px 12px; border:1px solid #d4d4d4; text-align:right;" class="num">700,000원</td><td style="padding:9px 12px; border:1px solid #d4d4d4; text-align:center;" class="num">14%</td><td style="padding:9px 12px; border:1px solid #d4d4d4; text-align:center;"><span style="color:#c62828; font-weight:600;">▲ 120,000원</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 항목별 이용 현황 (기존: 표 + 도넛) -->
+        <div style="margin-bottom:28px;">
+          <p style="margin:0 0 10px; font-size:12px; font-weight:700; color:#222; padding-bottom:4px; border-bottom:2px solid #333;">항목별 이용 현황</p>
+          <div style="display:flex; gap:24px; align-items:center;">
+            <table style="flex:1; width:100%; border-collapse:collapse; border:1px solid #d4d4d4; font-size:11.5px;">
+              <thead><tr>
+                <th style="background:#f5f5f5; padding:9px 12px; font-weight:600; color:#444; border:1px solid #d4d4d4;">항목</th>
+                <th style="background:#f5f5f5; padding:9px 12px; font-weight:600; color:#444; border:1px solid #d4d4d4;">주문</th>
+                <th style="background:#f5f5f5; padding:9px 12px; font-weight:600; color:#444; border:1px solid #d4d4d4;">이용금액</th>
+                <th style="background:#f5f5f5; padding:9px 12px; font-weight:600; color:#444; border:1px solid #d4d4d4;">비중</th>
+              </tr></thead>
+              <tbody>
+                <tr><td style="padding:9px 12px; border:1px solid #d4d4d4;">3단화환</td><td style="padding:9px 12px; border:1px solid #d4d4d4; text-align:center;" class="num">38건</td><td style="padding:9px 12px; border:1px solid #d4d4d4; text-align:right;" class="num">2,750,000원</td><td style="padding:9px 12px; border:1px solid #d4d4d4; text-align:center;" class="num">55%</td></tr>
+                <tr style="background:#fafbfc;"><td style="padding:9px 12px; border:1px solid #d4d4d4;">쌀화환</td><td style="padding:9px 12px; border:1px solid #d4d4d4; text-align:center;" class="num">17건</td><td style="padding:9px 12px; border:1px solid #d4d4d4; text-align:right;" class="num">1,500,000원</td><td style="padding:9px 12px; border:1px solid #d4d4d4; text-align:center;" class="num">30%</td></tr>
+                <tr><td style="padding:9px 12px; border:1px solid #d4d4d4;">기타</td><td style="padding:9px 12px; border:1px solid #d4d4d4; text-align:center;" class="num">9건</td><td style="padding:9px 12px; border:1px solid #d4d4d4; text-align:right;" class="num">750,000원</td><td style="padding:9px 12px; border:1px solid #d4d4d4; text-align:center;" class="num">15%</td></tr>
+              </tbody>
+            </table>
+            <div style="flex:0 0 140px;">
+              <svg width="124" height="124" viewBox="0 0 124 124" aria-hidden="true">
+                <circle cx="62" cy="62" r="44" fill="none" stroke="#e8e8e8" stroke-width="26"/>
+                <circle cx="62" cy="62" r="44" fill="none" stroke="#4169e1" stroke-width="26" stroke-dasharray="152 124" transform="rotate(-90 62 62)"/>
+                <circle cx="62" cy="62" r="44" fill="none" stroke="#f15a2a" stroke-width="26" stroke-dasharray="83 193" stroke-dashoffset="-152" transform="rotate(-90 62 62)"/>
+                <text x="62" y="60" text-anchor="middle" font-size="10" fill="#666">총 이용</text>
+                <text x="62" y="75" text-anchor="middle" font-size="12" font-weight="700" fill="#222">500만</text>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- 분석 코멘트 (기존: 번호 원 리스트 · 행간만 확대) -->
+        <div style="margin-bottom:20px;">
+          <p style="margin:0 0 10px; font-size:12px; font-weight:700; color:#222; padding-bottom:4px; border-bottom:2px solid #333;">분석 코멘트</p>
+          <ul style="margin:0; padding:4px 0 0; list-style:none; font-size:12.5px; color:#333;">
+            <li style="margin:0 0 12px; line-height:1.8; display:flex; gap:9px;"><span style="flex:0 0 19px; height:19px; border-radius:50%; background:#fff1ec; color:#d94000; font-size:11px; font-weight:700; text-align:center; line-height:19px;">1</span><span>총 이용금액이 전월 대비 9.9% 증가했으며, 하림지주가 3개월 연속 1위를 유지했습니다.</span></li>
+            <li style="margin:0 0 12px; line-height:1.8; display:flex; gap:9px;"><span style="flex:0 0 19px; height:19px; border-radius:50%; background:#fff1ec; color:#d94000; font-size:11px; font-weight:700; text-align:center; line-height:19px;">2</span><span>3단화환 비중이 55%로 가장 높고, 쌀화환 이용이 전월 대비 8%p 증가했습니다.</span></li>
+            <li style="margin:0 0 12px; line-height:1.8; display:flex; gap:9px;"><span style="flex:0 0 19px; height:19px; border-radius:50%; background:#fff1ec; color:#d94000; font-size:11px; font-weight:700; text-align:center; line-height:19px;">3</span><span>7월분 계산서 동의가 아직 시작되지 않았습니다 — 마감 5일 전 알림 발송을 권장합니다.</span></li>
+          </ul>
+        </div>
+
+        <!-- 푸터 (기존 그대로) -->
+        <p style="margin-top:auto; padding-top:14px; border-top:1px solid #e8e8e8; font-size:10.5px; color:#999; display:flex; justify-content:space-between;">
+          <span>본 리포트는 계열사 정산지원 데이터로부터 자동 생성된 분석 자료입니다.</span>
+          <span>하림그룹 경조화환 시스템 · 관리자 콘솔</span>
+        </p>
+      </div>
+    </div>
+    <div class="a4notes">
+      <div class="a4note"><b>유지 (기존 디자인)</b>헤더 구성 · 섹션 타이틀(2px 하단 보더) · KPI 박스 · 6컬럼 계열사 표 · 항목 표+도넛 · 번호 원 코멘트 · 푸터 — 전부 현행 report-doc.js 그대로.</div>
+      <div class="a4note"><b>문서 여백</b>패딩 <code>36/48</code> → <code>42/52</code>.</div>
+      <div class="a4note"><b>섹션 리듬</b>섹션 간격 <code>16~19px</code> → <code>28px</code> · 타이틀 아래 <code>6px</code> → <code>10px</code>.</div>
+      <div class="a4note"><b>표 밀도</b>셀 패딩 <code>5~6px 10px</code> → <code>9px 12px</code> (지브라·정렬 유지).</div>
+      <div class="a4note"><b>코멘트</b>행간 <code>1.6</code> → <code>1.8</code>, 항목 간 <code>10px</code> → <code>12px</code>.</div>
+      <div class="a4note"><b>넘침 처리</b>여백 확대로 넘치면 압축 대신 섹션 단위 2페이지 분리.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* 필터 데모 */
+function makeDropdown(rootId, opts, cur) {
+  const root = document.getElementById(rootId);
+  const trigger = root.querySelector(".dd-trigger");
+  const panel = root.querySelector(".dd-panel");
+  let val = cur;
+  const close = () => root.classList.remove("open");
+  trigger.addEventListener("click", () => {
+    if (root.classList.contains("open")) { close(); return; }
+    document.querySelectorAll(".dd.open").forEach((x) => x !== root && x.classList.remove("open"));
+    panel.innerHTML = opts.map((v) => `<button class="dd-opt ${v === val ? "sel" : ""}" data-v="${v}">${v}</button>`).join("");
+    root.classList.add("open");
+  });
+  panel.addEventListener("click", (e) => {
+    const o = e.target.closest("[data-v]"); if (!o) return;
+    val = o.dataset.v; trigger.textContent = val; close();
+  });
+  document.addEventListener("click", (e) => { if (!root.contains(e.target)) close(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
+}
+makeDropdown("ddYear", ["2024년", "2025년", "2026년"], "2026년");
+makeDropdown("ddMonth", ["05월", "06월", "07월", "08월"], "07월");
+document.getElementById("seg").addEventListener("click", (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  document.querySelectorAll("#seg button").forEach((x) => x.classList.toggle("sel", x === b));
+});
+document.querySelectorAll(".qchip").forEach((c) => c.addEventListener("click", () => {
+  document.querySelectorAll(".qchip").forEach((x) => x.classList.toggle("on", x === c));
+}));
+</script>
+</body>
+</html>

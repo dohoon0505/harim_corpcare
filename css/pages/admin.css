@@ -46,13 +46,6 @@
   border-radius: var(--r-md);
 }
 
-/* read-only field (e.g. accountId when editing a client) */
-.ofield__input.is-readonly {
-  background: var(--c-surface-3);
-  color: var(--c-text-muted);
-  cursor: not-allowed;
-}
-
 /* 3-check column header help row (settlement) */
 .admin-checkhdr {
   display: flex;

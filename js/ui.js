@@ -178,17 +178,20 @@ export function openLightbox({ src, alt = "", caption = "" } = {}) {
 
 /** Standard titled modal (ports Modal.tsx chrome): title bar + X + body slot.
  *  Any [data-action="close"] / [data-modal-close] element closes it. */
-export function simpleModal({ title, body, panelClass = "", onClose } = {}) {
+export function simpleModal({ title, subtitle, body, footer, size = "sm", panelClass = "", onClose } = {}) {
+  const sizeClass = size ? `modal-panel--${size}` : "";
   const inner = html`
-    <div class="modal-head">
-      <h2 class="modal-title" id="modal-title">${title}</h2>
-      <button class="modal-close" data-action="close" data-modal-close aria-label="닫기">
-        ${icon("x", { size: 18 })}
-      </button>
+    <div class="hm__head">
+      <div>
+        <h3 id="modal-title">${title}</h3>
+        ${subtitle ? html`<p>${subtitle}</p>` : ""}
+      </div>
+      <button class="hm__x" data-action="close" data-modal-close aria-label="닫기">${icon("x", { size: 14 })}</button>
     </div>
-    <div class="modal-body">${body}</div>
+    <div class="hm__body">${body}</div>
+    ${footer ? html`<div class="hm__foot">${footer}</div>` : ""}
   `;
-  const m = openModal({ panelClass, body: inner, labelledBy: "modal-title", onClose });
+  const m = openModal({ panelClass: `${sizeClass} ${panelClass}`.trim(), body: inner, labelledBy: "modal-title", onClose });
   m.panel.addEventListener("click", (e) => {
     if (e.target.closest("[data-action='close']")) m.close();
   });

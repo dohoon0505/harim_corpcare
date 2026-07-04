@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>통일 모달 시스템 — USER · ADMIN 공통</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
+<style>
+  /* ============================================================
+     통일 모달 시스템 (HModal) — USER · ADMIN 공통 규격
+     현재 modal-panel--confirm/--cedit/--pnew/--pedit/--sample 등
+     변형 클래스가 난립 → 규격 1종 + 변형 3종(confirm/form/detail)으로 축소
+     ============================================================ */
+  :root{
+    --c-orange:#f15a2a; --c-orange-hover:#d94e24; --c-orange-ink:#d94000; --c-orange-soft:#fff1ec;
+    --c-blue:#4169e1; --c-blue-soft:#f0f3fd;
+    --c-dark:#111118; --c-bg:#f9f9f9; --c-surface-2:#f5f5f7;
+    --c-border:#e0e0e0; --c-border-strong:#d8d8d8; --c-border-input:#e3e3e3; --c-divider:#e8e8e8;
+    --c-text-strong:#111; --c-text:#222; --c-text-2:#444; --c-text-3:#555;
+    --c-text-muted:#888; --c-text-faint:#aaa;
+    --c-success:#2e7d32; --c-success-bg:#e8f5e9;
+    --c-danger:#c62828; --c-danger-bg:#ffebee;
+    --c-indigo:#4f46e5;
+    --r-md:6px; --r-lg:8px; --r-xl:10px;
+    --sh-btn:0 2px 8px rgba(241,90,42,.28);
+    --sh-modal:0 16px 50px rgba(17,17,24,.22);
+    --ring-field:0 0 0 3px rgba(79,70,229,.14);
+    --font:"Pretendard",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:var(--font); background:var(--c-bg); color:var(--c-text); font-size:15px; line-height:1.6; -webkit-font-smoothing:antialiased; letter-spacing:-.011em;}
+  button{font-family:inherit; letter-spacing:inherit; cursor:pointer; border:none; background:none; color:inherit;}
+  input,select,textarea{font-family:inherit; letter-spacing:inherit; color:var(--c-text);}
+  .num{font-variant-numeric:tabular-nums;}
+
+  .gd{max-width:1020px; margin:0 auto; padding:48px 40px 120px;}
+  .gd h1{font-size:24px; font-weight:700; color:var(--c-text-strong); letter-spacing:-.02em;}
+  .gd .lead{font-size:13.5px; color:var(--c-text-muted); margin-top:8px; max-width:720px;}
+  .gd h2{font-size:17px; font-weight:700; color:var(--c-text-strong); margin:44px 0 12px; padding-top:22px; border-top:1px solid var(--c-border);}
+  .spec{width:100%; border-collapse:collapse; font-size:12.5px; background:#fff;}
+  .spec th{text-align:left; font-size:11.5px; color:var(--c-text-3); background:var(--c-surface-2); padding:8px 12px; border:1px solid var(--c-border);}
+  .spec td{padding:8px 12px; border:1px solid var(--c-divider); color:var(--c-text-2); vertical-align:top;}
+  .spec td:first-child{font-weight:600; color:var(--c-text-strong); white-space:nowrap;}
+  .spec code{background:var(--c-surface-2); border-radius:4px; padding:1px 6px; font-size:11px;}
+  .demo-row{display:flex; flex-wrap:wrap; gap:10px; margin-top:6px;}
+  .demo-btn{height:44px; padding:0 18px; border-radius:var(--r-xl); background:#fff; border:1px solid var(--c-border-strong); font-size:14px; font-weight:600; color:var(--c-text-2); transition:all .13s;}
+  .demo-btn:hover{border-color:var(--c-text-muted); background:var(--c-bg);}
+
+  /* ══════════ HModal — 통일 규격 ══════════ */
+  .hm-overlay{position:fixed; inset:0; background:rgba(17,17,24,.45); display:none; align-items:center; justify-content:center; z-index:60; padding:24px;}
+  .hm-overlay.show{display:flex;}
+  .hm{width:var(--hm-w,480px); max-width:100%; max-height:88vh; overflow-y:auto;
+    background:#fff; border-radius:12px; box-shadow:var(--sh-modal); animation:hmPop .18s ease;}
+  @keyframes hmPop{from{opacity:0; transform:scale(.97) translateY(4px);} to{opacity:1; transform:none;}}
+  .hm--sm{--hm-w:400px;} .hm--md{--hm-w:480px;} .hm--lg{--hm-w:640px;}
+  /* 헤더: 타이틀 + 설명 + 닫기 — 전 모달 공통 */
+  .hm__head{display:flex; align-items:flex-start; justify-content:space-between; gap:12px; padding:22px 24px 0;}
+  .hm__head h3{font-size:17px; font-weight:700; color:var(--c-text-strong); letter-spacing:-.01em;}
+  .hm__head p{font-size:12.5px; color:var(--c-text-muted); margin-top:4px;}
+  .hm__x{width:30px; height:30px; flex:0 0 30px; border-radius:var(--r-lg); display:grid; place-items:center; color:var(--c-text-muted); font-size:14px; margin:-4px -6px 0 0;}
+  .hm__x:hover{background:var(--c-surface-2);}
+  /* 바디 */
+  .hm__body{padding:18px 24px 4px;}
+  /* 푸터: 우측 정렬 · 취소(좌) + 주 행동(우) 최대 2개 */
+  .hm__foot{display:flex; gap:8px; padding:18px 24px 22px;}
+  .hm__foot .hm-btn{flex:1;}
+  .hm-btn{display:inline-flex; align-items:center; justify-content:center; gap:7px; height:46px; padding:0 18px;
+    border-radius:var(--r-xl); font-size:14px; font-weight:700; transition:background .14s, border-color .14s;}
+  .hm-btn--primary{background:var(--c-orange); color:#fff; box-shadow:var(--sh-btn);}
+  .hm-btn--primary:hover{background:var(--c-orange-hover);}
+  .hm-btn--secondary{background:#fff; border:1px solid var(--c-border-strong); color:var(--c-text-2); font-weight:600;}
+  .hm-btn--secondary:hover{border-color:var(--c-text-muted); background:var(--c-bg);}
+  .hm-btn--danger{background:var(--c-danger); color:#fff;}
+  .hm-btn--danger:hover{background:#a82020;}
+  /* 파괴적 확인: 헤더 아이콘 없이 레드 워시 배너로 위험 전달 */
+  .hm-warn{display:flex; gap:9px; background:var(--c-danger-bg); border-radius:var(--r-lg); padding:12px 14px; font-size:13px; color:var(--c-text-2); line-height:1.6;}
+  .hm-warn b{color:var(--c-danger);}
+  .hm-info{display:flex; gap:9px; background:var(--c-blue-soft); border-radius:var(--r-lg); padding:12px 14px; font-size:13px; color:var(--c-text-2); line-height:1.6;}
+  .hm-info b{color:var(--c-blue);}
+  /* 폼 필드 (인디고 포커스 — 기존 Text Field) */
+  .hm-field{margin-bottom:16px;}
+  .hm-field label{display:block; font-size:13px; font-weight:600; color:var(--c-text-2); margin-bottom:7px;}
+  .hm-field label .req{color:var(--c-danger); margin-left:2px;}
+  .hm-input{width:100%; height:48px; padding:0 15px; font-size:14.5px; background:#fff;
+    border:1px solid var(--c-border-input); border-radius:var(--r-lg); transition:border-color .15s, box-shadow .15s;}
+  .hm-input::placeholder{color:var(--c-text-faint);}
+  .hm-input:focus{outline:none; border-color:var(--c-indigo); box-shadow:var(--ring-field);}
+  .hm-grid2{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+  .hm-help{font-size:11.5px; color:var(--c-text-muted); margin-top:6px;}
+  /* 상세 — 현행 Split 모달(세로형 2:3 이미지 + 정보 2단) 기반 */
+  .hm--split{--hm-w:700px; padding:0; overflow:hidden;}
+  .hm-split{display:flex; align-items:stretch; max-height:480px;}
+  .hm-split__media{position:relative; flex:0 0 320px; aspect-ratio:2/3; align-self:flex-start;
+    background:linear-gradient(160deg,#3a3f4a 0%,#23262e 60%,#191b20 100%);
+    border-right:1px solid var(--c-border); border-radius:12px 0 0 12px; overflow:hidden;
+    display:grid; place-items:center; color:#8b8f99; font-size:12.5px; cursor:zoom-in; border-top:0; border-bottom:0; border-left:0;}
+  .hm-split__zoom{position:absolute; right:10px; bottom:10px; display:inline-flex; align-items:center; gap:5px;
+    padding:5px 10px; border-radius:999px; background:rgba(17,17,17,.55); color:#fff; font-size:12px;
+    opacity:0; transition:opacity .15s; pointer-events:none;}
+  .hm-split__media:hover .hm-split__zoom{opacity:1;}
+  .hm-split__body{flex:1; min-width:0; display:flex; flex-direction:column; min-height:0;}
+  .hm-split__body .hm__head{padding:20px 22px 0;}
+  .hm-split__scroll{flex:1; min-height:0; overflow-y:auto; padding:14px 22px 0;}
+  .hm-split__body .hm__foot{padding:14px 22px 18px;}
+  .hm-dl{border-top:1px solid var(--c-divider);}
+  .hm-dl .row{display:flex; gap:14px; padding:10px 2px; border-bottom:1px solid var(--c-divider); font-size:13.5px;}
+  .hm-dl .k{flex:0 0 96px; color:var(--c-text-muted);}
+  .hm-dl .v{flex:1; color:var(--c-text-2); font-weight:500;}
+  .hm-dl .v.amt{color:var(--c-orange-ink); font-weight:700; font-size:15px;}
+  .hm-badge{display:inline-flex; font-size:12px; font-weight:700; padding:3px 10px; border-radius:999px;}
+  .hm-badge--info{background:var(--c-blue-soft); color:var(--c-blue);}
+  /* 성공 */
+  .hm-success{text-align:center; padding-top:8px;}
+  .hm-success .ic{width:58px; height:58px; margin:0 auto 14px; border-radius:50%; background:var(--c-success-bg); color:var(--c-success); display:grid; place-items:center; font-size:25px;}
+  .hm-success h4{font-size:18px; font-weight:700; color:var(--c-text-strong);}
+  .hm-success p{font-size:13px; color:var(--c-text-muted); margin-top:6px;}
+</style>
+</head>
+<body>
+<div class="gd">
+  <h1>통일 모달 시스템 — USER · ADMIN 공통</h1>
+  <p class="lead">현재 USER(프로필·주문내역·상품·명세서)와 ADMIN(계열사 관리)의 모달이 변형 클래스별로 톤이 제각각입니다.
+  아래 규격 1종 + 변형 3종(확인 · 폼 · 상세)으로 통합하고, 기존 <code style="background:#f5f5f7;border-radius:4px;padding:1px 6px;font-size:11.5px;">modal-panel--*</code> 변형은 전부 이 규격으로 흡수합니다.
+  버튼을 눌러 각 유형을 직접 확인하세요.</p>
+
+  <h2>공통 규격</h2>
+  <table class="spec">
+    <tr><th style="width:130px;">속성</th><th>값</th></tr>
+    <tr><td>오버레이</td><td><code>rgba(17,17,24,.45)</code> 잉크 딤 · 딤 클릭/ESC 닫기 · 포커스 트랩(기존 ui.js openModal 유지)</td></tr>
+    <tr><td>패널</td><td>라디우스 <b>12px</b> · <code>--sh-modal</code> · 등장 애니메이션 .18s(scale .97→1) · 사이즈 S 400 / M 480(기본) / L 640</td></tr>
+    <tr><td>헤더</td><td>타이틀 17/700 + 설명 12.5 muted + 우측 X(30px, hover 그레이 필). <b>이모지·아이콘 박스 금지</b> — 위험·안내는 배너로 전달</td></tr>
+    <tr><td>푸터</td><td>버튼 높이 46 · 좌 취소(Secondary) + 우 주 행동(Primary 오렌지 1개) · 파괴적 행동은 <b>Danger 레드 솔리드</b> + 레드 워시 경고 배너 필수</td></tr>
+    <tr><td>폼 필드</td><td>높이 48 · 라디우스 8 · 포커스 = 인디고 보더 + <code>--ring-field</code> (기존 Text Field 규격)</td></tr>
+    <tr><td>상세 뷰</td><td><b>현행 Split 모달 유지</b> — 세로형(2:3, 320px) 이미지 좌측 고정 + 우측 정보 스크롤 + 확대(라이트박스). 정의 리스트(라벨 96px), 금액 오렌지 잉크, 상태 배지</td></tr>
+    <tr><td>아이콘 규칙</td><td><b>이모지·장식 아이콘 금지.</b> 기능적 표식만 SVG 허용 — 닫기(X), 확대(돋보기), 성공 체크. 배너는 색 + 볼드 리드로 위험/안내 전달</td></tr>
+  </table>
+
+  <h2>유형별 데모 (USER · ADMIN 동일)</h2>
+  <div class="demo-row">
+    <button class="demo-btn" data-open="m1">① 확인 — 계산서 발급 동의 (USER)</button>
+    <button class="demo-btn" data-open="m2">② 파괴적 — 계열사 삭제 (ADMIN)</button>
+    <button class="demo-btn" data-open="m3">③ 폼 — 신규 담당자 등록 (USER)</button>
+    <button class="demo-btn" data-open="m4">④ 상세 — 주문 상세정보 (USER)</button>
+    <button class="demo-btn" data-open="m5">⑤ 폼 L — 계열사 정보 수정 (ADMIN)</button>
+    <button class="demo-btn" data-open="m6">⑥ 성공 — 접수 완료</button>
+  </div>
+</div>
+
+<!-- ① 확인 -->
+<div class="hm-overlay" id="m1"><div class="hm hm--sm">
+  <div class="hm__head"><div><h3>계산서 발급에 동의할까요?</h3></div><button class="hm__x" data-close aria-label="닫기"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div>
+  <div class="hm__body"><div class="hm-info"><span><b>2026년 04월 결제금액 585,000원</b>으로 세금계산서가 발급됩니다. 동의 후에는 내용을 변경할 수 없습니다.</span></div></div>
+  <div class="hm__foot"><button class="hm-btn hm-btn--secondary" data-close>취소</button><button class="hm-btn hm-btn--primary" data-close>동의합니다</button></div>
+</div></div>
+
+<!-- ② 파괴적 -->
+<div class="hm-overlay" id="m2"><div class="hm hm--sm">
+  <div class="hm__head"><div><h3>계열사를 삭제할까요?</h3><p>(주)하림 · harim01</p></div><button class="hm__x" data-close aria-label="닫기"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div>
+  <div class="hm__body"><div class="hm-warn"><span><b>삭제한 계정은 되돌릴 수 없습니다.</b> 해당 계열사의 접속이 즉시 차단되며, 과거 정산 이력은 보존됩니다.</span></div></div>
+  <div class="hm__foot"><button class="hm-btn hm-btn--secondary" data-close>취소</button><button class="hm-btn hm-btn--danger" data-close>삭제</button></div>
+</div></div>
+
+<!-- ③ 폼 -->
+<div class="hm-overlay" id="m3"><div class="hm hm--md">
+  <div class="hm__head"><div><h3>신규 담당자 등록</h3><p>주문 진행과 알림 수신에 사용됩니다.</p></div><button class="hm__x" data-close aria-label="닫기"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div>
+  <div class="hm__body">
+    <div class="hm-grid2">
+      <div class="hm-field"><label>성함 <span class="req">*</span></label><input class="hm-input" placeholder="예) 한다운" /></div>
+      <div class="hm-field"><label>부서·직위</label><input class="hm-input" placeholder="예) 비서" /></div>
+    </div>
+    <div class="hm-field"><label>연락처 <span class="req">*</span></label><input class="hm-input" placeholder="010-0000-0000" /><p class="hm-help">배송완료 문자 수신에 사용됩니다.</p></div>
+  </div>
+  <div class="hm__foot"><button class="hm-btn hm-btn--secondary" data-close>취소</button><button class="hm-btn hm-btn--primary" data-close>등록</button></div>
+</div></div>
+
+<!-- ④ 상세 — 현행 Split 모달(세로형 이미지) 기반 재정리 -->
+<div class="hm-overlay" id="m4"><div class="hm hm--split">
+  <div class="hm-split">
+    <button class="hm-split__media" aria-label="배송 사진 크게 보기">
+      <span>배송 완료 현장사진 (320 × 480)</span>
+      <span class="hm-split__zoom"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="m20 20-3.5-3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>크게 보기</span>
+    </button>
+    <div class="hm-split__body">
+      <div class="hm__head"><div><p style="font-size:12px;color:var(--c-text-muted);margin:0 0 2px;">주문 상세정보</p><h3>근조 3단화환 (고급)</h3></div>
+        <div style="display:flex; align-items:center; gap:8px;"><span class="hm-badge hm-badge--info">주문접수</span>
+        <button class="hm__x" data-close aria-label="닫기"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div></div>
+      <div class="hm-split__scroll">
+        <div class="hm-dl">
+          <div class="row"><span class="k">담당자</span><span class="v">김총무</span></div>
+          <div class="row"><span class="k">배송요청일시</span><span class="v num">2026/06/16 14:30</span></div>
+          <div class="row"><span class="k">배송주소</span><span class="v">서울 종로구 대학로 101 서울대학교병원 장례식장 5호실</span></div>
+          <div class="row"><span class="k">발송 프로필</span><span class="v">홍길동</span></div>
+          <div class="row"><span class="k">주문상품</span><span class="v">근조 3단화환 (고급)</span></div>
+          <div class="row"><span class="k">주문금액</span><span class="v amt num">100,000원</span></div>
+        </div>
+      </div>
+      <div class="hm__foot"><button class="hm-btn hm-btn--primary" data-close style="flex:1;">닫기</button></div>
+    </div>
+  </div>
+</div></div>
+
+<!-- ⑤ 폼 L (ADMIN) -->
+<div class="hm-overlay" id="m5"><div class="hm hm--lg">
+  <div class="hm__head"><div><h3>계열사 정보 수정</h3><p>접속 계정과 정산 기본 정보를 관리합니다.</p></div><button class="hm__x" data-close aria-label="닫기"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div>
+  <div class="hm__body">
+    <div class="hm-grid2">
+      <div class="hm-field"><label>계열사명 <span class="req">*</span></label><input class="hm-input" value="(주)하림" /></div>
+      <div class="hm-field"><label>접속 아이디</label><input class="hm-input" value="harim01" disabled style="background:var(--c-surface-2); color:var(--c-text-faint);" /></div>
+      <div class="hm-field"><label>담당자명</label><input class="hm-input" value="홍길동" /></div>
+      <div class="hm-field"><label>담당자 연락처</label><input class="hm-input num" value="010-7615-2699" /></div>
+    </div>
+    <div class="hm-field"><label>계산서 이메일</label><input class="hm-input" value="admin@harim.com" /></div>
+  </div>
+  <div class="hm__foot"><button class="hm-btn hm-btn--secondary" data-close>취소</button><button class="hm-btn hm-btn--primary" data-close>저장</button></div>
+</div></div>
+
+<!-- ⑥ 성공 -->
+<div class="hm-overlay" id="m6"><div class="hm hm--sm">
+  <div class="hm__body hm-success" style="padding-top:26px;">
+    <div class="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12.5 10 17.5 19 7" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <h4>주문이 접수되었습니다!</h4>
+    <p>실시간 주문내역에서 진행 상황을 확인할 수 있습니다.</p>
+  </div>
+  <div class="hm__foot"><button class="hm-btn hm-btn--secondary" data-close>확인</button><button class="hm-btn hm-btn--primary" data-close>주문내역 보기</button></div>
+</div></div>
+
+<script>
+document.addEventListener("click", (e) => {
+  const o = e.target.closest("[data-open]");
+  if (o) { document.getElementById(o.dataset.open).classList.add("show"); return; }
+  if (e.target.classList.contains("hm-overlay")) { e.target.classList.remove("show"); return; }
+  const c = e.target.closest("[data-close]");
+  if (c) c.closest(".hm-overlay").classList.remove("show");
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") document.querySelectorAll(".hm-overlay.show").forEach((o) => o.classList.remove("show"));
+});
+</script>
+</body>
+</html>
