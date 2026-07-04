@@ -119,7 +119,7 @@ export function mount(root, { nav }) {
           <p class="headline">${headline}</p>
           <div class="bars" role="img" aria-label="최근 6개월 이용금액 추이">
             ${r.trend.map((t) => {
-              const h = Math.max(6, Math.round((t.total / max) * 104));
+              const h = Math.max(10, Math.round((t.total / max) * 188));
               return html`<div class="bar ${t.isCurrent ? "cur" : ""}"><span class="bar__v num">${t.total === 0 ? "—" : man(t.total)}</span><span class="bar__c" style="height:${h}px"></span><span class="bar__l">${t.short}</span></div>`;
             })}
           </div>

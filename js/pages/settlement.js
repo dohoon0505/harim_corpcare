@@ -23,8 +23,8 @@ const settlementData = [
   { id: "F613G298", 발행일: "2026. 01. 01", 정산기한: "2026. 01. 31", 청구내역: "2025년 12월 경조화환 이용대금 청구", 청구년월: "2025년 12월", 정산금액: "700,000원", 입금자: "홍길동", 계산서발급: "발급완료", 정산확인: "정산완료" },
 ];
 
-const COL = "118px 120px 120px 1fr 120px 70px 200px 100px 100px";
-const HEADERS = ["문서 번호", "청구서 발행일", "정산 기한", "청구 내역", "정산금액", "입금자", "거래명세서", "계산서발급", "정산확인"];
+const COL = "118px 120px 120px 1fr 120px 200px 100px 100px";
+const HEADERS = ["문서 번호", "청구서 발행일", "정산 기한", "청구 내역", "정산금액", "거래명세서", "계산서발급", "정산확인"];
 
 const invoiceBadge = (t) =>
   t === "동의하기"
@@ -101,7 +101,6 @@ export function mount(root, { nav }) {
                   <div class="settle-td settle-td--muted">${r.정산기한}</div>
                   <div class="settle-td settle-td--clip"><p class="ellipsis">${r.청구내역}</p></div>
                   <div class="settle-td"><span class="settle-amount">${r.정산금액}</span></div>
-                  <div class="settle-td settle-td--muted">${r.입금자}</div>
                   <div class="settle-td"><button class="settle-link" data-action="invoice">${r.청구년월} 명세서 조회 ${icon("external-link", { size: 11 })}</button></div>
                   <div class="settle-td">${invoiceBadge(r.계산서발급)}</div>
                   <div class="settle-td">${settleBadge(r.정산확인)}</div>
