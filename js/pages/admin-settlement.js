@@ -19,7 +19,7 @@ import { invoiceDoc, printInvoiceDoc } from "../invoice-doc.js";
 import { reportDoc } from "../report-doc.js";
 
 const COL = "minmax(180px,1fr) 110px 110px 110px 110px 116px 128px";
-const HEADERS = ["계열사", "청구금액", "거래명세서", "계산서 발급", "거래대금", "공개 링크", "명세서 다운로드"];
+const HEADERS = ["계열사", "청구금액", "거래명세서", "계산서 발급", "거래대금", "접속 링크", "명세서 다운로드"];
 const STATUS_TABS = [
   { value: "all", label: "전체" },
   { value: "pending", label: "미완료" },
@@ -121,29 +121,22 @@ export function mount(root, { nav }) {
 
   /* ── ② 인사이트 헤드라인 + 6개월 추이 막대차트 ── */
   function insightCard(r) {
-    let headline, face;
+    let headline;
     if (r.deltaTotal == null) {
       headline = html`<b>${state.month}월</b> 총 이용금액은 <b class="num">${won(r.total)}</b>이에요`;
-      face = "🙂";
     } else if (r.deltaTotal === 0) {
-      headline = html`총 이용금액이 지난달과<br /><b class="num">같아요</b> (${won(r.total)})`;
-      face = "🙂";
+      headline = html`총 이용금액이 지난달과 <b class="num">같아요</b> (${won(r.total)})`;
     } else if (r.deltaTotal > 0) {
       headline = html`총 이용금액이 지난달보다<br /><b class="num up">${won(r.deltaTotal)}</b> 늘었어요`;
-      face = "😊";
     } else {
       headline = html`총 이용금액이 지난달보다<br /><b class="num down">${won(Math.abs(r.deltaTotal))}</b> 줄었어요`;
-      face = "😥";
     }
     const max = Math.max(...r.trend.map((t) => t.total), 1);
     return html`
       <div class="adash-card adash-insight">
         <div class="adash-insight__head">
-          <div>
-            <p class="adash-insight__headline">${headline}</p>
-            <p class="adash-insight__sub">최근 6개월 · 만원 단위</p>
-          </div>
-          <span class="adash-insight__face" aria-hidden="true">${face}</span>
+          <p class="adash-insight__headline">${headline}</p>
+          <p class="adash-insight__sub">최근 6개월 · 만원 단위</p>
         </div>
         <div class="adash-bars" role="img" aria-label="최근 6개월 이용금액 추이">
           ${r.trend.map((t) => {
@@ -336,7 +329,7 @@ export function mount(root, { nav }) {
       html`
         <div class="page-admin">
           <div class="admin-inner">
-            ${pageTitle({ imgSrc: "./assets/nav-accounting.png", title: "계열사 분리정산" })}
+            ${pageTitle({ imgSrc: "./assets/nav-accounting.png", title: "계열사 정산지원" })}
             <div class="orders-filters">
               <div class="orders-frow orders-frow--1">
                 <div class="orders-fgroup">
@@ -409,8 +402,8 @@ export function mount(root, { nav }) {
     const url = publicInvoiceUrl(token);
     const span = t.querySelector("span");
     const flash = () => { if (span) { span.textContent = "복사됨!"; setTimeout(() => { if (span) span.textContent = "링크 복사"; }, 1600); } };
-    if (navigator.clipboard?.writeText) navigator.clipboard.writeText(url).then(flash).catch(() => window.prompt("공개 링크", url));
-    else window.prompt("공개 링크", url);
+    if (navigator.clipboard?.writeText) navigator.clipboard.writeText(url).then(flash).catch(() => window.prompt("접속 링크", url));
+    else window.prompt("접속 링크", url);
   });
   // 명세서 PDF 즉시 다운로드: doc을 off-DOM으로 렌더 → printInvoiceDoc(새 창 인쇄 → PDF 저장)
   const offDownload = on(root, "click", "[data-action='download']", (e, t) => {

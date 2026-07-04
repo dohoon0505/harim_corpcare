@@ -168,14 +168,8 @@ export function buildMonthlyReport({ year, month, clients, usage, settlements, c
       insights.push(`항목 구성에서는 ${shifted.key} 비중이 전월 대비 ${shifted.shiftPp > 0 ? "+" : ""}${shifted.shiftPp}%p ${shifted.shiftPp > 0 ? "확대" : "축소"}되었습니다.`);
     }
   }
-  if (settle.count) {
-    let s = `정산 완료율(입금 기준)은 ${settle.paidRate}%(${settle.paid}/${settle.count})입니다.`;
-    if (settle.unpaidAmount > 0) {
-      const names = settle.unpaidNames.slice(0, 3).join(", ") + (settle.unpaidNames.length > 3 ? " 외" : "");
-      s += ` 미입금 총액은 ${wonFmt(settle.unpaidAmount)}(${names})로 입금 안내가 필요합니다.`;
-    }
-    insights.push(s);
-  }
+  /* 정산 완료율은 대시보드 '정산 진행 현황' 카드·리포트 KPI 에 이미 노출되므로
+     분석 코멘트에서는 중복 제외한다(요청 반영). */
 
   return {
     label, prevLabel, hasPrev,

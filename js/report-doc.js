@@ -15,10 +15,10 @@ const C = {
 const DONUT_COLORS = ["#4169e1", "#f15a2a", "#4caf50", "#ff9800", "#8b5cf6"];
 
 const S = {
-  section: `margin:0 0 6px;font-size:12px;font-weight:700;color:${C.ink};padding-bottom:4px;border-bottom:2px solid #333;`,
-  table: `width:100%;border-collapse:collapse;table-layout:fixed;border:1px solid ${C.border};font-size:11.5px;font-family:Pretendard,sans-serif;`,
-  th: `background:${C.head};padding:6px 10px;font-weight:600;color:${C.sub};border:1px solid ${C.border};text-align:center;line-height:1.4;white-space:nowrap;`,
-  td: `padding:5px 10px;color:#333;border:1px solid ${C.border};line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;`,
+  section: `margin:0 0 11px;font-size:13px;font-weight:700;color:${C.ink};padding-bottom:6px;border-bottom:2px solid #333;`,
+  table: `width:100%;border-collapse:collapse;table-layout:fixed;border:1px solid ${C.border};font-size:12px;font-family:Pretendard,sans-serif;`,
+  th: `background:${C.head};padding:8px 12px;font-weight:600;color:${C.sub};border:1px solid ${C.border};text-align:center;line-height:1.4;white-space:nowrap;`,
+  td: `padding:6px 12px;color:#333;border:1px solid ${C.border};line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;`,
 };
 
 const won = (n) => Number(n).toLocaleString("ko-KR") + "원";
@@ -30,32 +30,6 @@ function deltaSpan(delta, suffix = "원") {
   if (delta === 0) return `<span style="color:${C.muted}">±0${suffix}</span>`;
   const up = delta > 0;
   return `<span style="color:${up ? C.up : C.down};font-weight:600">${up ? "▲" : "▼"} ${Math.abs(delta).toLocaleString("ko-KR")}${suffix}</span>`;
-}
-
-/* ── 월별 추이 막대차트 (인라인 SVG) ── */
-function trendSvg(trend) {
-  const W = 706, H = 110, top = 19, bottom = 23;
-  const chartH = H - top - bottom;
-  const max = Math.max(...trend.map((t) => t.total), 1);
-  const bw = 54, gap = (W - bw * trend.length) / (trend.length + 1);
-  const bars = trend
-    .map((t, i) => {
-      const h = Math.max(4, Math.round((t.total / max) * chartH));
-      const x = Math.round(gap + i * (bw + gap));
-      const y = top + chartH - h;
-      const fill = t.isCurrent ? C.blue : C.rest;
-      const valColor = t.isCurrent ? C.blue : "#8a8f9c";
-      const lblColor = t.isCurrent ? C.blue : C.muted;
-      const lblWeight = t.isCurrent ? 700 : 500;
-      return (
-        `<rect x="${x}" y="${y}" width="${bw}" height="${h}" rx="7" fill="${fill}"/>` +
-        `<text x="${x + bw / 2}" y="${y - 7}" text-anchor="middle" font-size="11.5" font-weight="600" fill="${valColor}">${t.total === 0 ? "—" : man(t.total)}</text>` +
-        `<text x="${x + bw / 2}" y="${H - 8}" text-anchor="middle" font-size="11" font-weight="${lblWeight}" fill="${lblColor}">${t.short}</text>`
-      );
-    })
-    .join("");
-  return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="display:block;font-family:Pretendard,sans-serif">` +
-    `<line x1="0" y1="${top + chartH + 0.5}" x2="${W}" y2="${top + chartH + 0.5}" stroke="${C.divider}"/>` + bars + `</svg>`;
 }
 
 /* ── 항목 비중 도넛 (인라인 SVG) ── */
@@ -82,15 +56,15 @@ function donutSvg(catStats, total) {
 /* ── KPI 요약 박스 4개 ── */
 function kpiBoxes(r) {
   const box = (lbl, val, sub) => `
-    <div style="flex:1;border:1px solid ${C.border};border-radius:8px;padding:10px 14px;background:#fff">
-      <p style="margin:0 0 5px;font-size:11px;color:${C.muted}">${lbl}</p>
-      <p style="margin:0;font-size:16px;font-weight:700;color:${C.ink};letter-spacing:-0.02em">${val}</p>
-      <p style="margin:4px 0 0;font-size:10.5px;line-height:1.4">${sub}</p>
+    <div style="flex:1;border:1px solid ${C.border};border-radius:10px;padding:14px 16px;background:${C.zebra}">
+      <p style="margin:0 0 7px;font-size:11.5px;color:${C.muted}">${lbl}</p>
+      <p style="margin:0;font-size:19px;font-weight:700;color:${C.ink};letter-spacing:-0.02em">${val}</p>
+      <p style="margin:6px 0 0;font-size:11px;line-height:1.4">${sub}</p>
     </div>`;
   const vs = (delta, suffix) =>
     delta == null ? `<span style="color:${C.faint}">전월 데이터 없음</span>` : `지난달보다 ${deltaSpan(delta, suffix)}`;
   return `
-    <div style="display:flex;gap:10px;margin-bottom:14px">
+    <div style="display:flex;gap:12px;margin-bottom:18px">
       ${box("총 이용금액", won(r.total), vs(r.deltaTotal, "원"))}
       ${box("주문 건수", `${r.orders}건`, vs(r.deltaOrders, "건"))}
       ${box("이용 계열사", `${r.activeClients}곳`, `<span style="color:${C.muted}">전체 ${r.clientCount}곳 중</span>`)}
@@ -129,39 +103,33 @@ export function reportDoc(r, generatedAt) {
   const insightItems = r.insights
     .map(
       (t, i) => `
-      <li style="margin:0 0 5px;line-height:1.5">
-        <span style="display:inline-block;min-width:17px;height:17px;border-radius:50%;background:#fff1ec;color:${C.orangeInk};font-size:10.5px;font-weight:700;text-align:center;line-height:17px;margin-right:7px">${i + 1}</span>${escapeHtml(t)}
+      <li style="margin:0 0 10px;line-height:1.6;display:flex;gap:9px;align-items:flex-start">
+        <span style="flex:0 0 19px;height:19px;border-radius:50%;background:#fff1ec;color:${C.orangeInk};font-size:11px;font-weight:700;text-align:center;line-height:19px">${i + 1}</span><span>${escapeHtml(t)}</span>
       </li>`
     )
     .join("");
 
   return html`
-    <div class="report-doc" style="width:794px;min-height:1123px;background:#fff;font-family:Pretendard,sans-serif;font-size:12px;color:#333;padding:30px 44px 24px;box-sizing:border-box;display:flex;flex-direction:column;">
+    <div class="report-doc" style="width:794px;min-height:1123px;background:#fff;font-family:Pretendard,sans-serif;font-size:12px;color:#333;padding:36px 48px 26px;box-sizing:border-box;display:flex;flex-direction:column;">
       <!-- 헤더 -->
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px;padding-bottom:14px;border-bottom:1px solid ${C.divider}">
         <div>
-          <p style="margin:0 0 4px;font-size:13px;font-weight:700;color:${C.orange};white-space:nowrap">하림그룹 경조화환 시스템 · ADMIN</p>
-          <p style="margin:0;font-size:18px;font-weight:700;color:${C.ink}">${r.label} 계열사 이용 분석 리포트</p>
+          <p style="margin:0 0 5px;font-size:13px;font-weight:700;color:${C.orange};white-space:nowrap">하림그룹 경조화환 시스템 · ADMIN</p>
+          <p style="margin:0;font-size:20px;font-weight:700;color:${C.ink}">${r.label} 계열사 이용 분석 리포트</p>
         </div>
         <div style="text-align:right">
           <p style="margin:0;font-size:12px;font-weight:600;color:${C.muted}">${r.label} 귀속</p>
-          <p style="margin:3px 0 0;font-size:11px;color:${C.faint}">생성 ${generatedAt}</p>
+          <p style="margin:4px 0 0;font-size:11px;color:${C.faint}">생성 ${generatedAt}</p>
         </div>
       </div>
 
       ${raw(kpiBoxes(r))}
 
-      <!-- 월별 추이 -->
-      <div style="margin-bottom:14px">
-        <p style="${S.section}">월별 이용금액 추이 <span style="font-weight:400;color:${C.faint};font-size:11px">· 만원 단위 · 최근 6개월</span></p>
-        ${raw(trendSvg(r.trend))}
-      </div>
-
       <!-- 계열사별 -->
-      <div style="margin-bottom:14px">
+      <div style="margin-bottom:19px">
         <p style="${S.section}">계열사별 이용 현황</p>
         <table style="${S.table}">
-          <colgroup><col style="width:40px" /><col /><col style="width:74px" /><col style="width:120px" /><col style="width:64px" /><col style="width:120px" /></colgroup>
+          <colgroup><col style="width:44px" /><col /><col style="width:78px" /><col style="width:124px" /><col style="width:66px" /><col style="width:124px" /></colgroup>
           <thead><tr>
             <th style="${S.th}">순위</th><th style="${S.th}">계열사</th><th style="${S.th}">주문</th>
             <th style="${S.th}">이용금액</th><th style="${S.th}">비중</th><th style="${S.th}">전월 대비</th>
@@ -171,30 +139,30 @@ export function reportDoc(r, generatedAt) {
       </div>
 
       <!-- 항목별 (표 + 도넛) -->
-      <div style="margin-bottom:14px">
+      <div style="margin-bottom:19px">
         <p style="${S.section}">항목별 이용 현황</p>
-        <div style="display:flex;gap:18px;align-items:center">
+        <div style="display:flex;gap:24px;align-items:center">
           <table style="${S.table}flex:1;">
-            <colgroup><col /><col style="width:64px" /><col style="width:120px" /><col style="width:60px" /><col style="width:80px" /></colgroup>
+            <colgroup><col /><col style="width:66px" /><col style="width:124px" /><col style="width:62px" /><col style="width:82px" /></colgroup>
             <thead><tr>
               <th style="${S.th}">항목</th><th style="${S.th}">주문</th><th style="${S.th}">이용금액</th>
               <th style="${S.th}">비중</th><th style="${S.th}">비중 증감</th>
             </tr></thead>
             <tbody>${raw(catRows)}</tbody>
           </table>
-          <div style="flex:0 0 124px">${raw(donutSvg(r.catStats, r.total))}</div>
+          <div style="flex:0 0 140px">${raw(donutSvg(r.catStats, r.total))}</div>
         </div>
       </div>
 
       <!-- 분석 코멘트 -->
       <div style="margin-bottom:16px">
         <p style="${S.section}">분석 코멘트</p>
-        <ul style="margin:0;padding:2px 0 0;list-style:none;font-size:11.5px;color:#333">${raw(insightItems)}</ul>
+        <ul style="margin:0;padding:4px 0 0;list-style:none;font-size:12.5px;color:#333">${raw(insightItems)}</ul>
       </div>
 
       <!-- 푸터 -->
-      <p style="margin-top:auto;padding-top:10px;border-top:1px solid ${C.divider};font-size:10px;color:${C.faint};display:flex;justify-content:space-between">
-        <span>본 리포트는 계열사 분리정산 데이터로부터 자동 생성된 분석 자료입니다.</span>
+      <p style="margin-top:auto;padding-top:14px;border-top:1px solid ${C.divider};font-size:10.5px;color:${C.faint};display:flex;justify-content:space-between">
+        <span>본 리포트는 계열사 정산지원 데이터로부터 자동 생성된 분석 자료입니다.</span>
         <span>하림그룹 경조화환 시스템 · 관리자 콘솔</span>
       </p>
     </div>
