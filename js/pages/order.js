@@ -179,7 +179,7 @@ function markup() {
               </div>
               <button class="pick-btn" data-ribbon-pick type="button">${raw(PICK_SVG)}간편선택</button>
             </div>
-            <p class="warn-line"><b>접수 후에는 문구를 수정할 수 없어요.</b> 한 번 더 확인해 주세요.</p>
+            <p class="warn-line"><b>배송 시작 후 문구변경 시 비용이 청구될 수 있어요.</b> 한 번 더 확인해 주세요.</p>
           </div>
           <div class="sec-gap">
             <div class="sec-label">보내는분</div>
@@ -222,7 +222,7 @@ function markup() {
             <button class="btn-back" data-goto="3">이전</button>
             <button class="btn-next" data-submit>주문 접수하기</button>
           </div>
-          <p class="cta-hint">접수 후 리본 문구는 수정할 수 없어요 · 문의 02-0000-0000</p>
+          <p class="cta-hint">배송 시작 후 문구변경 시 비용이 청구될 수 있어요 · 문의 02-0000-0000</p>
         </section>
 
         <!-- 완료 -->
