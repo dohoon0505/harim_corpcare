@@ -6,7 +6,7 @@
    ============================================================ */
 import { html, raw, setHTML, on, qs, qsa } from "../dom.js";
 import { store, ALL_PRODUCTS, productKey } from "../store.js";
-import { pageTitle, makeDropdown, makeDatepicker } from "../ui.js";
+import { pageTitle, makeDropdown, makeDatepicker, simpleModal } from "../ui.js";
 
 /* ── 경조사 정의 (배너 · 카테고리 · 링크 안내문구) ───────────── */
 const OCC = {
@@ -23,7 +23,6 @@ const COMMON_PHRASES = [
   { group: "부고·근조", phrases: ["삼가 고인의 명복을 빕니다", "근조(謹弔)", "조의를 표합니다"] },
   { group: "결혼 축하", phrases: ["축 결혼(祝 結婚)", "화혼을 진심으로 축하드립니다", "행복한 새 출발을 축하합니다"] },
 ];
-const phrasesFor = (occ) => (occ === "wed" ? COMMON_PHRASES[1] : COMMON_PHRASES[0]).phrases;
 
 /* 부고장·청첩장 URL 데모 DB (경조사별) — 불러오기 시 배송지 자동입력 */
 const MOCK_URL_DB = {
@@ -49,6 +48,8 @@ const fmtYMD = (d) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.get
 
 const CHECK_SVG = `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12.5 10 17.5 19 7" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 const DONE_SVG = `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12.5 10 17.5 19 7" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+/* 간편선택 버튼 아이콘 (목록) */
+const PICK_SVG = `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="4.5" cy="6" r="1.4" fill="currentColor"/><circle cx="4.5" cy="12" r="1.4" fill="currentColor"/><circle cx="4.5" cy="18" r="1.4" fill="currentColor"/></svg>`;
 
 function markup() {
   return html`
@@ -171,17 +172,25 @@ function markup() {
           <p class="q-sub">왼쪽 리본에는 문구가, 오른쪽 리본에는 보내는분이 새겨져요.</p>
           <div class="sec-gap">
             <div class="sec-label">리본 문구</div>
-            <div class="ribbon-wrap">
-              <input type="text" data-ribbon-input maxlength="20" placeholder="문구를 입력하거나 아래에서 선택해 주세요" />
-              <span class="cnt num" data-ribbon-cnt>0/20</span>
+            <div class="rib-field">
+              <div class="ribbon-wrap">
+                <input type="text" data-ribbon-input maxlength="20" placeholder="문구를 직접 입력해 주세요" />
+                <span class="cnt num" data-ribbon-cnt>0/20</span>
+              </div>
+              <button class="pick-btn" data-ribbon-pick type="button">${raw(PICK_SVG)}간편선택</button>
             </div>
-            <div class="chips" data-chip-row></div>
             <p class="warn-line"><b>접수 후에는 문구를 수정할 수 없어요.</b> 한 번 더 확인해 주세요.</p>
           </div>
           <div class="sec-gap">
             <div class="sec-label">보내는분</div>
-            <div class="sender-list" data-sender-list></div>
-            <button class="sender-add" data-sender-add>＋ 새 명의 등록하기</button>
+            <div class="rib-field">
+              <div class="ribbon-wrap">
+                <input type="text" data-sender-input maxlength="30" placeholder="보내는분을 직접 입력해 주세요" />
+                <span class="cnt num" data-sender-cnt>0/30</span>
+              </div>
+              <button class="pick-btn" data-sender-pick type="button">${raw(PICK_SVG)}간편선택</button>
+            </div>
+            <p class="rib-hint">저장된 프로필에서 불러오거나, 직접 입력할 수 있어요.</p>
           </div>
           <div class="cta-row">
             <button class="btn-back" data-goto="2">이전</button>
@@ -236,7 +245,7 @@ export function mount(root, { nav }) {
   const state = {
     step: 1, maxStep: 1,
     occ: null, viaUrl: false,
-    product: null, ribbon: "", sender: null,
+    product: null, ribbon: "", sender: "",
     addr: "", toName: "", toPhone: "",
     immediate: false, date: "", hour: "09", min: "00",
     manager: 0,
@@ -303,7 +312,7 @@ export function mount(root, { nav }) {
     $("[data-prod-hint]").textContent = OCC[occ].label + " 상품";
     $("[data-ub-title]").textContent = OCC[occ].urlTitle;
     $("[data-url-input]").placeholder = OCC[occ].urlPh;
-    renderProducts(); renderChips(); refreshCtas();
+    renderProducts(); refreshCtas();
     reveal("url");
   }
   function renderProducts() {
@@ -390,25 +399,60 @@ export function mount(root, { nav }) {
     } else biz.classList.remove("show");
   }
 
-  /* ── STEP 3 · 리본문구 · 보내는분 ── */
-  function renderChips() {
-    setHTML($("[data-chip-row]"), html`
-      ${phrasesFor(state.occ).map((ph) => html`<button class="ochip ${state.ribbon === ph ? "sel" : ""}" data-chip="${ph}">${ph}</button>`)}
-    `);
-  }
+  /* ── STEP 3 · 리본문구 · 보내는분 (텍스트 입력 + 간편선택 모달) ── */
   function updateCnt() { $("[data-ribbon-cnt]").textContent = $("[data-ribbon-input]").value.length + "/20"; }
-  function renderSenders() {
+  function updateSenderCnt() { $("[data-sender-cnt]").textContent = $("[data-sender-input]").value.length + "/30"; }
+
+  let pickModal = null;
+  const closePick = () => { if (pickModal) { pickModal.close(); pickModal = null; } };
+
+  /* 리본 문구 간편선택 — 추천 문구 가이드 모달(직접입력과 병행) */
+  function openRibbonPick() {
+    closePick();
+    const body = html`
+      <p class="pick-intro">추천 문구를 선택하면 입력란에 채워져요. 이후 자유롭게 수정할 수 있어요.</p>
+      ${COMMON_PHRASES.map((g) => html`
+        <div class="pick-group">
+          <p class="pick-group__label">${g.group}</p>
+          <div class="pick-opts">
+            ${g.phrases.map((ph) => html`<button class="pick-opt ${state.ribbon === ph ? "sel" : ""}" data-pick-phrase="${ph}" type="button">${ph}</button>`)}
+          </div>
+        </div>
+      `)}
+    `;
+    pickModal = simpleModal({ title: "리본 문구 간편선택", panelClass: "modal-panel--pick", body, onClose: () => { pickModal = null; } });
+    on(pickModal.panel, "click", "[data-pick-phrase]", (e, t) => {
+      state.ribbon = t.dataset.pickPhrase;
+      $("[data-ribbon-input]").value = state.ribbon;
+      updateCnt(); refreshCtas(); closePick();
+    });
+  }
+
+  /* 보내는분 간편선택 — 저장된 프로필에서 불러오기(직접입력과 병행) */
+  function openSenderPick() {
+    closePick();
     const profiles = store.get().profiles;
-    setHTML($("[data-sender-list]"), html`
+    const body = html`
       ${profiles.length === 0
-        ? html`<div class="prod-empty">등록된 명의가 없습니다. 아래에서 새 명의를 등록해 주세요.</div>`
-        : profiles.map((p) => html`
-          <button class="sender-row ${state.sender && state.sender.no === p.no ? "sel" : ""}" data-sender="${p.no}">
-            <span class="radio"></span>
-            <span class="si"><b>${p.name} · ${p.role}</b><span>${p.greeting}</span></span>
-          </button>
-        `)}
-    `);
+        ? html`<div class="pick-empty">저장된 프로필이 없습니다.<br />아래에서 새 명의를 등록해 주세요.</div>`
+        : html`<div class="pick-senders">
+            ${profiles.map((p) => {
+              const text = (p.greeting && p.greeting.trim()) || `${p.role} ${p.name}`;
+              return html`<button class="pick-sender ${state.sender === text ? "sel" : ""}" data-pick-sender="${text}" type="button">
+                <span class="pick-sender__main"><b>${p.name}</b> · ${p.role}</span>
+                <span class="pick-sender__sub">${text}</span>
+              </button>`;
+            })}
+          </div>`}
+      <button class="pick-addprofile" data-pick-newprofile type="button">＋ 새 명의 등록하기</button>
+    `;
+    pickModal = simpleModal({ title: "보내는분 간편선택", panelClass: "modal-panel--pick", body, onClose: () => { pickModal = null; } });
+    on(pickModal.panel, "click", "[data-pick-sender]", (e, t) => {
+      state.sender = t.dataset.pickSender;
+      $("[data-sender-input]").value = state.sender;
+      updateSenderCnt(); refreshCtas(); closePick();
+    });
+    on(pickModal.panel, "click", "[data-pick-newprofile]", () => { closePick(); nav("#/app/profile"); });
   }
 
   /* ── STEP 4 · 확인 · 접수 ── */
@@ -434,7 +478,7 @@ export function mount(root, { nav }) {
         <span class="cv">${dateLabel()}</span>
         <button class="edit" data-goto="2">변경</button></div>
       <div class="cf-row"><span class="cl">리본 문구</span>
-        <span class="cv">${state.ribbon}<small>보내는분 · ${state.sender.name} ${state.sender.role}</small></span>
+        <span class="cv">${state.ribbon}<small>보내는분 · ${state.sender}</small></span>
         <button class="edit" data-goto="3">변경</button></div>
     `);
     $("[data-cf-amount]").textContent = p.price;
@@ -457,14 +501,14 @@ export function mount(root, { nav }) {
   /* ── 새 주문 작성하기: 페이지 재로드 없이 초기화 ── */
   function resetAll() {
     Object.assign(state, {
-      step: 1, maxStep: 1, occ: null, viaUrl: false, product: null, ribbon: "", sender: null,
+      step: 1, maxStep: 1, occ: null, viaUrl: false, product: null, ribbon: "", sender: "",
       addr: "", toName: "", toPhone: "", immediate: false, hour: "09", min: "00", manager: 0,
       notify: { recipient: true, sender: true, manager: true },
     });
     dpMin.setTime(Date.now()); dpMin.setHours(0, 0, 0, 0);
     dpMax.setTime(dpMin.getTime()); dpMax.setDate(dpMax.getDate() + 30);
     state.date = fmtYMD(new Date(dpMin.getTime() + 864e5));
-    ["[data-url-input]", "[data-f-addr]", "[data-f-toname]", "[data-f-tophone]", "[data-ribbon-input]"].forEach((s) => { $(s).value = ""; });
+    ["[data-url-input]", "[data-f-addr]", "[data-f-toname]", "[data-f-tophone]", "[data-ribbon-input]", "[data-sender-input]"].forEach((s) => { $(s).value = ""; });
     const msg = $("[data-url-msg]"); msg.className = "url-msg"; msg.textContent = "";
     $("[data-auto-chip]").classList.remove("show");
     $$("[data-reveal]").forEach((r) => r.classList.remove("show"));
@@ -473,7 +517,7 @@ export function mount(root, { nav }) {
     $$("[data-nt]").forEach((t) => t.classList.add("on"));
     setImmediate(false);
     ddHour.renderTrigger(); ddMin.renderTrigger(); dpDate.renderTrigger();
-    renderChips(); renderSenders(); updateCnt(); applyBizRule();
+    updateCnt(); updateSenderCnt(); applyBizRule();
     go(1);
   }
 
@@ -502,22 +546,16 @@ export function mount(root, { nav }) {
   bind("input", "[data-f-tophone]", (e, t) => onPhone(t));
   bind("click", '[data-seg="imm"]', () => setImmediate(true));
   bind("click", '[data-seg="sched"]', () => setImmediate(false));
-  bind("click", "[data-chip]", (e, t) => {
-    state.ribbon = t.dataset.chip;
-    $("[data-ribbon-input]").value = state.ribbon;
-    updateCnt(); renderChips(); refreshCtas();
-  });
+  bind("click", "[data-ribbon-pick]", openRibbonPick);
   bind("input", "[data-ribbon-input]", (e, t) => {
     state.ribbon = t.value.trim();
-    updateCnt();
-    $$("[data-chip]").forEach((c) => c.classList.toggle("sel", c.dataset.chip === state.ribbon));
-    refreshCtas();
+    updateCnt(); refreshCtas();
   });
-  bind("click", "[data-sender]", (e, t) => {
-    state.sender = store.get().profiles.find((p) => p.no === t.dataset.sender) || null;
-    renderSenders(); refreshCtas();
+  bind("click", "[data-sender-pick]", openSenderPick);
+  bind("input", "[data-sender-input]", (e, t) => {
+    state.sender = t.value.trim();
+    updateSenderCnt(); refreshCtas();
   });
-  bind("click", "[data-sender-add]", () => nav("#/app/profile"));
   bind("change", "[data-mgr-select]", (e, t) => { state.manager = +t.value; });
   bind("click", "[data-nt]", (e, t) => {
     const k = t.dataset.nt;
@@ -530,15 +568,15 @@ export function mount(root, { nav }) {
 
   /* ── 초기 렌더 ── */
   renderManagers();
-  renderChips();
-  renderSenders();
   updateCnt();
+  updateSenderCnt();
   refreshCtas();
   applyBizRule();
   const bizTimer = setInterval(applyBizRule, 60 * 1000);
 
   return () => {
     clearInterval(bizTimer);
+    closePick();
     ddHour.destroy(); ddMin.destroy(); dpDate.destroy();
     offs.forEach((off) => off());
   };
