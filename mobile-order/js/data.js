@@ -1,8 +1,7 @@
 /* eslint-disable */
 // flower_example — 상품 카탈로그 (자동 생성: publishToGitHub)
 const CATEGORIES = [
-  { id: "tab4", name: "경조화환", blurb: "축하·근조 화환", banner: "img/banner_tab4.png", photo: "img/tab4_grand1.jpg", icon: "wreath", accent: "var(--p-amber-500)", accentBg: "#FEF3D1" },
-  { id: "tab_alt", name: "대체상품", blurb: "쌀화환·오브제·바구니 등", banner: "img/banner_tab2.png", photo: "img/tab2_item1_img1.png", icon: "basket", accent: "#D946A6", accentBg: "#FDE7F4" }
+  { id: "tab4", name: "경조화환", blurb: "축하·근조 화환", banner: "img/banner_tab4.png", photo: "img/tab4_grand1.jpg", icon: "wreath", accent: "var(--p-amber-500)", accentBg: "#FEF3D1" }
 ];
 const SECTIONS = {
   tab4: [
@@ -13,16 +12,6 @@ const SECTIONS = {
     { kicker: "", key: "condol", title: "100% 생화사용 근조화환", tag: "장례 · 부고 · 애도", banner: "img/banner_tab5.png", items: [
       { productId: "tab5-basic", id: "tab5-basic", name: "근조 3단화환 (기본)", price: 70000, img: "img/condol_basic.jpg", desc: "100% 신품 국화(생화) 70송이 이상 + 하단 백합(조화) + 와네끼, 도시루 등 부소재 데코" },
       { productId: "tab5-premium", id: "tab5-premium", name: "근조 3단화환 (고급)", price: 90000, img: "img/condol_premium.jpg", desc: "100% 신품 국화(생화) 80송이 이상 + 하단 및 사이드 백합(조화) + 와네끼, 도시루 등 부소재 데코" }
-    ] }
-  ],
-  tab_alt: [
-    { kicker: "", title: "3단화환 반입불가 대체상품", tag: "대체상품 미리보기", note: "장소에 따라 반입 가능한 상품을 안내드립니다!", items: [
-      { productId: "alt-objet", id: "alt-objet", name: "특수화환 (오브제)", price: 75000, img: "img/placeholder.png", desc: "철제 받침·반입 가능한 형태 + 100% 신품 국화(생화) 30송이 이상 + 백합 조화 또는 도시루 등 부소재 데코" },
-      { productId: "alt-stand", id: "alt-stand", name: "특수화환 (스탠드)", price: 75000, img: "img/placeholder.png", desc: "플라스틱 받침·반입 가능한 형태 + 100% 신품 국화(생화) 40송이 이상 + 백합 조화 또는 도시루 등 부소재 데코" },
-      { productId: "alt-rice-condol", id: "alt-rice-condol", name: "근조특수화환(10KG 쌀화환)", price: 95000, img: "img/placeholder.png", desc: "3단·반입 가능한 형태 + 쌀 10KG 동반배송" },
-      { productId: "alt-rice-congrat", id: "alt-rice-congrat", name: "축하특수화환(10KG 쌀화환)", price: 95000, img: "img/placeholder.png", desc: "3단·반입 가능한 형태 + 쌀 10KG 동반배송" },
-      { productId: "alt-basket-condol", id: "alt-basket-condol", name: "근조바구니", price: 65000, img: "img/placeholder.png", desc: "나무 바구니·반입 가능한 형태 + 100% 신품 국화(생화) 40송이 이상 + 백합 조화 또는 도시루 등 부소재 데코" },
-      { productId: "alt-basket-flower", id: "alt-basket-flower", name: "꽃바구니", price: 80000, img: "img/placeholder.png", desc: "100% 신품 생화(다품종) 20송이 이상 + 부소재 데코" }
     ] }
   ]
 };
