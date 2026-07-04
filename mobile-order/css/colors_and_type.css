@@ -1,0 +1,310 @@
+/* ================================================================
+   UIUX-DH · Colors & Type — design system root tokens
+   Source: https://github.com/dohoon0505/desgin_system (v0.5.1)
+   Korean-first mobile design system. JSON canonical, CSS mirror.
+   ================================================================ */
+
+/* ─────────── Pretendard — local @font-face ───────────
+   Brand-uploaded WOFF files. 9 static weights cover the full design system.
+   The variables below alias `--font-sans` and `--font-mono` to "Pretendard". */
+@font-face {
+  font-family: "Pretendard";
+  font-style: normal;
+  font-weight: 100;
+  font-display: swap;
+  src: url("../fonts/Pretendard-Thin.woff") format("woff");
+}
+@font-face {
+  font-family: "Pretendard";
+  font-style: normal;
+  font-weight: 200;
+  font-display: swap;
+  src: url("../fonts/Pretendard-ExtraLight.woff") format("woff");
+}
+@font-face {
+  font-family: "Pretendard";
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url("../fonts/Pretendard-Light.woff") format("woff");
+}
+@font-face {
+  font-family: "Pretendard";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../fonts/Pretendard-Regular.woff") format("woff");
+}
+@font-face {
+  font-family: "Pretendard";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("../fonts/Pretendard-Medium.woff") format("woff");
+}
+@font-face {
+  font-family: "Pretendard";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("../fonts/Pretendard-SemiBold.woff") format("woff");
+}
+@font-face {
+  font-family: "Pretendard";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("../fonts/Pretendard-Bold.woff") format("woff");
+}
+@font-face {
+  font-family: "Pretendard";
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url("../fonts/Pretendard-ExtraBold.woff") format("woff");
+}
+@font-face {
+  font-family: "Pretendard";
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+  src: url("../fonts/Pretendard-Black.woff") format("woff");
+}
+
+:root {
+  /* ─────────── PRIMITIVE TOKENS — palette source of truth ───────────
+     Never reference `--p-*` directly in UI. Only `--sm-*` and `--cm-*` may. */
+
+  /* Neutral · cool-tinted gray (faint indigo undertone) */
+  --p-neutral-0:   #FFFFFF;
+  --p-neutral-10:  #F8F9FB;
+  --p-neutral-20:  #F1F3F7;
+  --p-neutral-30:  #E6E9F0;
+  --p-neutral-40:  #D4D8E2;
+  --p-neutral-50:  #B1B6C4;
+  --p-neutral-60:  #818797;
+  --p-neutral-70:  #5A5F6E;
+  --p-neutral-80:  #3C404B;
+  --p-neutral-85:  #2A2D36;
+  --p-neutral-90:  #1B1D24;
+  --p-neutral-95:  #111319;
+  --p-neutral-100: #0B0D12;
+
+  /* Brand primary · 하림 레드, 500 is the signature (토큰명은 indigo 유지) */
+  --p-indigo-50:  #FDECEC;
+  --p-indigo-100: #FBD3D5;
+  --p-indigo-200: #F5A1A5;
+  --p-indigo-300: #F07178;
+  --p-indigo-400: #EE4A52;
+  --p-indigo-500: #ED1C24;
+  --p-indigo-600: #CF171E;
+  --p-indigo-700: #A81319;
+  --p-indigo-800: #7C0E13;
+  --p-indigo-900: #50090C;
+
+  /* Amber · 하림 세컨더리(따뜻한 앰버), 보조 액센트 */
+  --p-amber-300: #FFD98A;
+  --p-amber-400: #FBB040;
+  --p-amber-500: #F59E0B;
+  --p-amber-600: #C77D06;
+
+  /* Status primitives */
+  --p-green-400: #22C55E;
+  --p-green-500: #16A34A;
+  --p-red-400:   #F87171;
+  --p-red-500:   #EF4444;
+  --p-red-600:   #DC2626;
+  --p-blue-400:  #3B82F6;
+  --p-blue-500:  #2563EB;
+
+  /* ─────────── SEMANTIC TOKENS · LIGHT (default) ─────────── */
+  --sm-background-default:  var(--p-neutral-0);
+  --sm-background-subtle:   var(--p-neutral-10);
+  --sm-background-muted:    var(--p-neutral-20);
+  --sm-background-elevated: var(--p-neutral-0);
+  --sm-background-inverse:  var(--p-neutral-100);
+
+  --sm-content-primary:   var(--p-neutral-100);
+  --sm-content-secondary: var(--p-neutral-70);
+  --sm-content-tertiary:  var(--p-neutral-60);
+  --sm-content-disabled:  var(--p-neutral-50);
+  --sm-content-inverse:   var(--p-neutral-0);
+  --sm-content-brand:     var(--p-indigo-500);
+  --sm-content-onBrand:   var(--p-neutral-0);
+
+  --sm-border-subtle:  var(--p-neutral-30);
+  --sm-border-default: var(--p-neutral-40);
+  --sm-border-strong:  var(--p-neutral-80);
+  --sm-border-brand:   var(--p-indigo-500);
+  --sm-border-focus:   var(--p-indigo-400);
+
+  --sm-surface-default: var(--p-neutral-0);
+  --sm-surface-raised:  var(--p-neutral-0);
+  --sm-surface-sunken:  var(--p-neutral-10);
+
+  --sm-interactive-brand-default: var(--p-indigo-500);
+  --sm-interactive-brand-hover:   var(--p-indigo-600);
+  --sm-interactive-brand-active:  var(--p-indigo-700);
+  --sm-interactive-brand-subtle:  var(--p-indigo-50);
+
+  --sm-status-success: var(--p-green-500);
+  --sm-status-warning: var(--p-amber-500);
+  --sm-status-error:   var(--p-red-500);
+  --sm-status-info:    var(--p-blue-500);
+
+  --sm-status-success-subtle: color-mix(in oklab, var(--p-green-500) 14%, transparent);
+  --sm-status-warning-subtle: color-mix(in oklab, var(--p-amber-500) 16%, transparent);
+  --sm-status-error-subtle:   color-mix(in oklab, var(--p-red-500) 14%, transparent);
+  --sm-status-info-subtle:    color-mix(in oklab, var(--p-blue-500) 14%, transparent);
+
+  --sm-signal-highlight: var(--p-amber-400);
+
+  /* ─────────── TYPOGRAPHY ───────────
+     Pretendard Variable carries every weight. v0.4.1: --font-mono is also
+     Pretendard — pair with `font-variant-numeric: tabular-nums` for table digits. */
+  --font-sans: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  --font-mono: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+
+  /* Display */
+  --text-display-lg: 700 56px/1.1  var(--font-sans);
+  --text-display-md: 700 44px/1.12 var(--font-sans);
+  --text-display-sm: 700 36px/1.2  var(--font-sans);
+  /* Heading */
+  --text-heading-lg: 700 28px/1.3  var(--font-sans);
+  --text-heading-md: 700 22px/1.35 var(--font-sans);
+  --text-heading-sm: 600 18px/1.4  var(--font-sans);
+  /* Body */
+  --text-body-lg:    400 17px/1.55 var(--font-sans);
+  --text-body-md:    400 15px/1.6  var(--font-sans);  /* default */
+  --text-body-sm:    400 13px/1.55 var(--font-sans);
+  /* Label */
+  --text-label-lg:   600 15px/1.4  var(--font-sans);
+  --text-label-md:   600 13px/1.4  var(--font-sans);
+  --text-label-sm:   600 11px/1.4  var(--font-sans);
+  /* Other */
+  --text-caption:    500 12px/1.45 var(--font-sans);
+  --text-overline:   600 11px/1.4  var(--font-sans);
+
+  /* Tracking helpers — Display/Heading use negative tracking */
+  --track-display-lg: -0.035em;
+  --track-display-md: -0.030em;
+  --track-display-sm: -0.025em;
+  --track-heading-lg: -0.020em;
+  --track-heading-md: -0.015em;
+  --track-heading-sm: -0.010em;
+  --track-overline:    0.080em;
+
+  /* ─────────── SIZING (4px grid) ─────────── */
+  --size-50:   2px;
+  --size-100:  4px;
+  --size-150:  6px;
+  --size-200:  8px;
+  --size-300: 12px;
+  --size-400: 16px;
+  --size-500: 20px;
+  --size-600: 24px;
+  --size-700: 32px;
+  --size-800: 40px;
+  --size-900: 48px;
+  --size-1000: 64px;
+  --size-1100: 80px;
+  --size-1200: 96px;
+
+  /* ─────────── RADIUS ─────────── */
+  --radius-none: 0;
+  --radius-xs:   4px;     /* tags, mini badges */
+  --radius-sm:   6px;     /* inline */
+  --radius-md:  10px;     /* buttons, inputs */
+  --radius-lg:  14px;     /* default cards */
+  --radius-xl:  20px;     /* feature cards */
+  --radius-2xl: 28px;     /* bottom sheets, modals */
+  --radius-full: 9999px;  /* chips, pills, avatars */
+
+  /* ─────────── ELEVATION (light values) ─────────── */
+  --elevation-0: none;
+  --elevation-1: 0 1px 2px rgba(11, 13, 18, 0.04);
+  --elevation-2: 0 2px 8px rgba(11, 13, 18, 0.06), 0 1px 2px rgba(11, 13, 18, 0.04);
+  --elevation-3: 0 8px 24px rgba(11, 13, 18, 0.08), 0 2px 6px rgba(11, 13, 18, 0.04);
+  --elevation-4: 0 20px 48px rgba(11, 13, 18, 0.12), 0 6px 12px rgba(11, 13, 18, 0.06);
+
+  /* ─────────── MOTION ─────────── */
+  --motion-instant: 0ms;
+  --motion-fast:    120ms;   /* hover, focus ring */
+  --motion-base:    200ms;   /* default · modal, toast */
+  --motion-slow:    320ms;   /* page transitions, sheets */
+  --motion-slower:  480ms;
+  --ease-standard:    cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasized:  cubic-bezier(0.3, 0, 0, 1);
+  --ease-decelerate:  cubic-bezier(0,   0, 0, 1);
+  --ease-accelerate:  cubic-bezier(0.3, 0, 1, 1);
+
+  /* ─────────── Z-INDEX ─────────── */
+  --z-base: 0;
+  --z-dropdown: 100;
+  --z-sticky:   200;
+  --z-modal-backdrop: 900;
+  --z-modal:   1000;
+  --z-toast:   1100;
+}
+
+/* ─────────── DARK THEME · semantic remap ───────────
+   Same names, different primitive values. Never invent dark-only tokens. */
+[data-theme="dark"] {
+  --sm-background-default:  var(--p-neutral-100);
+  --sm-background-subtle:   var(--p-neutral-95);
+  --sm-background-muted:    var(--p-neutral-90);
+  --sm-background-elevated: var(--p-neutral-90);
+  --sm-background-inverse:  var(--p-neutral-0);
+
+  --sm-content-primary:   var(--p-neutral-0);
+  --sm-content-secondary: var(--p-neutral-40);
+  --sm-content-tertiary:  var(--p-neutral-50);
+  --sm-content-disabled:  var(--p-neutral-70);
+  --sm-content-inverse:   var(--p-neutral-100);
+  --sm-content-brand:     var(--p-indigo-300);
+
+  --sm-border-subtle:  var(--p-neutral-85);
+  --sm-border-default: var(--p-neutral-80);
+  --sm-border-strong:  var(--p-neutral-40);
+  --sm-border-brand:   var(--p-indigo-400);
+  --sm-border-focus:   var(--p-indigo-300);
+
+  --sm-surface-default: var(--p-neutral-90);
+  --sm-surface-raised:  var(--p-neutral-85);
+  --sm-surface-sunken:  var(--p-neutral-95);
+
+  --sm-interactive-brand-default: var(--p-indigo-400);
+  --sm-interactive-brand-hover:   var(--p-indigo-300);
+  --sm-interactive-brand-active:  var(--p-indigo-200);
+  --sm-interactive-brand-subtle:  rgba(237, 28, 36, 0.14);
+
+  --sm-status-success: var(--p-green-400);
+  --sm-status-warning: var(--p-amber-400);
+  --sm-status-error:   var(--p-red-400);
+  --sm-status-info:    var(--p-blue-400);
+
+  /* Shadows are darker on dark backgrounds */
+  --elevation-1: 0 1px 2px rgba(0, 0, 0, 0.32);
+  --elevation-2: 0 2px 8px rgba(0, 0, 0, 0.40), 0 1px 2px rgba(0, 0, 0, 0.32);
+  --elevation-3: 0 8px 24px rgba(0, 0, 0, 0.48), 0 2px 6px rgba(0, 0, 0, 0.32);
+  --elevation-4: 0 20px 48px rgba(0, 0, 0, 0.56), 0 6px 12px rgba(0, 0, 0, 0.40);
+}
+
+/* ─────────── SEMANTIC TYPE ROLES ───────────
+   Convenience classes / element defaults so authors can write semantically. */
+html, body {
+  background: var(--sm-background-default);
+  color: var(--sm-content-primary);
+  font: var(--text-body-md);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+h1 { font: var(--text-display-sm); letter-spacing: var(--track-display-sm); margin: 0; }
+h2 { font: var(--text-heading-lg); letter-spacing: var(--track-heading-lg); margin: 0; }
+h3 { font: var(--text-heading-md); letter-spacing: var(--track-heading-md); margin: 0; }
+h4 { font: var(--text-heading-sm); letter-spacing: var(--track-heading-sm); margin: 0; }
+p  { font: var(--text-body-md); margin: 0; }
+small, .caption { font: var(--text-caption); color: var(--sm-content-tertiary); }
+.overline { font: var(--text-overline); letter-spacing: var(--track-overline); text-transform: uppercase; color: var(--sm-content-tertiary); }
+.label    { font: var(--text-label-md); }
+.tabular-nums { font-variant-numeric: tabular-nums; }

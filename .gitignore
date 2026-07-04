@@ -4,3 +4,10 @@ React-Backup/
 # Tooling / test artifacts
 .playwright-mcp/
 node_modules/
+
+# ── 모바일 간편주문(이식본) 개발 산출물·비밀 — 배포·커밋 제외 ──
+mobile-order/node_modules/
+mobile-order/keystore.json
+mobile-order/server.js
+mobile-order/.env
+mobile-order/.env.*

@@ -41,7 +41,7 @@ jobs:
       - name: Stage site (앱 파일만)
         run: |
           mkdir -p _site
-          cp -r index.html CNAME .nojekyll assets css js invoice _site/
+          cp -r index.html CNAME .nojekyll assets css js invoice mobile-order _site/
       - name: Upload site artifact (_site)
         uses: actions/upload-pages-artifact@v3
         with:

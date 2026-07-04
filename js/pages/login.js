@@ -6,8 +6,8 @@ import { icon } from "../icons.js";
 import { resolveRole, setRole, setClientId, clearClientId } from "../session.js";
 import { store } from "../store.js";
 
-// TODO: 모바일 간편주문 링크 (추후 연결 예정) — 임시 placeholder URL
-const MOBILE_ORDER_URL = "https://example.com/mobile-order";
+// 병합된 모바일 간편주문 사이트(같은 오리진). /mobile-order/ = harim_mob 이식본.
+const MOBILE_ORDER_URL = "/mobile-order/";
 
 // 당일배송 마감 18:30 · 접수 시작 09:00 · 배송 소요 4시간(09:00~18:30 동적 계산).
 // 정책 변경 시 이 값들만 수정하면 됩니다.
@@ -87,8 +87,8 @@ export function mount(root, { nav }) {
 
             <div class="auth__form-wrap">
               <div class="auth__form-col">
-                <!-- 모바일 전용: 간편주문 바로가기 (추후 링크 연결) -->
-                <a class="auth__mobile-order" href="${MOBILE_ORDER_URL}" target="_blank" rel="noopener">
+                <!-- 모바일 전용: 간편주문 바로가기 (같은 오리진 /mobile-order/ 이동) -->
+                <a class="auth__mobile-order" href="${MOBILE_ORDER_URL}">
                   ${icon("phone", { size: 17 })}
                   <span>모바일 간편주문</span>
                   ${icon("arrow-right", { size: 15 })}
