@@ -15,10 +15,10 @@ const C = {
 const DONUT_COLORS = ["#4169e1", "#f15a2a", "#4caf50", "#ff9800", "#8b5cf6"];
 
 const S = {
-  section: `margin:0 0 11px;font-size:13px;font-weight:700;color:${C.ink};padding-bottom:6px;border-bottom:2px solid #333;`,
-  table: `width:100%;border-collapse:collapse;table-layout:fixed;border:1px solid ${C.border};font-size:12px;font-family:Pretendard,sans-serif;`,
-  th: `background:${C.head};padding:8px 12px;font-weight:600;color:${C.sub};border:1px solid ${C.border};text-align:center;line-height:1.4;white-space:nowrap;`,
-  td: `padding:6px 12px;color:#333;border:1px solid ${C.border};line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;`,
+  section: `margin:0 0 10px;font-size:13px;font-weight:700;color:${C.ink};padding-bottom:4px;border-bottom:2px solid #333;`,
+  table: `width:100%;border-collapse:collapse;table-layout:fixed;border:1px solid ${C.border};font-size:11.5px;font-family:Pretendard,sans-serif;`,
+  th: `background:${C.head};padding:9px 12px;font-weight:600;color:${C.sub};border:1px solid ${C.border};text-align:center;line-height:1.4;white-space:nowrap;`,
+  td: `padding:9px 12px;color:#333;border:1px solid ${C.border};line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;`,
 };
 
 const won = (n) => Number(n).toLocaleString("ko-KR") + "원";
@@ -64,7 +64,7 @@ function kpiBoxes(r) {
   const vs = (delta, suffix) =>
     delta == null ? `<span style="color:${C.faint}">전월 데이터 없음</span>` : `지난달보다 ${deltaSpan(delta, suffix)}`;
   return `
-    <div style="display:flex;gap:12px;margin-bottom:18px">
+    <div style="display:flex;gap:12px;margin-bottom:28px">
       ${box("총 이용금액", won(r.total), vs(r.deltaTotal, "원"))}
       ${box("주문 건수", `${r.orders}건`, vs(r.deltaOrders, "건"))}
       ${box("이용 계열사", `${r.activeClients}곳`, `<span style="color:${C.muted}">전체 ${r.clientCount}곳 중</span>`)}
@@ -103,16 +103,16 @@ export function reportDoc(r, generatedAt) {
   const insightItems = r.insights
     .map(
       (t, i) => `
-      <li style="margin:0 0 10px;line-height:1.6;display:flex;gap:9px;align-items:flex-start">
+      <li style="margin:0 0 12px;line-height:1.8;display:flex;gap:9px;align-items:flex-start">
         <span style="flex:0 0 19px;height:19px;border-radius:50%;background:#fff1ec;color:${C.orangeInk};font-size:11px;font-weight:700;text-align:center;line-height:19px">${i + 1}</span><span>${escapeHtml(t)}</span>
       </li>`
     )
     .join("");
 
   return html`
-    <div class="report-doc" style="width:794px;min-height:1123px;background:#fff;font-family:Pretendard,sans-serif;font-size:12px;color:#333;padding:36px 48px 26px;box-sizing:border-box;display:flex;flex-direction:column;">
+    <div class="report-doc" style="width:794px;min-height:1123px;background:#fff;font-family:Pretendard,sans-serif;font-size:12px;color:#333;padding:42px 52px 30px;box-sizing:border-box;display:flex;flex-direction:column;">
       <!-- 헤더 -->
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px;padding-bottom:14px;border-bottom:1px solid ${C.divider}">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px;padding-bottom:14px;border-bottom:1px solid ${C.divider}">
         <div>
           <p style="margin:0 0 5px;font-size:13px;font-weight:700;color:${C.orange};white-space:nowrap">하림그룹 경조화환 시스템 · ADMIN</p>
           <p style="margin:0;font-size:20px;font-weight:700;color:${C.ink}">${r.label} 계열사 이용 분석 리포트</p>
@@ -126,7 +126,7 @@ export function reportDoc(r, generatedAt) {
       ${raw(kpiBoxes(r))}
 
       <!-- 계열사별 -->
-      <div style="margin-bottom:19px">
+      <div style="margin-bottom:28px">
         <p style="${S.section}">계열사별 이용 현황</p>
         <table style="${S.table}">
           <colgroup><col style="width:44px" /><col /><col style="width:78px" /><col style="width:124px" /><col style="width:66px" /><col style="width:124px" /></colgroup>
@@ -139,7 +139,7 @@ export function reportDoc(r, generatedAt) {
       </div>
 
       <!-- 항목별 (표 + 도넛) -->
-      <div style="margin-bottom:19px">
+      <div style="margin-bottom:28px">
         <p style="${S.section}">항목별 이용 현황</p>
         <div style="display:flex;gap:24px;align-items:center">
           <table style="${S.table}flex:1;">
@@ -155,7 +155,7 @@ export function reportDoc(r, generatedAt) {
       </div>
 
       <!-- 분석 코멘트 -->
-      <div style="margin-bottom:16px">
+      <div style="margin-bottom:20px">
         <p style="${S.section}">분석 코멘트</p>
         <ul style="margin:0;padding:4px 0 0;list-style:none;font-size:12.5px;color:#333">${raw(insightItems)}</ul>
       </div>

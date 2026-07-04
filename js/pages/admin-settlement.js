@@ -1,17 +1,16 @@
 /* ============================================================
-   admin-settlement.js — 계열사 분리정산 (대시보드)
-   상단 필터(년/월·정산 상태·계열사 검색) 아래에
-   ① KPI 카드(총 이용금액·주문 건수·이용 계열사·미입금액, 전월 대비 증감)
-   ② 인사이트 헤드라인 + 최근 6개월 이용금액 막대차트
-   ③ 계열사별 이용 TOP(가로 막대) · 항목별 이용 비중(도넛)
-   ④ 정산 진행 현황(진행바) · 월간 분석 리포트 생성(PDF)
-   ⑤ 계열사별 정산 종합 테이블(동의/발급/입금 + 링크·명세서 다운로드)
+   admin-settlement.js — 계열사 정산지원 (대시보드)
+   ① 상단 필터: 한 줄 통합 바(.fbar) — 연·월 커스텀 드롭다운(ui.js makeDropdown) +
+      이번달/저번달 오렌지 퀵칩 + 정산 상태 세그먼트 + 우측 검색.
+   ② KPI 카드(증감 배지) · 인사이트(막대) · 계열사 랭킹 · 항목 도넛 · 정산 진행 · 리포트 카드.
+   ③ 계열사별 정산 종합 테이블(하단, 현행 유지).
    분석 로직은 data/report.js(buildMonthlyReport), A4 리포트는 report-doc.js.
+   필터는 build-once + slot 갱신(makeDropdown 유지) — 상태탭/검색은 테이블만, 년·월은 대시보드+테이블 갱신.
    ============================================================ */
-import { html, setHTML, on, qs, raw, won } from "../dom.js";
+import { html, setHTML, on, qs, qsa, raw, won } from "../dom.js";
 import { icon } from "../icons.js";
 import { store } from "../store.js";
-import { pageTitle } from "../ui.js";
+import { pageTitle, makeDropdown } from "../ui.js";
 import { CLIENT_SETTLEMENTS, CLIENT_USAGE, USAGE_CATEGORIES, SETTLEMENT_YEARS, DATA_NOW } from "../data/admin-mock.js";
 import { buildMonthlyReport } from "../data/report.js";
 import { issueLink, publicInvoiceUrl, SUPPLIER, ACCOUNT } from "../data/invoice-links.js";
@@ -26,9 +25,11 @@ const STATUS_TABS = [
   { value: "done", label: "정산완료" },
 ];
 /* 도넛/범례 색 — tokens.css 차트 팔레트(기존 상태색 재사용 + --ch-purple) */
-const DONUT_VARS = ["var(--c-blue)", "var(--c-orange)", "var(--c-success)", "var(--c-warn)", "var(--ch-purple)"];
+const DONUT_VARS = ["var(--c-orange)", "var(--c-blue)", "var(--c-success)", "var(--c-warn)", "var(--ch-purple)"];
 const pad = (n) => String(n).padStart(2, "0");
 const man = (n) => Math.round(n / 10000); // 만원 단위
+const MONTHS = Array.from({ length: 12 }, (_, i) => pad(i + 1));
+const SEARCH_SVG = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="m20 20-3.5-3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`;
 
 const ok = (t) => html`<span class="settle-badge settle-badge--ok">${t}</span>`;
 const warn = (t) => html`<span class="settle-badge settle-badge--warn">${t}</span>`;
@@ -38,12 +39,12 @@ const issueBadge = (v) => (v === "발급완료" ? ok("발급완료") : warn("동
 const payBadge = (v) => (v === "입금완료" ? ok("입금완료") : danger("미입금"));
 const isDone = (r) => r.거래명세서동의 === "동의완료" && r.계산서발급 === "발급완료" && r.입금완료 === "입금완료";
 
-/* 전월 대비 증감 배지 (증가=적·감소=청, 한국 금융 관례) */
-function deltaTag(delta, suffix = "원") {
-  if (delta == null) return html`<span class="adash-delta adash-delta--flat">전월 데이터 없음</span>`;
-  if (delta === 0) return html`<span class="adash-delta adash-delta--flat">지난달과 동일</span>`;
+/* KPI 전월 대비 증감 배지 (▲ 증가=레드워시 · ▼ 감소=블루워시 · 중립=그레이) */
+function deltaBadge(delta, suffix = "원") {
+  if (delta == null) return html`<span class="kpi__delta flat">전월 데이터 없음</span>`;
+  if (delta === 0) return html`<span class="kpi__delta flat">지난달과 동일</span>`;
   const up = delta > 0;
-  return html`<span class="adash-delta ${up ? "adash-delta--up" : "adash-delta--down"}">지난달보다 ${up ? "+" : "-"}${Math.abs(delta).toLocaleString("ko-KR")}${suffix}</span>`;
+  return html`<span class="kpi__delta ${up ? "up" : "down"}">${up ? "▲" : "▼"} ${Math.abs(delta).toLocaleString("ko-KR")}${suffix}</span>`;
 }
 
 // 정산 레코드 → 공개 명세서 doc (요약 1줄). 같은 사업자번호·귀속월이면 issueLink가 시드 토큰 재사용.
@@ -72,7 +73,6 @@ export function mount(root, { nav }) {
       usage: CLIENT_USAGE, settlements: CLIENT_SETTLEMENTS, categories: USAGE_CATEGORIES,
     });
   }
-
   function rowsForPeriod() {
     const label = `${state.year}년 ${pad(state.month)}월`;
     return store.get().clients
@@ -91,87 +91,57 @@ export function mount(root, { nav }) {
     return rows;
   }
 
-  /* ── ① KPI 카드 ── */
+  /* ── ① KPI 카드 (증감 배지) ── */
   function kpiCards(r) {
     return html`
-      <div class="adash-kpis">
-        <div class="adash-kpi">
-          <span class="adash-kpi__lbl">총 이용금액</span>
-          <span class="adash-kpi__val num">${won(r.total)}</span>
-          ${deltaTag(r.deltaTotal)}
-        </div>
-        <div class="adash-kpi">
-          <span class="adash-kpi__lbl">주문 건수</span>
-          <span class="adash-kpi__val num">${r.orders}건</span>
-          ${deltaTag(r.deltaOrders, "건")}
-        </div>
-        <div class="adash-kpi">
-          <span class="adash-kpi__lbl">이용 계열사</span>
-          <span class="adash-kpi__val num">${r.activeClients}곳</span>
-          <span class="adash-delta adash-delta--flat">전체 ${r.clientCount}곳 중</span>
-        </div>
-        <div class="adash-kpi">
-          <span class="adash-kpi__lbl">미입금액</span>
-          <span class="adash-kpi__val num ${r.settle.unpaidAmount > 0 ? "is-warn" : ""}">${won(r.settle.unpaidAmount)}</span>
-          <span class="adash-delta adash-delta--flat">정산 완료율 ${r.settle.paidRate}%</span>
-        </div>
+      <div class="kpis">
+        <div class="kpi"><span class="kpi__lbl">총 이용금액</span><div class="kpi__val num">${won(r.total)}</div>${deltaBadge(r.deltaTotal)}</div>
+        <div class="kpi"><span class="kpi__lbl">주문 건수</span><div class="kpi__val num">${r.orders}건</div>${deltaBadge(r.deltaOrders, "건")}</div>
+        <div class="kpi"><span class="kpi__lbl">이용 계열사</span><div class="kpi__val num">${r.activeClients}곳</div><span class="kpi__delta flat">전체 ${r.clientCount}곳 중</span></div>
+        <div class="kpi"><span class="kpi__lbl">미입금액</span><div class="kpi__val num ${r.settle.unpaidAmount > 0 ? "warn" : ""}">${won(r.settle.unpaidAmount)}</div><span class="kpi__delta flat">정산 완료율 ${r.settle.paidRate}%</span></div>
       </div>
     `;
   }
 
-  /* ── ② 인사이트 헤드라인 + 6개월 추이 막대차트 ── */
+  /* ── ② 월간 인사이트 (헤드라인 + 6개월 막대) ── */
   function insightCard(r) {
     let headline;
-    if (r.deltaTotal == null) {
-      headline = html`<b>${state.month}월</b> 총 이용금액은 <b class="num">${won(r.total)}</b>이에요`;
-    } else if (r.deltaTotal === 0) {
-      headline = html`총 이용금액이 지난달과 <b class="num">같아요</b> (${won(r.total)})`;
-    } else if (r.deltaTotal > 0) {
-      headline = html`총 이용금액이 지난달보다<br /><b class="num up">${won(r.deltaTotal)}</b> 늘었어요`;
-    } else {
-      headline = html`총 이용금액이 지난달보다<br /><b class="num down">${won(Math.abs(r.deltaTotal))}</b> 줄었어요`;
-    }
+    if (r.deltaTotal == null) headline = html`<b>${state.month}월</b> 총 이용금액은 <b class="num">${won(r.total)}</b>이에요`;
+    else if (r.deltaTotal === 0) headline = html`총 이용금액이 지난달과 <b class="num">같아요</b> (${won(r.total)})`;
+    else if (r.deltaTotal > 0) headline = html`총 이용금액이 지난달보다<br /><span class="up num">${won(r.deltaTotal)}</span> 늘었어요`;
+    else headline = html`총 이용금액이 지난달보다<br /><span class="down num">${won(Math.abs(r.deltaTotal))}</span> 줄었어요`;
     const max = Math.max(...r.trend.map((t) => t.total), 1);
     return html`
-      <div class="adash-card adash-insight">
-        <div class="adash-insight__head">
-          <p class="adash-insight__headline">${headline}</p>
-          <p class="adash-insight__sub">최근 6개월 · 만원 단위</p>
-        </div>
-        <div class="adash-bars" role="img" aria-label="최근 6개월 이용금액 추이">
-          ${r.trend.map((t) => {
-            const h = Math.max(6, Math.round((t.total / max) * 112));
-            return html`
-              <div class="adash-bar ${t.isCurrent ? "is-cur" : ""}">
-                <span class="adash-bar__val num">${t.total === 0 ? "—" : man(t.total)}</span>
-                <span class="adash-bar__col" style="height:${h}px"></span>
-                <span class="adash-bar__lbl">${t.short}</span>
-              </div>
-            `;
-          })}
+      <div class="acard">
+        <div class="acard__head"><b>월간 인사이트</b><span class="acard__hint">최근 6개월 · 만원</span></div>
+        <div class="acard__body">
+          <p class="headline">${headline}</p>
+          <div class="bars" role="img" aria-label="최근 6개월 이용금액 추이">
+            ${r.trend.map((t) => {
+              const h = Math.max(6, Math.round((t.total / max) * 104));
+              return html`<div class="bar ${t.isCurrent ? "cur" : ""}"><span class="bar__v num">${t.total === 0 ? "—" : man(t.total)}</span><span class="bar__c" style="height:${h}px"></span><span class="bar__l">${t.short}</span></div>`;
+            })}
+          </div>
         </div>
       </div>
     `;
   }
 
-  /* ── ③-a 계열사별 이용 TOP (가로 막대 순위) ── */
+  /* ── ③ 계열사별 이용 랭킹 (가로 막대 · 오렌지) ── */
   function affiliateCard(r) {
     const top = r.affiliates[0]?.total || 1;
     return html`
-      <div class="adash-card">
-        <div class="adash-card__head">
-          <b>계열사별 이용 현황</b>
-          ${r.affiliates.length > 3 ? html`<span class="adash-card__hint">상위 3사 ${r.top3Share}%</span>` : ""}
-        </div>
-        <div class="adash-ranks">
+      <div class="acard">
+        <div class="acard__head"><b>계열사별 이용 현황</b>${r.affiliates.length > 3 ? html`<span class="acard__hint">상위 3사 ${r.top3Share}%</span>` : ""}</div>
+        <div class="acard__body" style="padding-top:12px;">
           ${r.affiliates.map(
             (a, i) => html`
-              <div class="adash-rank">
-                <span class="adash-rank__no ${i < 3 ? "is-top" : ""}">${i + 1}</span>
-                <span class="adash-rank__name ellipsis">${a.name}</span>
-                <span class="adash-rank__track"><span class="adash-rank__bar" style="width:${Math.max(3, Math.round((a.total / top) * 100))}%"></span></span>
-                <span class="adash-rank__amt num">${won(a.total)}</span>
-                <span class="adash-rank__share num">${a.share}%</span>
+              <div class="rank">
+                <span class="rank__no ${i < 3 ? "top" : ""}">${i + 1}</span>
+                <span class="rank__name">${a.name}</span>
+                <span class="rank__track"><span class="rank__bar" style="width:${Math.max(4, Math.round((a.total / top) * 100))}%"></span></span>
+                <span class="rank__amt num">${won(a.total)}</span>
+                <span class="rank__share num">${a.share}%</span>
               </div>
             `
           )}
@@ -180,10 +150,9 @@ export function mount(root, { nav }) {
     `;
   }
 
-  /* ── ③-b 항목별 이용 비중 (도넛 + 범례) ── */
+  /* ── ④ 항목별 이용 비중 (도넛 + 범례) ── */
   function donutSvg(r) {
-    const R = 52, CX = 70, CY = 70, SW = 30;
-    const CIRC = 2 * Math.PI * R;
+    const R = 44, CX = 62, CY = 62, SW = 24, CIRC = 2 * Math.PI * R;
     let acc = 0;
     const segs = r.catStats
       .map((c, i) => {
@@ -194,28 +163,25 @@ export function mount(root, { nav }) {
       })
       .join("");
     return raw(
-      `<svg width="140" height="140" viewBox="0 0 140 140" xmlns="http://www.w3.org/2000/svg" class="adash-donut__svg" aria-hidden="true">` +
+      `<svg width="124" height="124" viewBox="0 0 124 124" xmlns="http://www.w3.org/2000/svg" class="donut__svg" aria-hidden="true">` +
         `<circle cx="${CX}" cy="${CY}" r="${R}" fill="none" style="stroke:var(--c-divider)" stroke-width="${SW}"/>` + segs +
-        `<text x="${CX}" y="${CY - 4}" text-anchor="middle" class="adash-donut__t1">총 이용</text>` +
-        `<text x="${CX}" y="${CY + 14}" text-anchor="middle" class="adash-donut__t2">${man(r.total)}만</text>` +
+        `<text x="${CX}" y="${CY - 4}" text-anchor="middle" class="donut__t1">총 이용</text>` +
+        `<text x="${CX}" y="${CY + 13}" text-anchor="middle" class="donut__t2">${man(r.total)}만</text>` +
         `</svg>`
     );
   }
   function categoryCard(r) {
     return html`
-      <div class="adash-card">
-        <div class="adash-card__head"><b>항목별 이용 비중</b></div>
-        <div class="adash-donut">
+      <div class="acard">
+        <div class="acard__head"><b>항목별 이용 비중</b></div>
+        <div class="acard__body donut">
           ${donutSvg(r)}
-          <div class="adash-legend">
+          <div class="dleg">
             ${r.catStats.map(
               (c, i) => html`
-                <div class="adash-legend__row">
-                  <span class="adash-legend__dot" style="background:${DONUT_VARS[i % DONUT_VARS.length]}"></span>
-                  <span class="adash-legend__name">${c.key}</span>
-                  <span class="adash-legend__cnt num">${c.count}건</span>
-                  <span class="adash-legend__amt num">${won(c.amount)}</span>
-                  <span class="adash-legend__share num">${c.share}%</span>
+                <div class="dleg__row">
+                  <span class="dleg__l"><span class="dleg__dot" style="background:${DONUT_VARS[i % DONUT_VARS.length]}"></span><span class="dleg__name">${c.key}</span></span>
+                  <span class="dleg__val num">${c.share}% · ${man(c.amount)}만</span>
                 </div>
               `
             )}
@@ -225,48 +191,41 @@ export function mount(root, { nav }) {
     `;
   }
 
-  /* ── ④ 정산 진행 현황 + 월간 리포트 ── */
+  /* ── ⑤ 정산 진행 현황 ── */
   function progressCard(r) {
     const s = r.settle;
-    const step = (lbl, done, cnt) => html`
-      <div class="adash-step ${done === cnt ? "is-done" : ""}">
-        <span class="adash-step__lbl">${lbl}</span>
-        <span class="adash-step__val num">${done}/${cnt}</span>
-      </div>
-    `;
+    const step = (lbl, done, cnt) => html`<div class="step ${cnt > 0 && done === cnt ? "done" : ""}"><b>${lbl}</b><span class="num">${done}/${cnt}</span></div>`;
     return html`
-      <div class="adash-card">
-        <div class="adash-card__head">
-          <b>정산 진행 현황</b>
-          <span class="adash-card__hint">입금 기준 ${s.paidRate}% 완료</span>
-        </div>
-        <div class="adash-progress">
-          <div class="adash-progress__track"><div class="adash-progress__fill" style="width:${s.paidRate}%"></div></div>
-          <div class="adash-steps">
+      <div class="acard">
+        <div class="acard__head"><b>정산 진행 현황</b><span class="acard__hint">입금 기준 ${s.paidRate}%</span></div>
+        <div class="acard__body">
+          <div class="prog__track"><div class="prog__fill" style="width:${s.paidRate}%"></div></div>
+          <div class="steps">
             ${step("명세서 동의", s.agreed, s.count)}
             ${step("계산서 발급", s.issued, s.count)}
             ${step("입금 완료", s.paid, s.count)}
           </div>
-          <div class="adash-progress__amts">
-            <span>입금완료 <b class="num">${won(s.paidAmount)}</b></span>
-            <span class="is-warn">미입금 <b class="num">${won(s.unpaidAmount)}</b></span>
-          </div>
+          <div class="prog__amts"><span>입금완료 <b class="num">${won(s.paidAmount)}</b></span><span class="warn">미입금 <b class="num">${won(s.unpaidAmount)}</b></span></div>
         </div>
       </div>
     `;
   }
+
+  /* ── ⑥ 월간 분석 리포트 카드 v2 (라이트 · 문서 목차 · 아이콘 없음) ── */
   function reportCard(r) {
     return html`
-      <div class="adash-card adash-report">
-        <div class="adash-report__body">
-          <div class="adash-report__icon">${icon("package", { size: 20 })}</div>
-          <div>
-            <b class="adash-report__title">${r.label} 월간 분석 리포트</b>
-            <p class="adash-report__desc">이용·정산 데이터를 분석해 계열사별 순위, 항목 구성 변화, 정산 현황과 코멘트가 담긴 A4 리포트를 생성합니다.</p>
-            <p class="adash-report__preview">${r.insights[0] || ""}</p>
+      <div class="report">
+        <div class="report__head"><b>월간 분석 리포트</b><span class="report__hint">A4 · PDF</span></div>
+        <div class="report__body">
+          <p class="report__desc">${r.label} 이용·정산 데이터를 분석한 리포트를 생성합니다.</p>
+          <div class="report__list">
+            <div class="report__row"><b>계열사별 이용 순위</b><span>전월 대비 증감 포함</span></div>
+            <div class="report__row"><b>항목별 구성 변화</b><span>비중 · 건수</span></div>
+            <div class="report__row"><b>정산 현황 · 코멘트</b><span>자동 분석 ${r.insights.length}건</span></div>
           </div>
+          <p class="report__quote">"${r.insights[0] || ""}"</p>
         </div>
-        <button class="adash-report__btn" data-action="report">${icon("download", { size: 15 })}PDF 리포트 다운로드</button>
+        <button class="report__btn" data-action="report">PDF 리포트 다운로드</button>
       </div>
     `;
   }
@@ -277,20 +236,13 @@ export function mount(root, { nav }) {
     return html`
       <div class="adash">
         ${kpiCards(r)}
-        <div class="adash-row adash-row--main">
-          ${insightCard(r)}
-          ${affiliateCard(r)}
-        </div>
-        <div class="adash-row adash-row--sub">
-          ${categoryCard(r)}
-          ${progressCard(r)}
-          ${reportCard(r)}
-        </div>
+        <div class="row-main">${insightCard(r)}${affiliateCard(r)}</div>
+        <div class="row-sub">${categoryCard(r)}${progressCard(r)}${reportCard(r)}</div>
       </div>
     `;
   }
 
-  /* ── ⑤ 정산 테이블 (기존 유지) ── */
+  /* ── 정산 테이블 (하단 · 현행 유지) ── */
   function tableBody() {
     const rows = visibleRows();
     if (rows.length === 0) {
@@ -323,112 +275,117 @@ export function mount(root, { nav }) {
     return html`총 <strong>${rows.length}</strong>개 계열사 · 정산완료 <strong>${done}</strong>건`;
   }
 
-  function render() {
-    setHTML(
-      root,
-      html`
-        <div class="page-admin">
-          <div class="admin-inner">
-            ${pageTitle({ imgSrc: "./assets/nav-accounting.png", title: "계열사 정산지원" })}
-            <div class="orders-filters">
-              <div class="orders-frow orders-frow--1">
-                <div class="orders-fgroup">
-                  <span class="orders-flabel">조회 기간</span>
-                  <select class="select" data-ctl="year">
-                    ${SETTLEMENT_YEARS.map((y) => html`<option value="${y}" ${state.year === y ? "selected" : ""}>${y}년</option>`)}
-                  </select>
-                  <select class="select" data-ctl="month">
-                    ${Array.from({ length: 12 }, (_, i) => i + 1).map((m) => html`<option value="${m}" ${state.month === m ? "selected" : ""}>${pad(m)}월</option>`)}
-                  </select>
-                  <div class="orders-chips settle-quickmonth">
-                    <button class="orders-datebtn ${state.year === curY && state.month === curM ? "is-active" : ""}" data-action="qmonth" data-v="this">이번달</button>
-                    <button class="orders-datebtn ${state.year === lastY && state.month === lastM ? "is-active" : ""}" data-action="qmonth" data-v="last">저번달</button>
-                  </div>
-                </div>
-                <div class="orders-divider"></div>
-                <div class="orders-fgroup">
-                  <span class="orders-flabel">정산 상태</span>
-                  <div class="orders-chips">
-                    ${STATUS_TABS.map((t) => html`<button class="chip ${state.statusFilter === t.value ? "is-active" : ""}" data-action="stab" data-v="${t.value}">${t.label}</button>`)}
-                  </div>
-                </div>
-              </div>
-              <div class="orders-frow orders-frow--3">
-                <div class="orders-search">
-                  <div class="orders-search__lbl">${icon("search", { size: 12, cls: "tint-muted" })}<span>계열사 검색</span></div>
-                  <input type="text" data-search value="${state.search}" placeholder="계열사명 검색" />
-                </div>
-              </div>
-            </div>
-            <div data-slot="dash">${dashBody()}</div>
-            <p class="admin-summary" data-slot="summary">${summaryBody()}</p>
-            <div data-slot="table">${tableBody()}</div>
+  /* ── 페이지 골격(1회 렌더) ── */
+  setHTML(
+    root,
+    html`
+      <div class="page-admin">
+        <div class="admin-inner">
+          ${pageTitle({ imgSrc: "./assets/nav-accounting.png", title: "계열사 정산지원" })}
+          <div class="fbar">
+            <span class="fbar__lbl">조회 기간</span>
+            <div class="dd" data-dd="year"><button type="button" class="dd-trigger" aria-haspopup="listbox" aria-expanded="false"></button><div class="dd-panel" role="listbox"></div></div>
+            <div class="dd dd--month" data-dd="month"><button type="button" class="dd-trigger" aria-haspopup="listbox" aria-expanded="false"></button><div class="dd-panel" role="listbox"></div></div>
+            <button class="qchip" data-qmonth data-v="this">이번달</button>
+            <button class="qchip" data-qmonth data-v="last">저번달</button>
+            <span class="fbar__div"></span>
+            <span class="fbar__lbl">정산 상태</span>
+            <span class="seg" data-seg>
+              ${STATUS_TABS.map((t) => html`<button type="button" data-stab data-v="${t.value}">${t.label}</button>`)}
+            </span>
+            <div class="fsearch">${raw(SEARCH_SVG)}<input type="text" data-search value="${state.search}" placeholder="계열사명 검색" /></div>
           </div>
+          <div data-slot="dash">${dashBody()}</div>
+          <p class="admin-summary" data-slot="summary">${summaryBody()}</p>
+          <div data-slot="table">${tableBody()}</div>
         </div>
-      `
-    );
-  }
+      </div>
+    `
+  );
+
+  /* 연·월 커스텀 드롭다운 (ui.js 공용 makeDropdown 재사용) */
+  const ddYear = makeDropdown(qs(root, '[data-dd="year"]'), {
+    unit: "년", options: () => SETTLEMENT_YEARS.map(String), get: () => String(state.year),
+    set: (v) => { state.year = Number(v); afterPeriodChange(); },
+  });
+  const ddMonth = makeDropdown(qs(root, '[data-dd="month"]'), {
+    unit: "월", options: () => MONTHS, get: () => pad(state.month),
+    set: (v) => { state.month = Number(v); afterPeriodChange(); },
+  });
+
+  const refreshDash = () => { const el = qs(root, "[data-slot='dash']"); if (el) setHTML(el, dashBody()); };
   const refreshTable = () => {
     const tbl = qs(root, "[data-slot='table']");
     const sum = qs(root, "[data-slot='summary']");
     if (tbl) setHTML(tbl, tableBody());
     if (sum) setHTML(sum, summaryBody());
   };
-
-  render();
-
-  const offChange = on(root, "change", "[data-ctl]", (e, t) => {
-    state[t.dataset.ctl] = Number(t.value);
-    render(); // re-render so 이번달/저번달 active state stays in sync
-  });
-  const offClick = on(root, "click", "[data-action='stab']", (e, t) => {
-    state.statusFilter = t.dataset.v;
-    render(); // re-render to update active chip
-  });
-  const offQuick = on(root, "click", "[data-action='qmonth']", (e, t) => {
-    const base = new Date(now.getFullYear(), now.getMonth() - (t.dataset.v === "last" ? 1 : 0), 1);
-    state.year = base.getFullYear();
-    state.month = base.getMonth() + 1;
-    render();
-  });
-  const offSearch = on(root, "input", "[data-search]", (e, t) => {
-    state.search = t.value;
+  function syncFilters() {
+    const isThis = state.year === curY && state.month === curM;
+    const isLast = state.year === lastY && state.month === lastM;
+    qsa(root, "[data-qmonth]").forEach((b) => b.classList.toggle("on", b.dataset.v === "this" ? isThis : isLast));
+    qsa(root, "[data-stab]").forEach((b) => b.classList.toggle("sel", b.dataset.v === state.statusFilter));
+  }
+  function afterPeriodChange() {
+    ddYear.renderTrigger();
+    ddMonth.renderTrigger();
+    syncFilters();
+    refreshDash();
     refreshTable();
-  });
-  const offCopy = on(root, "click", "[data-action='copylink']", (e, t) => {
-    const row = rowsForPeriod().find(({ client }) => client.id === t.dataset.id);
-    if (!row) return;
-    const token = issueLink({ bizNumber: row.client.bizNumber, doc: buildDoc(row.client, row.rec) });
-    const url = publicInvoiceUrl(token);
-    const span = t.querySelector("span");
-    const flash = () => { if (span) { span.textContent = "복사됨!"; setTimeout(() => { if (span) span.textContent = "링크 복사"; }, 1600); } };
-    if (navigator.clipboard?.writeText) navigator.clipboard.writeText(url).then(flash).catch(() => window.prompt("접속 링크", url));
-    else window.prompt("접속 링크", url);
-  });
-  // 명세서 PDF 즉시 다운로드: doc을 off-DOM으로 렌더 → printInvoiceDoc(새 창 인쇄 → PDF 저장)
-  const offDownload = on(root, "click", "[data-action='download']", (e, t) => {
-    const row = rowsForPeriod().find(({ client }) => client.id === t.dataset.id);
-    if (!row) return;
-    const holder = document.createElement("div");
-    setHTML(holder, invoiceDoc(buildDoc(row.client, row.rec)));
-    const docEl = holder.querySelector(".invoice-doc");
-    if (!docEl) return;
-    try { printInvoiceDoc(docEl, `${row.client.companyName}_${row.rec.청구년월}_거래명세서`); }
-    catch (err) { console.error("PDF 생성 오류:", err); alert("PDF 생성 중 오류가 발생했습니다. 다시 시도해 주세요."); }
-  });
-  // 월간 분석 리포트: 분석 로직 실행 → A4 리포트 렌더 → printInvoiceDoc(새 창 인쇄 → PDF 저장)
-  const offReport = on(root, "click", "[data-action='report']", () => {
-    const r = reportFor();
-    if (!r) return;
-    const dt = new Date();
-    const generatedAt = `${dt.getFullYear()}. ${pad(dt.getMonth() + 1)}. ${pad(dt.getDate())} ${pad(dt.getHours())}:${pad(dt.getMinutes())}`;
-    const holder = document.createElement("div");
-    setHTML(holder, reportDoc(r, generatedAt));
-    const docEl = holder.querySelector(".report-doc");
-    if (!docEl) return;
-    try { printInvoiceDoc(docEl, `계열사_이용분석_리포트_${state.year}_${pad(state.month)}`); }
-    catch (err) { console.error("리포트 생성 오류:", err); alert("리포트 생성 중 오류가 발생했습니다. 다시 시도해 주세요."); }
-  });
+  }
+  syncFilters();
 
-  return () => { offChange(); offClick(); offQuick(); offSearch(); offCopy(); offDownload(); offReport(); };
+  const offs = [
+    on(root, "click", "[data-qmonth]", (e, t) => {
+      const base = new Date(now.getFullYear(), now.getMonth() - (t.dataset.v === "last" ? 1 : 0), 1);
+      state.year = base.getFullYear();
+      state.month = base.getMonth() + 1;
+      afterPeriodChange();
+    }),
+    on(root, "click", "[data-stab]", (e, t) => {
+      state.statusFilter = t.dataset.v;
+      syncFilters();
+      refreshTable();
+    }),
+    on(root, "input", "[data-search]", (e, t) => {
+      state.search = t.value;
+      refreshTable();
+    }),
+    on(root, "click", "[data-action='copylink']", (e, t) => {
+      const row = rowsForPeriod().find(({ client }) => client.id === t.dataset.id);
+      if (!row) return;
+      const token = issueLink({ bizNumber: row.client.bizNumber, doc: buildDoc(row.client, row.rec) });
+      const url = publicInvoiceUrl(token);
+      const span = t.querySelector("span");
+      const flash = () => { if (span) { span.textContent = "복사됨!"; setTimeout(() => { if (span) span.textContent = "링크 복사"; }, 1600); } };
+      if (navigator.clipboard?.writeText) navigator.clipboard.writeText(url).then(flash).catch(() => window.prompt("접속 링크", url));
+      else window.prompt("접속 링크", url);
+    }),
+    // 명세서 PDF 즉시 다운로드: doc을 off-DOM 렌더 → printInvoiceDoc(새 창 인쇄 → PDF)
+    on(root, "click", "[data-action='download']", (e, t) => {
+      const row = rowsForPeriod().find(({ client }) => client.id === t.dataset.id);
+      if (!row) return;
+      const holder = document.createElement("div");
+      setHTML(holder, invoiceDoc(buildDoc(row.client, row.rec)));
+      const docEl = holder.querySelector(".invoice-doc");
+      if (!docEl) return;
+      try { printInvoiceDoc(docEl, `${row.client.companyName}_${row.rec.청구년월}_거래명세서`); }
+      catch (err) { console.error("PDF 생성 오류:", err); alert("PDF 생성 중 오류가 발생했습니다. 다시 시도해 주세요."); }
+    }),
+    // 월간 분석 리포트: 분석 실행 → A4 리포트 렌더 → printInvoiceDoc
+    on(root, "click", "[data-action='report']", () => {
+      const r = reportFor();
+      if (!r) return;
+      const dt = new Date();
+      const generatedAt = `${dt.getFullYear()}. ${pad(dt.getMonth() + 1)}. ${pad(dt.getDate())} ${pad(dt.getHours())}:${pad(dt.getMinutes())}`;
+      const holder = document.createElement("div");
+      setHTML(holder, reportDoc(r, generatedAt));
+      const docEl = holder.querySelector(".report-doc");
+      if (!docEl) return;
+      try { printInvoiceDoc(docEl, `계열사_이용분석_리포트_${state.year}_${pad(state.month)}`); }
+      catch (err) { console.error("리포트 생성 오류:", err); alert("리포트 생성 중 오류가 발생했습니다. 다시 시도해 주세요."); }
+    }),
+  ];
+
+  return () => { offs.forEach((off) => off()); ddYear.destroy(); ddMonth.destroy(); };
 }

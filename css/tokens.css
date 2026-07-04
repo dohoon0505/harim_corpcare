@@ -107,6 +107,9 @@
   --sh-btn: 0 2px 8px rgba(241, 90, 42, 0.28);
   --sh-modal: 0 16px 50px rgba(17, 17, 24, 0.22);
   --c-modal-dim: rgba(17, 17, 24, 0.45); /* 모달 오버레이 잉크 딤 */
+  --sh-seg: 0 1px 4px rgba(17, 17, 24, 0.1); /* 세그먼트 선택 버튼 */
+  --c-toast-ok: #7be0a0;   /* 다크 토스트 위 성공 아이콘 */
+  --c-toast-warn: #ffcf80; /* 다크 토스트 위 경고 아이콘 */
   --sh-pop: 0 8px 28px rgba(17, 17, 24, 0.14); /* dropdown/calendar popover (order 08-brand) */
   --ring: 0 0 0 3px rgba(241, 90, 42, 0.09);
   --ring-blue: 0 0 0 3px rgba(65, 105, 225, 0.12);
