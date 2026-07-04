@@ -361,6 +361,10 @@
     display: none; /* 모바일 전용 버튼 — 데스크톱에서는 숨김 */
   }
 }
+/* ── 모바일: 회원가입(계열사 담당자 가입) 진입 요소 숨김 (데스크톱은 유지) ── */
+@media (max-width: 1023.98px) {
+  .auth__divider-block { display: none; }
+}
 @media (min-width: 1280px) {
   .auth__brand {
     width: 440px;

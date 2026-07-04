@@ -80,9 +80,6 @@ export function mount(root, { nav }) {
           <div class="auth__panel-inner">
             <div class="auth__topbar">
               <span class="auth__topbar-logo-text">하림그룹 경조화환 ERP</span>
-              <button type="button" class="auth__topbar-link" data-action="register">
-                회원가입 ${icon("arrow-right", { size: 11 })}
-              </button>
             </div>
 
             <div class="auth__form-wrap">
