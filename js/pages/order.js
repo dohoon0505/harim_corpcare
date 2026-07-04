@@ -639,11 +639,14 @@ export function mount(root, { nav }) {
     const p = state.product;
     if (!p) return; // 상품 미선택 방어(경조사 전환 후 탭 점프 등 비정상 경로)
     setHTML($("[data-cf-list]"), html`
-      <div class="cf-row"><span class="cl">경조사 · 상품</span>
-        <span class="cv">${p.product}<small>${OCC[state.occ].label}</small></span>
+      <div class="cf-row"><span class="cl">선택상품</span>
+        <span class="cv">${p.product}</span>
         <button class="edit" data-goto="1">변경</button></div>
       <div class="cf-row"><span class="cl">배송지</span>
-        <span class="cv">${state.addr}<small>${state.toName}${state.occ === "wed" && state.side ? ` (${state.side})` : ""} · ${state.toPhone}</small></span>
+        <span class="cv">${state.addr}</span>
+        <button class="edit" data-goto="2">변경</button></div>
+      <div class="cf-row"><span class="cl">받는분</span>
+        <span class="cv">${state.toName}${state.occ === "wed" && state.side ? ` (${state.side})` : ""} · ${state.toPhone}</span>
         <button class="edit" data-goto="2">변경</button></div>
       <div class="cf-row"><span class="cl">배송 일시</span>
         <span class="cv">${dateLabel()}</span>
