@@ -281,7 +281,7 @@ export function mount(root, { nav }) {
     root,
     html`
       <div class="page-admin">
-        <div class="admin-inner">
+        <div class="admin-inner admin-inner--settle">
           ${pageTitle({ imgSrc: "./assets/nav-accounting.png", title: "통합정산시스템" })}
           <div class="fbar">
             <span class="fbar__lbl">조회 기간</span>

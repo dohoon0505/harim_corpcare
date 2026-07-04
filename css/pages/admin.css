@@ -7,11 +7,13 @@
 }
 .admin-inner {
   width: 100%;
-  max-width: 1300px;
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
+/* 페이지별 최대 폭 분리 */
+.admin-inner--settle { max-width: 1300px; }  /* 통합정산시스템 */
+.admin-inner--clients { max-width: 800px; }  /* 계열사 접속관리 */
 
 /* selector row (settlement year/month + client pickers) */
 .admin-controls {

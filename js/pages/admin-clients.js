@@ -90,7 +90,7 @@ export function mount(root, { nav }) {
       root,
       html`
         <div class="page-admin">
-          <div class="admin-inner">
+          <div class="admin-inner admin-inner--clients">
             ${pageTitle({
               imgSrc: "./assets/nav-profile.png",
               title: "계열사 접속관리",
