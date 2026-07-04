@@ -25,7 +25,8 @@ const STATUS_TABS = [
   { value: "done", label: "정산완료" },
 ];
 /* 도넛/범례 색 — tokens.css 차트 팔레트(기존 상태색 재사용 + --ch-purple) */
-const DONUT_VARS = ["var(--c-orange)", "var(--c-blue)", "var(--c-success)", "var(--c-warn)", "var(--ch-purple)"];
+/* 도넛/범례 9색 — 항목별(상품 9종) 비중이 겹치지 않도록 인접 대비 순으로 배치 */
+const DONUT_VARS = ["var(--c-orange)", "var(--c-blue)", "var(--c-success)", "var(--ch-purple)", "var(--c-warn)", "var(--ch-cyan)", "var(--ch-pink)", "var(--ch-lime)", "var(--ch-slate)"];
 const pad = (n) => String(n).padStart(2, "0");
 const man = (n) => Math.round(n / 10000); // 만원 단위
 const MONTHS = Array.from({ length: 12 }, (_, i) => pad(i + 1));

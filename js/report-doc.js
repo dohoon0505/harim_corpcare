@@ -12,7 +12,8 @@ const C = {
   orange: "#f15a2a", orangeInk: "#d94000", blue: "#4169e1",
   up: "#c62828", down: "#1e56c9", rest: "#ececf1",
 };
-const DONUT_COLORS = ["#4169e1", "#f15a2a", "#4caf50", "#ff9800", "#8b5cf6"];
+// 도넛 9색 — tokens.css 도넛 팔레트와 동일 순서(상품 9종 중복 방지). A4 문서라 인라인 hex.
+const DONUT_COLORS = ["#f15a2a", "#4169e1", "#4caf50", "#8b5cf6", "#ff9800", "#06b6d4", "#ec4899", "#84cc16", "#64748b"];
 
 const S = {
   section: `margin:0 0 10px;font-size:13px;font-weight:700;color:${C.ink};padding-bottom:4px;border-bottom:2px solid #333;`,

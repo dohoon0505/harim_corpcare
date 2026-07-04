@@ -117,7 +117,13 @@
   --ring-field: 0 0 0 3px rgba(79, 70, 229, 0.14); /* indigo focus ring */
 
   /* ── Charts (admin 대시보드 인포그래픽) ─────────────────── */
-  --ch-purple: #8b5cf6;      /* 도넛 5번째 세그먼트 (blue/orange/success/warn 은 기존 토큰 재사용) */
+  /* 도넛 9색 팔레트 — 항목별(상품별) 이용 비중이 9개라 중복 없이 구분되도록.
+     1~5 는 기존 토큰(orange/blue/success/purple/warn) 재사용, 6~9 는 신규. */
+  --ch-purple: #8b5cf6;      /* 도넛 4번째 세그먼트 */
+  --ch-cyan: #06b6d4;        /* 도넛 6번째 */
+  --ch-pink: #ec4899;        /* 도넛 7번째 */
+  --ch-lime: #84cc16;        /* 도넛 8번째 */
+  --ch-slate: #64748b;       /* 도넛 9번째 */
   --ch-bar-rest: #ececf1;    /* 막대차트 비선택 월 */
 
   /* ── Text field (design-system Text Field component) ───── */
