@@ -47,6 +47,10 @@ const INITIAL_CONTACTS = [
 const KEY = "yeop.store.v4"; // v4: 프로필 명의(greeting) 하림 브랜딩 교체로 재시드
 const subs = new Set();
 
+/* 순번(no) 재부여: 프로필·담당자 목록은 항상 배열 순서대로 01,02,03… 을 유지한다.
+   → 대상자 삭제 시 뒤 항목이 자동으로 앞 번호로 당겨진다(빈 번호 방지). */
+const reindexNo = (arr) => arr.map((x, i) => ({ ...x, no: String(i + 1).padStart(2, "0") }));
+
 let state = {
   profiles: INITIAL_PROFILES.map((p) => ({ ...p })),
   contacts: INITIAL_CONTACTS.map((c) => ({ ...c })),
@@ -74,8 +78,8 @@ function hydrate() {
     if (!raw) return;
     const data = JSON.parse(raw);
     state = {
-      profiles: Array.isArray(data.profiles) ? data.profiles : state.profiles,
-      contacts: Array.isArray(data.contacts) ? data.contacts.map((c) => ({ isBilling: false, ...c })) : state.contacts,
+      profiles: Array.isArray(data.profiles) ? reindexNo(data.profiles) : state.profiles,
+      contacts: Array.isArray(data.contacts) ? reindexNo(data.contacts.map((c) => ({ isBilling: false, ...c }))) : state.contacts,
       clients: Array.isArray(data.clients) ? data.clients : state.clients,
     };
     // 불변식 보정: 로드된 담당자 중 정산담당이 없으면 첫 담당자로 지정
@@ -103,12 +107,12 @@ export const store = {
     return () => subs.delete(fn);
   },
   setProfiles(next) {
-    state = { ...state, profiles: resolve(next, state.profiles) };
+    state = { ...state, profiles: reindexNo(resolve(next, state.profiles)) };
     persist();
     emit();
   },
   setContacts(next) {
-    let arr = resolve(next, state.contacts);
+    let arr = reindexNo(resolve(next, state.contacts));
     // 불변식: 정산·회계 담당자는 항상 1명 존재해야 한다 (없으면 첫 담당자로 자동 지정)
     if (arr.length > 0 && !arr.some((c) => c.isBilling)) {
       arr = arr.map((c, i) => ({ ...c, isBilling: i === 0 }));
