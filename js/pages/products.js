@@ -106,13 +106,6 @@ function intakeGuideMarkup() {
   const yn = (v) => (v ? html`<span class="ig-yes" title="반입가능">✓</span>` : html`<span class="ig-no" aria-hidden="true">·</span>`);
   return html`
     <section class="intake-guide">
-      <div class="ig-head">
-        <div class="ig-head__top">
-          <b>지역별 · 상품 반입가이드</b>
-          <span class="ig-hint">시설·지역 사정에 따라 반입 가능한 대체발송 상품이 다릅니다 · <span class="ig-yes">✓</span> 반입가능</span>
-        </div>
-        <p class="ig-sub">지역, 장소의 담함 여부에 따라 유동적으로 변경될 수 있는 사안으로, 참고용으로 확인하시길 권장드립니다.</p>
-      </div>
       <div class="ig-scroll">
         <table class="ig-table">
           <colgroup><col class="c-sido" /><col class="c-place" /><col class="c-p" /><col class="c-p" /><col class="c-p" /><col class="c-note" /></colgroup>

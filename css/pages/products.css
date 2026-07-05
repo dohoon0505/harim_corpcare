@@ -37,11 +37,6 @@
 
 /* ── 지역별 · 상품 반입가이드 (상단 상품규격 .table-grid 와 동일 규격) ── */
 .intake-guide { background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--r-md); overflow: hidden; }
-.ig-head { padding: 16px; border-bottom: 1px solid var(--c-border); }
-.ig-head__top { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
-.ig-head b { font-size: var(--fs-15); font-weight: var(--fw-bold); color: var(--c-text-strong); letter-spacing: -0.01em; }
-.ig-hint { font-size: var(--fs-13); color: var(--c-text-muted); }
-.ig-sub { margin: 8px 0 0; font-size: var(--fs-13); color: var(--c-text-muted); line-height: 1.55; }
 .ig-scroll { overflow-x: auto; }
 .ig-table { width: 100%; border-collapse: collapse; font-size: var(--fs-14); table-layout: fixed; }
 .ig-table col.c-sido { width: 108px; }
