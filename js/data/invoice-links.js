@@ -38,7 +38,7 @@ export const INVOICE_LINKS = {
       supplier: SUPPLIER,
       items: [
         { date: "2026년 03월 30일", sender: "홍길동", address: "서울 강남구 테헤란로 152 강남파이낸스센터", product: "축하 3단화환 (고급)", amount: "100,000원" },
-        { date: "2026년 03월 22일", sender: "정소빈", address: "대전 유성구 대학로 99 세종빌딩", product: "특수화환 (오브제)", amount: "70,000원" },
+        { date: "2026년 03월 22일", sender: "정소빈", address: "대전 유성구 대학로 99 세종빌딩", product: "오브제(대체발송)", amount: "70,000원" },
         { date: "2026년 03월 15일", sender: "임직원", address: "인천 연수구 송도과학로 32 송도컨벤시아", product: "축하 3단화환 (기본)", amount: "70,000원" },
         { date: "2026년 03월 08일", sender: "홍길동", address: "광주 서구 상무중앙로 110 김대중컨벤션센터", product: "근조 3단화환 (기본)", amount: "70,000원" },
       ],
@@ -56,7 +56,7 @@ export const INVOICE_LINKS = {
       supplier: SUPPLIER,
       items: [
         { date: "2026년 04월 26일", sender: "김사원", address: "서울 서초구 서초대로 396 강남빌딩", product: "축하 3단화환 (고급)", amount: "100,000원" },
-        { date: "2026년 04월 18일", sender: "총무팀", address: "경기 성남시 분당구 판교로 289", product: "특수화환 (스탠드)", amount: "70,000원" },
+        { date: "2026년 04월 18일", sender: "총무팀", address: "경기 성남시 분당구 판교로 289", product: "스탠드(대체발송)", amount: "70,000원" },
       ],
       account: ACCOUNT,
       total: "170,000원",

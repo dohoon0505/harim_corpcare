@@ -21,7 +21,7 @@ function deliveryPhoto(order) {
 const orderData = [
   // 오늘 (2026/06/16)
   { id: 1, manager: "김총무", date: "2026/06/16 14:30", address: "서울 종로구 대학로 101 서울대학교병원 장례식장 5호실", sender: "홍길동", profile: "(주)하림지주 대표이사 홍길동", product: "근조 3단화환 (고급)", amount: "100,000원", status: "주문접수", statusColor: "#4169e1", hasPhoto: true },
-  { id: 2, manager: "박사원", date: "2026/06/16 10:15", address: "경기 성남시 분당구 야탑로 59 분당차병원 장례식장 특실", sender: "김현수", profile: "(주)하림지주 인사팀 김현수", product: "근조바구니", amount: "65,000원", status: "접수대기", statusColor: "#9e9e9e", hasPhoto: false },
+  { id: 2, manager: "박사원", date: "2026/06/16 10:15", address: "경기 성남시 분당구 야탑로 59 분당차병원 장례식장 특실", sender: "김현수", profile: "(주)하림지주 인사팀 김현수", product: "근조바구니(대체발송)", amount: "65,000원", status: "접수대기", statusColor: "#9e9e9e", hasPhoto: false },
   // 내일 (2026/06/17) — 예약 발송
   { id: 3, manager: "이대리", date: "2026/06/17 09:00", address: "부산 해운대구 센텀중앙로 90 벡스코 제2전시장 그랜드볼룸", sender: "영업본부", profile: "(주)하림지주 영업본부", product: "축하 3단화환 (고급)", amount: "100,000원", status: "접수대기", statusColor: "#9e9e9e", hasPhoto: false },
   // 어제 (2026/06/15)
@@ -29,16 +29,16 @@ const orderData = [
   { id: 5, manager: "최과장", date: "2026/06/15 09:30", address: "대전 서구 둔산로 100 대전무역회관 4층 대강당", sender: "홍길동", profile: "(주)하림지주 대표이사 홍길동", product: "축하 3단화환 (기본)", amount: "70,000원", status: "배송완료", statusColor: "#4caf50", hasPhoto: false },
   // 이번 달 (2026/06/01 ~ 06/13)
   { id: 6, manager: "박사원", date: "2026/06/13 11:20", address: "광주 북구 첨단과기로 123 광주과학기술원 오룡관 컨벤션홀", sender: "이대리", profile: "(주)하림지주 영업1팀 이대리", product: "축하 3단화환 (고급)", amount: "100,000원", status: "주문접수", statusColor: "#4169e1", hasPhoto: true },
-  { id: 7, manager: "오임찬", date: "2026/06/11 15:00", address: "울산 남구 삼산로 200 울산롯데호텔 3층 크리스탈볼룸", sender: "오임찬", profile: "(주)하림지주 재경팀 오임찬", product: "특수화환 (스탠드)", amount: "70,000원", status: "배송완료", statusColor: "#4caf50", hasPhoto: true },
+  { id: 7, manager: "오임찬", date: "2026/06/11 15:00", address: "울산 남구 삼산로 200 울산롯데호텔 3층 크리스탈볼룸", sender: "오임찬", profile: "(주)하림지주 재경팀 오임찬", product: "스탠드(대체발송)", amount: "70,000원", status: "배송완료", statusColor: "#4caf50", hasPhoto: true },
   { id: 8, manager: "김총무", date: "2026/06/09 13:10", address: "경남 창원시 의창구 중앙대로 250 창원컨벤션센터 2층 컨벤션홀", sender: "경영지원팀", profile: "(주)하림지주 경영지원팀", product: "축하 3단화환 (기본)", amount: "70,000원", status: "배송완료", statusColor: "#4caf50", hasPhoto: false },
-  { id: 9, manager: "이대리", date: "2026/06/06 10:00", address: "서울 강남구 테헤란로 152 강남파이낸스센터 지하1층 컨퍼런스홀", sender: "영업본부", profile: "(주)하림지주 영업본부", product: "특수화환 (오브제)", amount: "70,000원", status: "배송완료", statusColor: "#4caf50", hasPhoto: true },
-  { id: 10, manager: "박사원", date: "2026/06/04 17:30", address: "전북 전주시 덕진구 백제대로 567 전북대학교병원 장례식장 특2호실", sender: "김현수", profile: "(주)하림지주 인사팀 김현수", product: "특수화환 (10KG 쌀화환)", amount: "90,000원", status: "배송완료", statusColor: "#4caf50", hasPhoto: false },
+  { id: 9, manager: "이대리", date: "2026/06/06 10:00", address: "서울 강남구 테헤란로 152 강남파이낸스센터 지하1층 컨퍼런스홀", sender: "영업본부", profile: "(주)하림지주 영업본부", product: "오브제(대체발송)", amount: "70,000원", status: "배송완료", statusColor: "#4caf50", hasPhoto: true },
+  { id: 10, manager: "박사원", date: "2026/06/04 17:30", address: "전북 전주시 덕진구 백제대로 567 전북대학교병원 장례식장 특2호실", sender: "김현수", profile: "(주)하림지주 인사팀 김현수", product: "10KG 쌀화환(대체발송)", amount: "90,000원", status: "배송완료", statusColor: "#4caf50", hasPhoto: false },
   { id: 11, manager: "최과장", date: "2026/06/02 09:40", address: "경기 수원시 영통구 광교중앙로 140 수원컨벤션센터 3층 컨벤션홀", sender: "홍길동", profile: "(주)하림지주 대표이사 홍길동", product: "축하 3단화환 (고급)", amount: "100,000원", status: "배송완료", statusColor: "#4caf50", hasPhoto: true },
   { id: 12, manager: "김총무", date: "2026/06/01 11:00", address: "대구 수성구 동대구로 99 대구은행 본점 2층 대강당", sender: "경영지원팀", profile: "(주)하림지주 경영지원팀", product: "축하 3단화환 (기본)", amount: "70,000원", status: "배송완료", statusColor: "#4caf50", hasPhoto: false },
   // 지난 달 (2026/05)
   { id: 13, manager: "오임찬", date: "2026/05/27 14:00", address: "서울 송파구 올림픽로 300 롯데월드타워 SKY31 컨벤션", sender: "오임찬", profile: "(주)하림지주 재경팀 오임찬", product: "축하 3단화환 (고급)", amount: "100,000원", status: "배송완료", statusColor: "#4caf50", hasPhoto: true },
-  { id: 14, manager: "이대리", date: "2026/05/20 10:30", address: "충북 청주시 흥덕구 1순환로 776 청주성모병원 장례식장 5호실", sender: "이대리", profile: "(주)하림지주 영업1팀 이대리", product: "근조바구니", amount: "65,000원", status: "배송완료", statusColor: "#4caf50", hasPhoto: false },
-  { id: 15, manager: "박사원", date: "2026/05/13 16:20", address: "강원 춘천시 백령로 156 강원대학교병원 장례식장 특실", sender: "김현수", profile: "(주)하림지주 인사팀 김현수", product: "특수화환 (10KG 쌀화환)", amount: "90,000원", status: "배송완료", statusColor: "#4caf50", hasPhoto: true },
+  { id: 14, manager: "이대리", date: "2026/05/20 10:30", address: "충북 청주시 흥덕구 1순환로 776 청주성모병원 장례식장 5호실", sender: "이대리", profile: "(주)하림지주 영업1팀 이대리", product: "근조바구니(대체발송)", amount: "65,000원", status: "배송완료", statusColor: "#4caf50", hasPhoto: false },
+  { id: 15, manager: "박사원", date: "2026/05/13 16:20", address: "강원 춘천시 백령로 156 강원대학교병원 장례식장 특실", sender: "김현수", profile: "(주)하림지주 인사팀 김현수", product: "10KG 쌀화환(대체발송)", amount: "90,000원", status: "배송완료", statusColor: "#4caf50", hasPhoto: true },
   { id: 16, manager: "김총무", date: "2026/05/06 09:00", address: "제주 제주시 첨단로 242 제주첨단과학기술단지 컨벤션홀", sender: "경영지원팀", profile: "(주)하림지주 경영지원팀", product: "축하 3단화환 (기본)", amount: "70,000원", status: "배송완료", statusColor: "#4caf50", hasPhoto: false },
 ].map((o) => (o.status === "배송완료" ? { ...o, hasPhoto: true } : o)); // 배송완료 주문은 항상 사진 보유
 
