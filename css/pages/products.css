@@ -37,9 +37,11 @@
 
 /* ── 지역별 · 상품 반입가이드 ─────────────────────────────── */
 .intake-guide { background: var(--c-surface); border: 1px solid var(--c-border); border-radius: 12px; box-shadow: var(--sh-card); overflow: hidden; margin-top: 6px; }
-.ig-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; padding: 18px 22px 14px; border-bottom: 1px solid var(--c-divider); }
+.ig-head { padding: 18px 22px 14px; border-bottom: 1px solid var(--c-divider); }
+.ig-head__top { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
 .ig-head b { font-size: 15px; font-weight: var(--fw-bold); color: var(--c-text-strong); letter-spacing: -0.01em; }
 .ig-hint { font-size: 12.5px; color: var(--c-text-muted); }
+.ig-sub { margin: 8px 0 0; font-size: 12.5px; color: var(--c-text-muted); line-height: 1.55; }
 .ig-scroll { overflow-x: auto; }
 .ig-table { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; }
 .ig-table col.c-sido { width: 100px; }
@@ -55,4 +57,3 @@
 .ig-note { color: var(--c-text-muted); font-size: 12.5px; }
 .ig-yes { color: var(--c-success-ink); font-weight: var(--fw-bold); }
 .ig-no { color: var(--c-border-strong); }
-.ig-foot { padding: 12px 22px 16px; margin: 0; font-size: 11.5px; color: var(--c-text-faint); line-height: 1.5; }

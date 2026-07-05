@@ -107,8 +107,11 @@ function intakeGuideMarkup() {
   return html`
     <section class="intake-guide">
       <div class="ig-head">
-        <b>지역별 · 상품 반입가이드</b>
-        <span class="ig-hint">시설·지역 사정에 따라 반입 가능한 대체발송 상품이 다릅니다 · <span class="ig-yes">✓</span> 반입가능</span>
+        <div class="ig-head__top">
+          <b>지역별 · 상품 반입가이드</b>
+          <span class="ig-hint">시설·지역 사정에 따라 반입 가능한 대체발송 상품이 다릅니다 · <span class="ig-yes">✓</span> 반입가능</span>
+        </div>
+        <p class="ig-sub">지역, 장소의 담함 여부에 따라 유동적으로 변경될 수 있는 사안으로, 참고용으로 확인하시길 권장드립니다.</p>
       </div>
       <div class="ig-scroll">
         <table class="ig-table">
@@ -132,7 +135,6 @@ function intakeGuideMarkup() {
           </tbody>
         </table>
       </div>
-      <p class="ig-foot">※ 상기 가이드는 대표 사례이며, 시설 사정에 따라 변동될 수 있어 접수 시 담당자가 재확인해 드립니다.</p>
     </section>
   `;
 }
