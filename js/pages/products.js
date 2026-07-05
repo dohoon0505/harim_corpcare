@@ -72,7 +72,7 @@ export function mount(root, { nav }) {
               <div class="row"><span class="k">상품금액</span><span class="v amt num">${product.price}</span></div>
               <div class="row"><span class="k">상품설명</span><span class="v">${product.description}</span></div>
             </div>
-            <p class="hm-help" style="margin-top:14px;">※ 실제 상품은 사진과 다를 수 있으며, 계절·산지 사정에 따라 품종이 변경될 수 있습니다.</p>
+            <p class="hm-help" style="margin-top:14px;">※ 상품 품질 표준화를 위해 실제 배송되었던 이미지를 참고 이미지로 첨부합니다.</p>
           </div>
           <div class="hm__foot"><button class="hm-btn hm-btn--primary" data-action="close">닫기</button></div>
         </div>
