@@ -7,90 +7,48 @@
 .profile-sections {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 32px;
 }
-
-/* ── Section card (프로필 / 담당자 저장공간) ─────────────── */
 .psec {
-  width: 100%;
-  max-width: 1300px;
-  background: var(--c-surface);
-  border: 1px solid var(--c-border);
-  border-radius: var(--r-lg);
-  box-shadow: var(--sh-card);
-  overflow: hidden;
+  width: 1300px;
 }
-.psec-hd {
+.psec-title {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--c-border);
+  margin-bottom: 16px;
 }
-.psec-hd__l {
+.psec-title__l {
   display: flex;
   align-items: center;
-  gap: 12px;
-  min-width: 0;
+  gap: 10px;
 }
 .psec-bar {
-  flex: 0 0 4px;
-  align-self: stretch;
-  min-height: 34px;
+  width: 3px;
+  height: 18px;
   background: var(--c-blue);
   border-radius: 999px;
+  display: inline-block;
 }
-.psec-hd__title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.psec-titletext {
   font-size: var(--fs-16);
   font-weight: var(--fw-bold);
-  color: var(--c-text-strong);
-  letter-spacing: -0.01em;
-}
-.psec-count {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 22px;
-  height: 20px;
-  padding: 0 7px;
-  border-radius: 999px;
-  background: var(--c-blue-soft);
-  color: var(--c-blue);
-  font-size: var(--fs-12);
-  font-weight: var(--fw-bold);
-  font-variant-numeric: tabular-nums;
-}
-.psec-hd__sub {
-  margin-top: 3px;
-  font-size: var(--fs-13);
-  color: var(--c-text-muted);
+  color: var(--c-text);
 }
 .psec-addbtn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  flex: 0 0 auto;
-  padding: 9px 15px;
+  padding: 8px 16px;
   background: var(--c-blue);
-  color: var(--c-surface);
-  border-radius: var(--r-md);
+  color: #fff;
+  border-radius: 4px;
   font-size: var(--fs-14);
-  font-weight: var(--fw-semibold);
-  white-space: nowrap;
+  font-weight: var(--fw-medium);
   transition: background 0.15s;
 }
 .psec-addbtn:hover {
-  background: var(--c-blue-hover);
-}
-
-/* 카드 프레임이 감싸므로 내부 테이블은 외곽선 제거 */
-.psec .table-grid {
-  border: 0;
-  border-radius: 0;
+  background: #3558c4;
 }
 
 /* table action buttons */
@@ -98,20 +56,20 @@
 .ptbl-del {
   display: inline-flex;
   padding: 6px;
-  border-radius: var(--r-sm);
+  border-radius: 4px;
   transition: background 0.15s;
 }
 .ptbl-edit {
   color: var(--c-blue);
 }
 .ptbl-edit:hover {
-  background: var(--c-blue-soft);
+  background: #e8edff;
 }
 .ptbl-del {
   color: var(--c-danger);
 }
 .ptbl-del:hover {
-  background: var(--c-danger-bg);
+  background: #ffeded;
 }
 
 /* ── 정산·회계 담당자 지정 ──────────────────────────────── */
@@ -136,9 +94,9 @@
 .psec-billnote {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin: 14px 20px;
-  padding: 10px 14px;
+  gap: 6px;
+  margin-bottom: 10px;
+  padding: 9px 14px;
   border-radius: var(--r-md);
   background: var(--c-blue-soft);
   border: 1px solid var(--c-user-border);
