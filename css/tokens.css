@@ -10,6 +10,7 @@
   --c-orange-soft: #fff1ec;   /* faint orange wash */
   --c-orange-hover: #d94e24;  /* primary CTA hover (order 08-brand) */
   --c-blue: #4169e1;          /* secondary / links / toggles */
+  --c-blue-hover: #3558c4;    /* blue button hover */
   --c-blue-soft: #f0f3fd;     /* selected row wash */
   --c-blue-soft-2: #eef1fd;
   --c-blue-sel: #f8f9ff;      /* selected list-row wash (order/invoice) */

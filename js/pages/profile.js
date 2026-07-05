@@ -55,21 +55,33 @@ export function mount(root, { nav }) {
         <div class="page-profile">
           ${pageTitle({ imgSrc: "./assets/nav-profile.png", title: "프로필 저장공간" })}
           <div class="profile-sections">
-            <div class="psec">
-              <div class="psec-title">
-                <div class="psec-title__l"><span class="psec-bar"></span><span class="psec-titletext">📋 발송인 프로필관리</span></div>
-                <button class="psec-addbtn" data-action="new-profile">${icon("user-plus", { size: 14 })} 신규 프로필 등록</button>
-              </div>
+            <section class="psec">
+              <header class="psec-hd">
+                <div class="psec-hd__l">
+                  <span class="psec-bar"></span>
+                  <div>
+                    <h3 class="psec-hd__title">발송인 프로필관리<span class="psec-count">${profiles.length}</span></h3>
+                    <p class="psec-hd__sub">화환 리본에 새길 '보내는분' 명의를 저장해 두고 주문 시 불러옵니다</p>
+                  </div>
+                </div>
+                <button class="psec-addbtn" data-action="new-profile">${icon("user-plus", { size: 15 })} 신규 프로필 등록</button>
+              </header>
               ${tableGrid({ columns: profileCols, rows: profiles, rowKey: (r) => r.no, compact: true })}
-            </div>
-            <div class="psec">
-              <div class="psec-title">
-                <div class="psec-title__l"><span class="psec-bar"></span><span class="psec-titletext">📋 담당자 저장공간</span></div>
-                <button class="psec-addbtn" data-action="new-contact">${icon("user-plus", { size: 14 })} 신규 담당자 등록</button>
-              </div>
-              <div class="psec-billnote">${icon("info", { size: 13 })}<span>거래명세서 발급·입금요청 <strong>알림톡</strong>은 정산·회계 담당자에게 발송됩니다 (1명 지정). ${billingSummary()}</span></div>
+            </section>
+            <section class="psec">
+              <header class="psec-hd">
+                <div class="psec-hd__l">
+                  <span class="psec-bar"></span>
+                  <div>
+                    <h3 class="psec-hd__title">담당자 저장공간<span class="psec-count">${contacts.length}</span></h3>
+                    <p class="psec-hd__sub">배송완료 · 정산 알림톡을 받을 담당자를 관리합니다</p>
+                  </div>
+                </div>
+                <button class="psec-addbtn" data-action="new-contact">${icon("user-plus", { size: 15 })} 신규 담당자 등록</button>
+              </header>
+              <div class="psec-billnote">${icon("info", { size: 14 })}<span>거래명세서 발급·입금요청 <strong>알림톡</strong>은 정산·회계 담당자에게 발송됩니다 (1명 지정). ${billingSummary()}</span></div>
               ${tableGrid({ columns: contactCols, rows: contacts, rowKey: (r) => r.no, compact: true })}
-            </div>
+            </section>
           </div>
         </div>
       `
