@@ -55,18 +55,7 @@
 .page-invoice .rm-hero .due { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--c-divider); font-size: 12.5px; color: var(--c-text-muted); }
 .page-invoice .rm-hero .due b { color: var(--c-danger-ink); font-weight: 600; }
 
-/* ③ 정산 프로세스 3스텝 (저대비 · 솔리드·그림자 금지) */
-.page-invoice .rm-flow { display: flex; align-items: center; padding: 14px 20px; border-bottom: 1px solid var(--c-divider); }
-.page-invoice .rm-node { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; }
-.page-invoice .rm-node .dot { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; line-height: 1; font-size: 11px; font-weight: 700; background: var(--c-surface); color: var(--c-text-faint); border: 1.5px solid var(--c-border); }
-.page-invoice .rm-node span { font-size: 11px; color: var(--c-text-muted); font-weight: 500; white-space: nowrap; }
-.page-invoice .rm-node.done .dot { border-color: var(--c-success-ink); color: var(--c-success-ink); }
-.page-invoice .rm-node.done span { color: var(--c-success-ink); }
-.page-invoice .rm-node.cur .dot { border-color: var(--c-orange); color: var(--c-orange-ink); }
-.page-invoice .rm-node.cur span { color: var(--c-orange-ink); font-weight: 700; }
-.page-invoice .rm-link { flex: 0 0 24px; height: 1px; background: var(--c-border); margin-bottom: 17px; }
-
-/* ④ 액션 (PDF 오렌지 · EXCEL 다크 · 열람링크 화이트) */
+/* ③ 액션 (PDF 오렌지 · EXCEL 다크 · 열람링크 화이트) */
 .page-invoice .rm-actions { padding: 16px 18px 6px; display: flex; flex-direction: column; gap: 9px; }
 .page-invoice .rm-actions__row { display: flex; gap: 9px; }
 .page-invoice .rm-actions__row .rm-btn { flex: 1; min-width: 0; }
@@ -79,7 +68,7 @@
 .page-invoice .rm-btn--dark:hover { background: var(--c-dark-hover); }
 .page-invoice .rm-btn__sub { font-weight: 400; color: var(--c-text-faint); font-size: 12px; }
 
-/* ⑤ 계산서 발급 동의 (조용한 섹션 · 워시·대시 보더 금지) */
+/* ④ 계산서 발급 동의 (조용한 섹션 · 워시·대시 보더 금지) */
 .page-invoice .rm-agree { margin: 14px 18px 16px; padding-top: 14px; border-top: 1px solid var(--c-divider); }
 .page-invoice .rm-agree p { font-size: 12px; color: var(--c-text-muted); line-height: 1.65; }
 .page-invoice .rm-agree p b { color: var(--c-text-2); font-weight: 600; }

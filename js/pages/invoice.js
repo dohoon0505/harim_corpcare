@@ -102,16 +102,7 @@ function markup() {
             <div class="due"><span>결제 · 정산 대금기한</span><b class="num" data-hero-due>—</b></div>
           </div>
 
-          <!-- ③ 정산 프로세스 3스텝 -->
-          <div class="rm-flow">
-            <div class="rm-node done"><span class="dot">✓</span><span>명세서 확인</span></div>
-            <div class="rm-link"></div>
-            <div class="rm-node cur" data-node-agree><span class="dot">2</span><span>계산서 동의</span></div>
-            <div class="rm-link"></div>
-            <div class="rm-node" data-node-pay><span class="dot">3</span><span>입금 완료</span></div>
-          </div>
-
-          <!-- ④ 액션 (PDF · EXCEL · 열람링크) · 아이콘 없음 -->
+          <!-- ③ 액션 (PDF · EXCEL · 열람링크) · 아이콘 없음 -->
           <div class="rm-actions">
             <div class="rm-actions__row">
               <button class="rm-btn rm-btn--primary" data-pdf>PDF 다운로드</button>
@@ -120,7 +111,7 @@ function markup() {
             <button class="rm-btn rm-btn--secondary" data-link>거래명세서 열람링크 <span class="rm-btn__sub">· 링크만으로 접속이 가능해요</span></button>
           </div>
 
-          <!-- ⑤ 계산서 발급 동의 (조용한 섹션) -->
+          <!-- ④ 계산서 발급 동의 (조용한 섹션) -->
           <div class="rm-agree" data-agree-wrap>
             <div class="pending">
               <p>명세서 내용을 확인한 뒤 동의하면 <b>위 금액으로 세금계산서가 발급</b>됩니다. 동의 후에는 내용을 변경할 수 없습니다.</p>
@@ -292,17 +283,13 @@ export function mount(root, { nav }) {
   }
 
   /* 계산서 발급 동의 적용 (재확인 모달에서 '동의하고 발급' 클릭 시 실행)
-     → 동의 섹션 완료 라인 + 프로세스 스텝(2 done → 3 cur) 전환 */
+     → 동의 섹션 완료 라인 전환 */
   function applyAgree() {
     if (state.agreed) return;
     state.agreed = true;
     el("[data-agree-wrap]").classList.add("done");
     const dt = new Date();
     el("[data-agree-date]").textContent = `${dt.getFullYear()}. ${pad2(dt.getMonth() + 1)}. ${pad2(dt.getDate())} 동의`;
-    const nodeAgree = el("[data-node-agree]"), nodePay = el("[data-node-pay]");
-    nodeAgree.className = "rm-node done";
-    nodeAgree.querySelector(".dot").textContent = "✓";
-    nodePay.className = "rm-node cur";
     toast("계산서 발급에 동의했습니다");
   }
 
