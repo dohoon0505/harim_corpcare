@@ -98,13 +98,13 @@ export function mount(root, { nav }) {
                     <div data-slot="error"></div>
 
                     <div class="auth-field">
-                      <label class="auth-field__label" for="login-id">아이디 / 사업자번호</label>
+                      <label class="auth-field__label" for="login-id">계열사 아이디</label>
                       <input
                         class="auth-field__input"
                         id="login-id"
                         name="id"
                         type="text"
-                        placeholder="아이디 또는 사업자번호를 입력해주세요"
+                        placeholder="계열사 아이디를 입력해주세요"
                         autocomplete="username"
                       />
                     </div>
