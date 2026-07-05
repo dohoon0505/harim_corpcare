@@ -16,7 +16,7 @@ import { sheetToXlsx } from "../util/xlsx.js";
    rows: [배송요청일시, 발송인, 배송지, 주문상품, 결제금액(숫자)] */
 const DB = {
   "2026-06": {
-    due: "2026년 07월 31일", issue: "2026년 07월 01일",
+    issue: "2026년 07월 01일",
     rows: [
       ["2026년 06월 30일", "채상운", "서울 종로구 대학로 101 서울대학교병원 장례식장 특2호실", "근조바구니(대체발송)", 65000],
       ["2026년 06월 30일", "최윤호", "인천 연수구 컨벤시아대로 165 송도컨벤시아 2층 프리미어볼룸", "꽃바구니(대체발송)", 80000],
@@ -81,7 +81,7 @@ const DB = {
     ],
   },
   "2026-04": {
-    due: "2026년 05월 31일", issue: "2026년 05월 01일",
+    issue: "2026년 05월 01일",
     rows: [
       ["2026년 04월 28일", "홍길동", "서울 관악구 신림동 산 56-1 65동 서울대학교 교수회관", "근조 3단화환 (기본)", 70000],
       ["2026년 04월 25일", "김태권", "서울 동산구 아에린로29 신정기념관내 로얄마크컨벤션 3층 포장홀", "축하 3단화환 (기본)", 70000],
@@ -94,7 +94,7 @@ const DB = {
     ],
   },
   "2026-03": {
-    due: "2026년 04월 30일", issue: "2026년 04월 01일",
+    issue: "2026년 04월 01일",
     rows: [
       ["2026년 03월 27일", "오임찬", "서울 서초구 반포대로 179 서울성모병원 장례식장", "근조 3단화환 (고급)", 100000],
       ["2026년 03월 19일", "한다운", "서울 송파구 올림픽로 319 웨딩시그니처 5층", "축하 3단화환 (기본)", 70000],
@@ -165,7 +165,6 @@ function markup() {
           <div class="rm-hero">
             <p class="lbl" data-hero-lbl></p>
             <p class="amt num" data-hero-amt>0원</p>
-            <div class="due"><span>결제 · 정산 대금기한</span><b class="num" data-hero-due>—</b></div>
           </div>
 
           <!-- ③ 액션 (PDF · EXCEL · 열람링크) · 아이콘 없음 -->
@@ -213,7 +212,7 @@ export function mount(root, { nav }) {
       ? data.rows.map((r) => ({ date: r[0], sender: r[1], address: r[2], product: r[3], amount: won(r[4]) }))
       : [{ date: "", sender: "", address: "해당 월의 거래 내역이 없습니다", product: "", amount: "" }];
     return {
-      _label: label, _due: data ? data.due : "—",
+      _label: label,
       title: `${state.year.slice(2)}년 ${state.month}월 거래명세서`,
       period: `${label} 귀속`,
       buyer: { ...BUYER, issueDate: data ? data.issue : "-" },
@@ -232,7 +231,6 @@ export function mount(root, { nav }) {
     el("[data-period-lbl]").textContent = d._label;
     el("[data-hero-lbl]").textContent = `${d._label} 결제금액`;
     el("[data-hero-amt]").textContent = d.total;
-    el("[data-hero-due]").textContent = d._due;
     ddYear.renderTrigger();
     ddMonth.renderTrigger();
   }
@@ -297,9 +295,8 @@ export function mount(root, { nav }) {
       push([{ v: "해당 월의 거래 내역이 없습니다", s: XS.empty }, bl(XS.empty), bl(XS.empty), bl(XS.empty), bl(XS.empty)]); mr("A", "E");
     }
     push([]);
-    /* 입금 · 기한 */
+    /* 입금 계좌 */
     foot("입금 계좌", ACCOUNT);
-    foot("결제 · 정산 대금기한", data ? data.due : "—");
 
     const cols = [18, 11, 46, 20, 14];
 
