@@ -57,6 +57,15 @@ const timePhase = (d) => {
 };
 const DOW = ["일", "월", "화", "수", "목", "금", "토"];
 const fmtYMD = (d) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+/* 영업시간(biz) 즉시배송 예상 슬롯: 접수시각 + 4시간(분 30분 단위 반올림), 마감(18:30) 초과 시 마감으로 클램프.
+   드롭다운·안내문구·확인화면이 모두 이 값을 공유한다. */
+const immBizSlot = () => {
+  const d = new Date(Date.now() + 4 * 36e5);
+  d.setMinutes(Math.round(d.getMinutes() / 30) * 30, 0, 0); // 60분이면 자동으로 다음 시로 넘어감
+  const closeT = BIZ.closeH * 60 + BIZ.closeM;
+  if (d.getHours() * 60 + d.getMinutes() > closeT) { d.setHours(BIZ.closeH); d.setMinutes(BIZ.closeM); }
+  return d;
+};
 
 const CHECK_SVG = `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12.5 10 17.5 19 7" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 const DONE_SVG = `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12.5 10 17.5 19 7" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
@@ -142,8 +151,8 @@ function markup() {
                 </div>
               </div>
               <div class="ofield">
-                <label>받는분 연락처</label>
-                <input type="text" data-f-tophone placeholder="010-0000-0000" inputmode="numeric" />
+                <label>받는분 연락처 <span class="opt-chip">선택</span></label>
+                <input type="text" data-f-tophone placeholder="010-0000-0000 (선택)" inputmode="numeric" />
               </div>
             </div>
           </div>
@@ -291,7 +300,7 @@ export function mount(root, { nav }) {
 
   const valid = {
     1: () => !!(state.occ && state.product),
-    2: () => !!(state.addr && state.toName && state.toPhone && (state.deliv !== "sched" || state.date) && (state.occ !== "wed" || state.side)),
+    2: () => !!(state.addr && state.toName && (state.deliv !== "sched" || state.date) && (state.occ !== "wed" || state.side)),
     3: () => !!(state.ribbon && state.sender),
   };
 
@@ -463,13 +472,20 @@ export function mount(root, { nav }) {
     renderDelivNote();
     refreshCtas();
   }
-  /* 즉시/익일 빠른배송 선택 시 날짜·시간 픽커를 실제 배송 슬롯으로 세팅:
-     영업 후(evening/night) → 익일 12:30 · 영업 전(beforeOpen) → 당일 12:30.
-     (영업시간 즉시배송은 '4시간 내'라 특정 시각을 지정하지 않는다.) */
+  /* 즉시/익일 빠른배송 선택 시 날짜·시간 픽커를 실제 배송 슬롯으로 동기화:
+     영업시간(biz) → 접수시각 + 4시간(분 30분 단위 반올림), 마감(18:30) 초과 시 마감으로 클램프.
+       예) 13:23 접수 → 17:30. · 영업 후(evening/night) → 익일 12:30 · 영업 전(beforeOpen) → 당일 12:30. */
   function applyImmSlot() {
     const ph = timePhase(new Date());
-    if (ph === "biz") return;
     const base = new Date();
+    if (ph === "biz") {
+      const slot = immBizSlot();
+      state.date = fmtYMD(slot);
+      state.hour = pad2(slot.getHours());
+      state.min = pad2(slot.getMinutes());
+      dpDate.renderTrigger(); ddHour.renderTrigger(); ddMin.renderTrigger();
+      return;
+    }
     if (ph === "evening" || ph === "night") base.setDate(base.getDate() + 1);
     state.date = fmtYMD(base);
     state.hour = "12";
@@ -484,7 +500,7 @@ export function mount(root, { nav }) {
     if (state.deliv === "imm") {
       if (ph === "evening" || ph === "night") lines = ["금일 영업시간이 종료되어 다음 날 오전에 배송됩니다."];
       else if (ph === "beforeOpen") lines = ["영업 시작(09:00) 후 순차 배송되어 오늘 낮 12시 30분경 배송돼요."];
-      else { const d = new Date(Date.now() + 4 * 36e5); lines = [`영업시간 내 접수 건은 4시간 이내(${pad2(d.getHours())}:${pad2(d.getMinutes())} 전)에 배송해 드려요.`]; }
+      else { const d = immBizSlot(); lines = [`영업시간 내 접수 건은 4시간 이내(오늘 ${pad2(d.getHours())}:${pad2(d.getMinutes())}경)에 배송해 드려요.`]; }
     } else if (state.deliv === "urgent") {
       lines = ["2시간 내 긴급하게 배송 요청 시 선택해주세요.", "최대 1만원의 비용이 추가로 발생합니다."]; tone = "warn";
     } else if (state.deliv === "night") {
@@ -499,7 +515,7 @@ export function mount(root, { nav }) {
     const ph = timePhase(new Date());
     $('[data-seg="imm"]').textContent = ph === "evening" || ph === "night" ? "익일 빠른배송" : "즉시배송";
     const urgentOk = ph === "biz";
-    const nightOk = ph === "biz" || ph === "evening";
+    const nightOk = ph === "evening"; // 야간배송은 영업 종료(18:30) 후 야간 시간대에만 신청 가능
     const ub = $('[data-seg="urgent"]'), nb = $('[data-seg="night"]');
     ub.disabled = !urgentOk; ub.title = urgentOk ? "" : "긴급배송은 09:00 ~ 18:30 에만 신청할 수 있어요";
     nb.disabled = !nightOk; nb.title = nightOk ? "" : "야간배송은 18:30 ~ 20:00 배송 건에 한해 신청할 수 있어요";
@@ -577,7 +593,7 @@ export function mount(root, { nav }) {
       return `익일 빠른배송 · ${t.getMonth() + 1}월 ${t.getDate()}일 (${DOW[t.getDay()]}) 12:30`;
     }
     if (ph === "beforeOpen") return "즉시배송 · 오늘 12:30";
-    return "즉시배송";
+    return `즉시배송 · 오늘 ${state.hour}:${state.min}`;
   }
   /* 주문 접수 재확인 모달 — '계산서 발급동의'와 동일 패턴(되돌릴 수 없어 한 번 더 확인). */
   let submitModal = null;
@@ -646,7 +662,7 @@ export function mount(root, { nav }) {
         <span class="cv">${state.addr}</span>
         <button class="edit" data-goto="2">변경</button></div>
       <div class="cf-row"><span class="cl">받는분</span>
-        <span class="cv">${state.toName}${state.occ === "wed" && state.side ? ` (${state.side})` : ""} · ${state.toPhone}</span>
+        <span class="cv">${state.toName}${state.occ === "wed" && state.side ? ` (${state.side})` : ""}${state.toPhone ? ` · ${state.toPhone}` : ""}</span>
         <button class="edit" data-goto="2">변경</button></div>
       <div class="cf-row"><span class="cl">배송 일시</span>
         <span class="cv">${dateLabel()}</span>
