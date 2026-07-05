@@ -14,7 +14,10 @@
 /* ── 레이아웃 ── */
 .page-invoice .cols { display: flex; gap: 20px; align-items: flex-start; }
 .page-invoice .doc { flex: 0 0 794px; width: 794px; }
-.page-invoice .a4-frame { border: 1px solid var(--c-border); border-radius: 4px; overflow: hidden; box-shadow: 0 1px 6px rgba(17, 17, 24, 0.06); width: 794px; background: var(--c-surface); }
+/* 멀티페이지: .a4-frame 은 투명 컨테이너, 카드 프레임은 각 .invoice-page 가 담당 */
+.page-invoice .a4-frame { width: 794px; }
+.page-invoice .invoice-page { border: 1px solid var(--c-border); border-radius: 4px; box-shadow: var(--sh-card); }
+.page-invoice .invoice-page + .invoice-page { margin-top: 24px; }
 /* ══ 우측 리모컨 (단일 통합 패널 · 섹션은 헤어라인 구분) ══════════
    ⚠ .remote 에 overflow:hidden 금지 — 드롭다운 패널이 잘려 먹통이 됨(시안 주석). */
 .page-invoice .remote { flex: 1; min-width: 300px; position: sticky; top: 24px; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: 14px; box-shadow: 0 4px 16px rgba(17, 17, 24, 0.07); }
