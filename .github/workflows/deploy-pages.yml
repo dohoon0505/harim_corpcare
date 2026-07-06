@@ -37,11 +37,11 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
       # 앱 런타임 파일만 공개 배포. 제외: mockups·screenshot·guidelines·제안서 PDF·
-      # PROMPT/PLAN 문서·serve.mjs·README 등 개발 산출물. 포함(필수): CNAME·.nojekyll·invoice/.
+      # PROMPT/PLAN 문서·serve.mjs·README 등 개발 산출물. 포함(필수): CNAME·.nojekyll·invoice/·delivery/.
       - name: Stage site (앱 파일만)
         run: |
           mkdir -p _site
-          cp -r index.html CNAME .nojekyll assets css js invoice mobile-order _site/
+          cp -r index.html CNAME .nojekyll assets css js invoice delivery mobile-order _site/
       - name: Upload site artifact (_site)
         uses: actions/upload-pages-artifact@v3
         with:
