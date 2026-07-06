@@ -43,13 +43,27 @@
     const dow = ["일", "월", "화", "수", "목", "금", "토"][dt.getDay()];
     return p[0] + "." + String(p[1]).padStart(2, "0") + "." + String(p[2]).padStart(2, "0") + " (" + dow + ")";
   }
+  // 배송 영업시간 09:00~18:30 · 시간대 구분: beforeOpen(~09) / biz(~18:30) / evening(~20:00) / night
+  function timePhase(d) {
+    const t = d.getHours() * 60 + d.getMinutes();
+    if (t < 9 * 60) return "beforeOpen";
+    if (t <= 18 * 60 + 30) return "biz";
+    if (t <= 20 * 60) return "evening";
+    return "night";
+  }
+  // 즉시배송 예상 슬롯 (PC order.js 와 동일 규칙):
+  //   영업시간 → 접수+4시간(분 30분 단위 반올림, 마감 18:30 클램프) · 영업 후 → 익일 12:30 · 영업 전 → 당일 12:30
   function computeInstantDelivery(base) {
     const now = base || new Date();
     const mins = now.getHours() * 60 + now.getMinutes();
     let target;
-    if (mins >= 18 * 60 + 30) target = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 12, 30);
+    if (mins > 18 * 60 + 30) target = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 12, 30);
     else if (mins < 9 * 60) target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 30);
-    else { target = new Date(now.getTime() + 3 * 60 * 60 * 1000); if (target.getMinutes() >= 30) target.setHours(target.getHours() + 1); target.setMinutes(0, 0, 0); }
+    else {
+      target = new Date(now.getTime() + 4 * 60 * 60 * 1000);
+      target.setMinutes(Math.round(target.getMinutes() / 30) * 30, 0, 0); // 60분이면 자동으로 다음 시로 넘어감
+      if (target.getHours() * 60 + target.getMinutes() > 18 * 60 + 30) { target.setHours(18); target.setMinutes(30, 0, 0); }
+    }
     return { date: fmtDate(target), time: String(target.getHours()).padStart(2, "0") + ":" + String(target.getMinutes()).padStart(2, "0") };
   }
   function parseISOToDateTime(iso) {
@@ -778,7 +792,7 @@
 
   // ---------- ORDER ----------
   function buildOrderScreen() {
-    const form = { product: S.orderSeed || "", deliveryDate: "", deliveryTime: "", address: "", recipient: "", sender: "", message: "" };
+    const form = { product: S.orderSeed || "", deliv: "sched", deliveryDate: "", deliveryTime: "", address: "", recipient: "", sender: "", message: "" };
     const fields = [
       { id: "product", label: "상품 분류 및 이름", hint: "100% 생화 근조화환(기본)", icon: I.Tag },
       { id: "address", label: "보내는 장소(상세주소)", hint: "서울 중랑구 신내로 156 서울의료원 장례식장 105호실", icon: I.Pin, multiline: true },
@@ -801,7 +815,8 @@
       toastTimer = setTimeout(() => { toastHost.innerHTML = ""; }, dur || 2200);
     }
 
-    function dtDone() { return !!(form.deliveryDate && form.deliveryTime); }
+    // 긴급·야간배송은 특정 슬롯 없이 모드 선택만으로 완료 처리
+    function dtDone() { return form.deliv === "urgent" || form.deliv === "night" || !!(form.deliveryDate && form.deliveryTime); }
     function countDone() { return fields.filter((f) => form[f.id].trim().length > 0).length + (dtDone() ? 1 : 0); }
 
     // 진행바
@@ -816,18 +831,74 @@
       doneText.textContent = done + "/" + total;
     }
 
-    // datetime field
+    // ── 희망 배송일시: PC order.js 4-세그먼트(날짜·시간 지정/즉시배송/긴급배송/야간배송) 이식 ──
+    const DSEG = [
+      { m: "sched", label: "날짜 · 시간 지정" },
+      { m: "imm", label: "즉시배송" },
+      { m: "urgent", label: "긴급배송" },
+      { m: "night", label: "야간배송" },
+    ];
     const dtFieldContainer = el("div");
-    const dtValSpan = el("span");
-    function renderDtField() {
-      dtFieldContainer.className = "field selectable " + (dtDone() ? "done" : "");
-      dtValSpan.className = "field-val " + (!dtDone() ? "placeholder" : "");
-      dtValSpan.textContent = dtDone() ? (formatDateKR(form.deliveryDate) + " · " + form.deliveryTime) : "달력에서 배송 날짜와 시간을 선택하세요";
+    const segBtns = {};
+    const segRow = el("div", { class: "dt-seg" });
+    DSEG.forEach((s) => { const b = el("button", { type: "button", class: "dt-seg-btn", onClick: () => setDeliv(s.m) }, s.label); segBtns[s.m] = b; segRow.appendChild(b); });
+    const dtBody = el("div", { class: "dt-body" });
+    const dtNote = el("div", { class: "dt-note" });
+
+    function setDeliv(mode) {
+      if (segBtns[mode] && segBtns[mode].disabled) return;
+      form.deliv = mode;
+      if (mode === "imm") {
+        const d = computeInstantDelivery();
+        form.deliveryDate = d.date; form.deliveryTime = d.time;
+        showToast("즉시배송 일시로 설정했어요 · " + formatDateKR(d.date) + " " + d.time);
+      } else if (mode === "urgent" || mode === "night") {
+        form.deliveryDate = ""; form.deliveryTime = "";
+      }
+      renderDtField(); recompute();
     }
-    dtFieldContainer.appendChild(el("div", { class: "field-label" },
-      el("span", { class: "lbl" }, el("span", { class: "stepno" }, "1"), " 희망 배송일시"),
-      el("button", { type: "button", class: "field-guide-btn", onClick: () => { const d = computeInstantDelivery(); form.deliveryDate = d.date; form.deliveryTime = d.time; renderDtField(); recompute(); showToast("즉시배송 일시로 설정했어요 · " + formatDateKR(d.date) + " " + d.time); } }, I.Truck({ size: 12, strokeWidth: 2.2 }), " 즉시배송")));
-    dtFieldContainer.appendChild(el("button", { type: "button", class: "field-trigger", onClick: () => openDateTimePicker(form.deliveryDate, form.deliveryTime, (r) => { form.deliveryDate = r.date; form.deliveryTime = r.time; renderDtField(); recompute(); showToast("배송일시가 선택되었어요", 1800); }) }, dtValSpan));
+
+    function renderDtField() {
+      const ph = timePhase(new Date());
+      const urgentOk = ph === "biz", nightOk = ph === "evening";
+      // 현재 선택이 시간대상 불가한 모드면 '날짜·시간 지정'으로 복귀 (긴급=영업시간만 · 야간=18:30~20:00만)
+      if ((form.deliv === "urgent" && !urgentOk) || (form.deliv === "night" && !nightOk)) form.deliv = "sched";
+      segBtns.imm.textContent = (ph === "evening" || ph === "night") ? "익일 빠른배송" : "즉시배송";
+      DSEG.forEach((s) => segBtns[s.m].classList.toggle("sel", form.deliv === s.m));
+      segBtns.urgent.disabled = !urgentOk;
+      segBtns.night.disabled = !nightOk;
+
+      dtBody.innerHTML = "";
+      if (form.deliv === "sched") {
+        const done = !!(form.deliveryDate && form.deliveryTime);
+        const val = el("span", { class: "field-val " + (done ? "" : "placeholder") }, done ? (formatDateKR(form.deliveryDate) + " · " + form.deliveryTime) : "달력에서 배송 날짜와 시간을 선택하세요");
+        dtBody.appendChild(el("button", { type: "button", class: "field-trigger dt-trigger", onClick: () => openDateTimePicker(form.deliveryDate, form.deliveryTime, (r) => { form.deliveryDate = r.date; form.deliveryTime = r.time; renderDtField(); recompute(); showToast("배송일시가 선택되었어요", 1800); }) }, val, I.Arrow({ size: 16 })));
+      } else if (form.deliv === "imm") {
+        const lbl = (ph === "evening" || ph === "night") ? "익일 빠른배송" : "즉시배송";
+        dtBody.appendChild(el("div", { class: "dt-mode" }, el("b", null, lbl), el("span", null, formatDateKR(form.deliveryDate) + " · " + form.deliveryTime)));
+      } else if (form.deliv === "urgent") {
+        dtBody.appendChild(el("div", { class: "dt-mode" }, el("b", null, "긴급배송"), el("span", null, "2시간 내 배송")));
+      } else if (form.deliv === "night") {
+        dtBody.appendChild(el("div", { class: "dt-mode" }, el("b", null, "야간배송"), el("span", null, "18:30 ~ 20:00 배송")));
+      }
+
+      let noteText = "", warn = false;
+      if (form.deliv === "imm") {
+        if (ph === "evening" || ph === "night") noteText = "금일 영업시간이 종료되어 다음 날 낮 12시 30분경 배송됩니다.";
+        else if (ph === "beforeOpen") noteText = "영업 시작(09:00) 후 순차 배송되어 오늘 낮 12시 30분경 배송돼요.";
+        else noteText = "영업시간 내 접수 건은 4시간 이내(오늘 " + computeInstantDelivery().time + "경)에 배송해 드려요.";
+      } else if (form.deliv === "urgent") { noteText = "2시간 내 긴급 배송이 필요할 때 선택하세요. 최대 1만원의 비용이 추가로 발생합니다."; warn = true; }
+      else if (form.deliv === "night") { noteText = "18:30 이후 야간 배송이 필요할 때 선택하세요. 화훼 농가·배송 인프라 확인 후 가능 유무를 안내드립니다."; warn = true; }
+      dtNote.className = "dt-note" + (noteText ? " show" : "") + (warn ? " warn" : "");
+      dtNote.textContent = noteText;
+
+      dtFieldContainer.className = "field dt-field " + (dtDone() ? "done" : "");
+    }
+
+    dtFieldContainer.appendChild(el("div", { class: "field-label" }, el("span", { class: "lbl" }, el("span", { class: "stepno" }, "1"), " 희망 배송일시")));
+    dtFieldContainer.appendChild(segRow);
+    dtFieldContainer.appendChild(dtBody);
+    dtFieldContainer.appendChild(dtNote);
     renderDtField();
 
     // 일반 필드 빌더
@@ -909,8 +980,8 @@
     function handleIntake(type, data) {
       if (data && data.deliveryAddress) setFieldValue("address", String(data.deliveryAddress).trim());
       if (data && data.recipient) setFieldValue("recipient", String(data.recipient).trim());
-      if (type === "obituary") { const dt = computeInstantDelivery(); form.deliveryDate = dt.date; form.deliveryTime = dt.time; }
-      else { const dt = parseISOToDateTime(data && data.ceremonyDateTime); if (dt) { form.deliveryDate = dt.date; if (dt.time) form.deliveryTime = dt.time; } }
+      if (type === "obituary") { form.deliv = "imm"; const dt = computeInstantDelivery(); form.deliveryDate = dt.date; form.deliveryTime = dt.time; }
+      else { form.deliv = "sched"; const dt = parseISOToDateTime(data && data.ceremonyDateTime); if (dt) { form.deliveryDate = dt.date; if (dt.time) form.deliveryTime = dt.time; } }
       renderDtField(); recompute();
       openProductPicker("tab4", (label) => { setFieldValue("product", label); showToast("상품이 선택되었어요", 1800); }, { groupKey: type === "obituary" ? "condol" : "congrat" });
       showToast(type === "obituary" ? "부고장 정보를 불러왔어요 · 근조화환을 선택해주세요" : "청첩장 정보를 불러왔어요 · 축하화환을 선택해주세요", 3000);
@@ -924,14 +995,10 @@
     root.appendChild(progressWrap);
     root.appendChild(el("div", { style: { padding: "8px 20px 0", display: "flex", justifyContent: "space-between", fontSize: "12px", color: "var(--sm-content-tertiary)" } }, el("span", null, "입력 진행"), doneText));
     root.appendChild(formEl);
-    // 긴급·야간배송 안내: 영업시간 외(18:30~09:00)에만 노출 (정상 영업 09:00~18:30 에는 숨김)
-    const noticeNow = new Date();
-    const noticeMins = noticeNow.getHours() * 60 + noticeNow.getMinutes();
-    const bizOpen = noticeMins >= 9 * 60 && noticeMins < 18 * 60 + 30;
+    // 긴급·야간배송은 '희망 배송일시' 세그먼트에서 직접 선택 (영업시간 게이팅 적용)
     root.appendChild(el("div", { class: "notice" },
       el("h5", null, "NOTICE"), el("h6", null, "주문 시 꼭 확인해주세요"),
       el("ul", null,
-        bizOpen ? false : el("li", null, "긴급·야간배송 시 우선 신청을 해주시고, 전화문의를 통해 가능유무를 확인 부탁드립니다."),
         el("li", null, "배송완료 이후에 사진을 발송해 드려요."),
         el("li", null, "18:30 이후 주문은 익일 오전 중 배송돼요."),
         el("li", null, "일부 지역에서 배송비가 발생할 수 있어요."),

@@ -859,6 +859,38 @@ ul { list-style: none; padding: 0; margin: 0; }
 }
 .field-trigger > svg { flex-shrink: 0; }
 
+/* ── 배송일시 4-세그먼트 (PC order.js 이식: 날짜·시간 지정/즉시배송/긴급배송/야간배송) ── */
+.dt-field .field-label { margin-bottom: 10px; }
+.dt-seg { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.dt-seg-btn {
+  padding: 11px 10px;
+  border-radius: var(--radius-md);
+  font-size: 14px; font-weight: 600; letter-spacing: -0.01em;
+  color: var(--sm-content-secondary);
+  background: var(--sm-background-subtle);
+  border: 1px solid var(--sm-border-subtle);
+  transition: all var(--motion-fast) var(--ease-standard);
+}
+.dt-seg-btn:hover:not(:disabled):not(.sel) { background: var(--sm-background-muted); }
+.dt-seg-btn.sel { background: var(--p-neutral-90); color: var(--p-neutral-0); border-color: var(--p-neutral-90); }
+.dt-seg-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.dt-body { margin-top: 12px; }
+.dt-trigger { padding: 2px 0; }
+.dt-mode { display: flex; align-items: baseline; gap: 8px; font-size: 16px; letter-spacing: -0.015em; }
+.dt-mode b { font-weight: 700; color: var(--sm-content-primary); }
+.dt-mode span { font-weight: 500; color: var(--sm-content-secondary); }
+.dt-note {
+  display: none;
+  margin-top: 12px;
+  font-size: 13px; line-height: 1.5;
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  color: var(--sm-content-secondary);
+  background: var(--sm-background-subtle);
+}
+.dt-note.show { display: block; }
+.dt-note.warn { color: var(--sm-content-primary); background: var(--sm-status-warning-subtle); border-left: 3px solid var(--sm-status-warning); }
+
 /* ────── DateTime picker (배송일시) ────── */
 .cal-head {
   display: flex; align-items: center; justify-content: space-between;
