@@ -10,7 +10,6 @@
      recipient  받는분 (주문 시 지정)
      sender     보내는분 (리본문구)
      receiver   경조화환 수령자 (현장 인수자)
-     via        수령 방식/관계      예) 본인 수령 · 경비실 대리수령
      photo      현장 배송 사진 URL (http/https 만 허용)
 
    값은 전부 textContent 로 주입 → URL 을 통한 HTML/스크립트 주입(XSS) 불가.
@@ -22,10 +21,9 @@
     order: "20260706-0342",
     date: "2026년 07월 06일 14:30",
     place: "서울특별시 강남구 테헤란로 152, 강남파이낸스센터 3층 대회의실",
-    recipient: "김도훈 부장",
+    recipient: "공훈 부장",
     sender: "(주)하림지주 임직원 일동",
     receiver: "박상준",
-    via: "경비실 대리수령",
     photo: "",
   };
 
@@ -36,10 +34,6 @@
     if (v != null) v = v.trim();
     return v ? v : SAMPLE[key] || "";
   }
-  function rawParam(key) {
-    var v = params.get(key);
-    return v != null ? v.trim() : "";
-  }
   function setText(id, text) {
     var el = document.getElementById(id);
     if (el) el.textContent = text;
@@ -49,10 +43,10 @@
     return n.length < 2 ? "0" + n : n;
   }
 
-  /* 헤드라인: 받는 분을 부른다. 존칭/직위/단체 접미사는 '님께' 중복을 피한다. */
+  /* 헤드라인: 받는 분을 부른다. 이미 존칭/단체 접미사가 붙은 경우만 '께', 그 외(직위 포함)는 '님께'. */
   function headlineFor(r) {
     if (!r || r.length > 12) return "화환 배송을 완료했습니다";
-    var tail = /(님|귀하|유가족|일동|가족|드림|님들|부장|과장|차장|대리|사원|사장|대표|이사|팀장|실장|본부장)$/.test(r)
+    var tail = /(님|귀하|유가족|일동|가족|드림|님들)$/.test(r)
       ? "께 화환을 전달했습니다"
       : "님께 화환을 전달했습니다";
     return r + tail;
@@ -88,14 +82,6 @@
   setText("v-sender", val("sender"));
   setText("receiver-name", receiver);
   setText("seal-date", compactDate(val("date")));
-
-  // 수령 방식/관계 (있을 때만 노출, 없으면 태그 제거)
-  var via = rawParam("via") || SAMPLE.via;
-  var viaEl = document.getElementById("receiver-via");
-  if (viaEl) {
-    if (via) viaEl.textContent = "현장 수령 · " + via;
-    else viaEl.remove();
-  }
 
   // 현장 배송 사진 (외부 URL 이 안전할 때만 교체)
   var photo = safePhoto(params.get("photo"));
