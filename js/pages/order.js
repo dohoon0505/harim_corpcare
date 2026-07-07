@@ -7,6 +7,11 @@
 import { html, raw, setHTML, on, qs, qsa } from "../dom.js";
 import { store, ALL_PRODUCTS, productKey } from "../store.js";
 import { pageTitle, makeDropdown, makeDatepicker, simpleModal } from "../ui.js";
+import { deliveryFeeFor } from "../data/delivery-fees.js";
+
+/* 금액 문자열("70,000원") ↔ 숫자 — 배송지 추가 배송비 합산용 */
+const parseWon = (s) => Number(String(s).replace(/[^0-9]/g, "")) || 0;
+const won = (n) => Number(n).toLocaleString("ko-KR") + "원";
 
 /* ── 경조사 정의 (배너 · 카테고리 · 링크 안내문구) ───────────── */
 const OCC = {
@@ -137,6 +142,7 @@ function markup() {
             <div class="ofield">
               <label>배송지 주소 <span class="auto-chip" data-auto-chip>링크에서 자동입력</span></label>
               <input type="text" data-f-addr placeholder="장례식장 · 예식장 주소를 입력해 주세요" />
+              <p class="deliv-fee-note" data-deliv-fee></p>
             </div>
             <div class="grid2">
               <div class="ofield">
@@ -385,6 +391,7 @@ export function mount(root, { nav }) {
         $("[data-f-toname]").value = d.toName;
         $("[data-f-tophone]").value = d.toPhone;
         $("[data-auto-chip]").classList.add("show");
+        renderDelivFeeNote();
         /* 상품 미선택 시 표준 3단화환 기본 선택(데모) */
         if (!state.product) { state.product = occProducts(occ)[0] || null; renderProducts(); }
         msg.className = "url-msg ok";
@@ -611,7 +618,7 @@ export function mount(root, { nav }) {
       }
     }
     const body = html`
-      <div class="hm-info"><span><b>${state.product.product}</b> · <b class="num">${state.product.price}</b>으로 주문을 접수합니다. 접수 후에는 리본문구·보내는분을 수정할 수 없어요.</span></div>
+      <div class="hm-info"><span><b>${state.product.product}</b> · <b class="num">${won(parseWon(state.product.price) + deliveryFeeFor(state.addr).fee)}</b>으로 주문을 접수합니다. 접수 후에는 리본문구·보내는분을 수정할 수 없어요.</span></div>
     `;
     const footer = html`
       <button class="hm-btn hm-btn--secondary" data-action="close">취소</button>
@@ -651,16 +658,36 @@ export function mount(root, { nav }) {
     redirectTimer = setTimeout(() => { cancelRedirect(); nav("#/app/orders"); }, REDIRECT_SEC * 1000);
   }
 
+  /* 배송지에 따른 추가 배송비 안내(STEP2). 해당 지역이면 노출, 아니면 숨김. */
+  function renderDelivFeeNote() {
+    const el = $("[data-deliv-fee]");
+    if (!el) return;
+    const { fee, region } = deliveryFeeFor(state.addr);
+    if (fee > 0) {
+      el.textContent = `${region} 지역은 추가 배송비 +${won(fee)}이 적용돼요.`;
+      el.classList.add("show");
+    } else {
+      el.textContent = "";
+      el.classList.remove("show");
+    }
+  }
+
   function renderConfirm() {
     const p = state.product;
     if (!p) return; // 상품 미선택 방어(경조사 전환 후 탭 점프 등 비정상 경로)
+    const df = deliveryFeeFor(state.addr); // 배송지 추가 배송비
     setHTML($("[data-cf-list]"), html`
       <div class="cf-row"><span class="cl">선택상품</span>
-        <span class="cv">${p.product}</span>
+        <span class="cv">${p.product} <b class="num">${p.price}</b></span>
         <button class="edit" data-goto="1">변경</button></div>
       <div class="cf-row"><span class="cl">배송지</span>
         <span class="cv">${state.addr}</span>
         <button class="edit" data-goto="2">변경</button></div>
+      ${df.fee > 0
+        ? html`<div class="cf-row"><span class="cl">추가 배송비</span>
+            <span class="cv"><b class="num">+${won(df.fee)}</b> · ${df.region} 지역</span>
+            <button class="edit" data-goto="2">변경</button></div>`
+        : ""}
       <div class="cf-row"><span class="cl">받는분</span>
         <span class="cv">${state.toName}${state.occ === "wed" && state.side ? ` (${state.side})` : ""}${state.toPhone ? ` · ${state.toPhone}` : ""}</span>
         <button class="edit" data-goto="2">변경</button></div>
@@ -674,7 +701,7 @@ export function mount(root, { nav }) {
         <span class="cv">${state.sender}</span>
         <button class="edit" data-goto="3">변경</button></div>
     `);
-    $("[data-cf-amount]").textContent = p.price;
+    $("[data-cf-amount]").textContent = won(parseWon(p.price) + df.fee);
   }
   function submit() {
     const contacts = store.get().contacts;
@@ -684,7 +711,7 @@ export function mount(root, { nav }) {
       <div class="cf-row"><span class="cl">리본 문구</span><span class="cv">${state.ribbon}</span></div>
       <div class="cf-row"><span class="cl">배송</span><span class="cv">${dateLabel()}<small>${state.addr}</small></span></div>
       <div class="cf-row"><span class="cl">담당자</span><span class="cv">${c.name} (${c.phone})</span></div>
-      <div class="cf-row"><span class="cl">결제 금액</span><span class="cv num done-amount">${state.product.price}</span></div>
+      <div class="cf-row"><span class="cl">결제 금액</span><span class="cv num done-amount">${won(parseWon(state.product.price) + deliveryFeeFor(state.addr).fee)}</span></div>
     `);
     $$("[data-panel]").forEach((p) => p.classList.remove("on"));
     $('[data-panel="done"]').classList.add("on");
@@ -737,6 +764,7 @@ export function mount(root, { nav }) {
   bind("input", "[data-f-addr]", (e, t) => {
     state.addr = t.value.trim();
     if (state.viaUrl) { state.viaUrl = false; $("[data-auto-chip]").classList.remove("show"); }
+    renderDelivFeeNote();
     refreshCtas();
   });
   bind("input", "[data-f-toname]", (e, t) => { state.toName = t.value.trim(); refreshCtas(); });
