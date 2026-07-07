@@ -238,7 +238,7 @@ function markup() {
           <h2 class="q">작성하신 내용을 확인해 주세요</h2>
           <p class="q-sub">잘못된 부분이 있다면 각 항목에서 바로 고칠 수 있어요.</p>
           <div class="confirm-list" data-cf-list></div>
-          <div class="cf-amount"><span>결제 금액</span><b class="num" data-cf-amount>0원</b></div>
+          <div class="cf-amount" data-cf-pay></div>
           <div class="opt-box">
             <div class="opt-row">
               <div class="ol">주문 담당자<small>주문 처리 상황을 안내받을 담당자예요</small></div>
@@ -678,16 +678,11 @@ export function mount(root, { nav }) {
     const df = deliveryFeeFor(state.addr); // 배송지 추가 배송비
     setHTML($("[data-cf-list]"), html`
       <div class="cf-row"><span class="cl">선택상품</span>
-        <span class="cv">${p.product} <b class="num">${p.price}</b></span>
+        <span class="cv">${p.product}</span>
         <button class="edit" data-goto="1">변경</button></div>
       <div class="cf-row"><span class="cl">배송지</span>
         <span class="cv">${state.addr}</span>
         <button class="edit" data-goto="2">변경</button></div>
-      ${df.fee > 0
-        ? html`<div class="cf-row"><span class="cl">추가 배송비</span>
-            <span class="cv"><b class="num">+${won(df.fee)}</b> · ${df.region} 지역</span>
-            <button class="edit" data-goto="2">변경</button></div>`
-        : ""}
       <div class="cf-row"><span class="cl">받는분</span>
         <span class="cv">${state.toName}${state.occ === "wed" && state.side ? ` (${state.side})` : ""}${state.toPhone ? ` · ${state.toPhone}` : ""}</span>
         <button class="edit" data-goto="2">변경</button></div>
@@ -701,7 +696,17 @@ export function mount(root, { nav }) {
         <span class="cv">${state.sender}</span>
         <button class="edit" data-goto="3">변경</button></div>
     `);
-    $("[data-cf-amount]").textContent = won(parseWon(p.price) + df.fee);
+    /* 결제 금액: 추가 배송비가 있으면 상품/배송비 내역을 함께 표기 */
+    const total = parseWon(p.price) + df.fee;
+    setHTML($("[data-cf-pay]"), html`
+      ${df.fee > 0
+        ? html`<div class="cf-brk">
+            <div class="cf-brk__row"><span class="k">상품 금액</span><span class="v num">${p.price}</span></div>
+            <div class="cf-brk__row"><span class="k">추가 배송비 <em>${df.region} 지역</em></span><span class="v num">+${won(df.fee)}</span></div>
+          </div>`
+        : ""}
+      <div class="cf-amount__total"><span>결제 금액</span><b class="num">${won(total)}</b></div>
+    `);
   }
   function submit() {
     const contacts = store.get().contacts;

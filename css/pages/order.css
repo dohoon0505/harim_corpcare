@@ -226,9 +226,16 @@
 .page-order .cf-row .cv small { display: block; font-size: 12.5px; color: var(--c-text-muted); font-weight: 400; }
 .page-order .cf-row .edit { flex: 0 0 auto; font-size: 13px; font-weight: 600; color: var(--c-blue); padding: 4px 8px; border-radius: var(--r-md); }
 .page-order .cf-row .edit:hover { background: var(--c-blue-soft); }
-.page-order .cf-amount { display: flex; align-items: center; justify-content: space-between; padding: 24px 4px 4px; }
-.page-order .cf-amount span { font-size: 15px; color: var(--c-text-muted); }
-.page-order .cf-amount b { font-size: 26px; font-weight: 700; color: var(--c-orange-ink); letter-spacing: -0.02em; }
+.page-order .cf-amount { padding: 20px 4px 4px; }
+/* 결제 금액 내역(상품 금액 / 추가 배송비) — 추가 배송비가 있을 때만 노출 */
+.page-order .cf-brk { display: flex; flex-direction: column; gap: 10px; padding-bottom: 16px; margin-bottom: 16px; border-bottom: 1px dashed var(--c-border); }
+.page-order .cf-brk__row { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
+.page-order .cf-brk__row .k { font-size: 14px; color: var(--c-text-muted); }
+.page-order .cf-brk__row .k em { font-style: normal; font-size: 12.5px; color: var(--c-text-4); margin-left: 3px; }
+.page-order .cf-brk__row .v { font-size: 15px; font-weight: 600; color: var(--c-text-2); }
+.page-order .cf-amount__total { display: flex; align-items: center; justify-content: space-between; }
+.page-order .cf-amount__total span { font-size: 15px; color: var(--c-text-muted); }
+.page-order .cf-amount__total b { font-size: 26px; font-weight: 700; color: var(--c-orange-ink); letter-spacing: -0.02em; }
 
 /* 담당자 · 알림 */
 .page-order .opt-box { margin-top: 36px; background: var(--c-surface-2); border: 1px solid var(--c-border); border-radius: var(--r-xl); padding: 20px 24px; }
