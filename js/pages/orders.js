@@ -96,7 +96,7 @@ export function mount(root, { nav }) {
     { label: "배송요청일시", width: "148px", render: (r) => r.date },
     { label: "배송요청주소", render: (r) => html`<div class="orders-trunc">${r.address}</div>` },
     { label: "발송 프로필", width: "120px", render: (r) => html`<div class="orders-trunc">${r.sender}</div>` },
-    { label: "주문상품", width: "140px", render: (r) => r.product },
+    { label: "주문상품", width: "140px", render: (r) => html`<div class="orders-trunc">${r.product}</div>` },
     { label: "결제금액", width: "96px", align: "right", render: (r) => r.amount },
     {
       label: "주문현황", width: "94px", align: "center",
