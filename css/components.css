@@ -385,9 +385,23 @@
   pointer-events: none;
 }
 .msplit__media--btn:hover .msplit__zoomhint,
-.msplit__media--btn:focus-visible .msplit__zoomhint {
+.msplit__media--btn:focus-visible .msplit__zoomhint,
+.pcar:hover .msplit__zoomhint,
+.pcar__track:focus-visible ~ .msplit__zoomhint {
   opacity: 1;
 }
+
+/* ── 샘플 사진 캐러셀(.pcar) — .msplit__media(2:3) 안에서 슬라이드 ── */
+.pcar__track { display: flex; width: 100%; height: 100%; transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); cursor: zoom-in; }
+.pcar__slide { position: relative; flex: 0 0 100%; width: 100%; height: 100%; }
+.pcar__slide img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.pcar__ctrl { position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); z-index: 3; display: flex; align-items: center; gap: 4px; padding: 4px 6px; border-radius: 999px; background: rgba(17, 17, 17, 0.58); }
+.pcar__nav { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 999px; color: #fff; font-size: 18px; line-height: 1; transition: background 0.15s; }
+.pcar__nav:hover { background: rgba(255, 255, 255, 0.22); }
+.pcar__count { color: #fff; font-size: var(--fs-12); font-variant-numeric: tabular-nums; min-width: 42px; text-align: center; }
+.pcar__count b { font-weight: 700; }
+/* 캐러셀일 때 확대 힌트는 상단으로(하단 컨트롤과 겹침 방지) */
+.pcar--multi .msplit__zoomhint { top: 10px; bottom: auto; }
 .msplit__body {
   flex: 1;
   min-width: 0;

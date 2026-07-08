@@ -2,24 +2,26 @@
    products.js — ports ProductGuide.tsx (상품 규격 안내)
    상품 상시 노출 + 샘플 사진 모달. (즐겨찾기/저장·카테고리 필터 없음)
    ============================================================ */
-import { html, setHTML, on } from "../dom.js";
+import { html, setHTML, on, qs } from "../dom.js";
 import { icon } from "../icons.js";
 import { ALL_PRODUCTS, productKey } from "../store.js";
 import { pageTitle, tableGrid, openModal, openLightbox } from "../ui.js";
 
-/* 상품 샘플 사진은 2:3 세로형 규격으로 관리한다. */
-const SAMPLE_IMG = {
-  funeral: "https://images.unsplash.com/photo-1728080568516-28156ceae0ea?auto=format&fit=crop&w=720&h=1080&q=80",
-  orchid: "https://images.unsplash.com/photo-1577378978713-9bebf3db8312?auto=format&fit=crop&w=720&h=1080&q=80",
-  bouquet: "https://images.unsplash.com/photo-1641430262389-93bbbd2dd754?auto=format&fit=crop&w=720&h=1080&q=80",
+/* 상품별 샘플 사진(2:3 세로형) — assets/ 실제 배송 이미지.
+   상품명(고유) → 파일명 배열. 2장 이상이면 모달에서 캐러셀(5초 자동 슬라이드 + ‹›). */
+const SAMPLE_IMAGES = {
+  "축하 3단화환 (기본)": ["축하_기본_예시.png"],
+  "축하 3단화환 (고급)": ["축하_고급_예시.png"],
+  "근조 3단화환 (기본)": ["근조_기본_예시_2.jpg"],
+  "근조 3단화환 (고급)": ["근조_고급_예시.jpg", "근조_고급_예시5.jpg"],
+  "오브제(대체발송)": ["오브제_예시.jpg", "오브제_예시_3.jpg"],
+  "스탠드(대체발송)": ["스탠드_예시_2.jpg"],
+  "10KG 쌀화환(대체발송)": ["쌀화환_예시.jpg", "쌀화환_예시_2.jpg", "쌀화환_예시_3.jpg", "쌀에-리본.png", "쌀화환 청주.jpg", "쌀화환-울산.jpg", "거창쌀화환.jpg", "옥천쌀화환.jpg"],
+  "근조바구니(대체발송)": ["근조바구니_예시.png"],
+  "꽃바구니(대체발송)": ["꽃바구니_예시.jpg"],
 };
-const sampleImages = {
-  축하화환: SAMPLE_IMG.bouquet,
-  근조화환: SAMPLE_IMG.funeral,
-  특수화환: SAMPLE_IMG.orchid,
-  근조바구니: SAMPLE_IMG.funeral,
-  꽃바구니: SAMPLE_IMG.bouquet,
-};
+/* 파일명 → 안전한 URL(공백·한글 인코딩). 매핑 없으면 빈 배열. */
+const sampleUrls = (productName) => (SAMPLE_IMAGES[productName] || []).map((f) => encodeURI("./assets/" + f));
 
 /* 지역별 · 상품(대체발송) 반입가이드 — [시·도, [ [지역·장소, 오브제, 근조바구니, 쌀화환, 상세안내], ... ]] */
 const INTAKE_GUIDE = [
@@ -165,15 +167,27 @@ export function mount(root, { nav }) {
 
   function openSample(product) {
     closeModal();
-    const imgUrl = sampleImages[product.category];
-    /* 세로형(2:3) 샘플 사진을 좌측 고정 배치, 상품 정보는 우측 —
-       사진을 자르지 않고 보여주면서 모달 세로 길이를 사진 높이로 고정한다. */
+    const imgs = sampleUrls(product.product);
+    const multi = imgs.length > 1;
+    let idx = 0;
+    let timer = null;
+    /* 세로형(2:3) 샘플 사진 캐러셀을 좌측 고정 배치, 상품 정보는 우측.
+       2장 이상이면 하단 ‹›·매수 표기 + 5초 주기 자동 슬라이드(우→좌). */
     const body = html`
       <div class="msplit">
-        <button class="msplit__media msplit__media--btn" data-action="zoom" aria-label="샘플 사진 크게 보기">
-          <img src="${imgUrl}" alt="${product.product} 샘플 사진" />
+        <div class="msplit__media pcar ${multi ? "pcar--multi" : ""}">
+          <div class="pcar__track" data-action="zoom" role="button" tabindex="0" aria-label="샘플 사진 크게 보기">
+            ${imgs.map((u, i) => html`<div class="pcar__slide"><img src="${u}" alt="${product.product} 샘플 사진 ${i + 1}" /></div>`)}
+          </div>
           <span class="msplit__zoomhint">${icon("search", { size: 12 })}크게 보기</span>
-        </button>
+          ${multi
+            ? html`<div class="pcar__ctrl">
+                <button class="pcar__nav" data-action="prev" aria-label="이전 사진">‹</button>
+                <span class="pcar__count"><b data-pcar-cur>1</b> / ${imgs.length}</span>
+                <button class="pcar__nav" data-action="next" aria-label="다음 사진">›</button>
+              </div>`
+            : ""}
+        </div>
         <div class="msplit__body">
           <div class="hm__head">
             <div><p class="hm-eyebrow">${product.category}</p><h3>${product.product}</h3></div>
@@ -190,11 +204,24 @@ export function mount(root, { nav }) {
         </div>
       </div>
     `;
-    activeModal = openModal({ panelClass: "modal-panel--split", body, onClose: () => {} });
+    activeModal = openModal({ panelClass: "modal-panel--split", body, onClose: () => { if (timer) clearInterval(timer); } });
+    const track = qs(activeModal.panel, ".pcar__track");
+    const curEl = qs(activeModal.panel, "[data-pcar-cur]");
+    const show = (i) => {
+      idx = (i + imgs.length) % imgs.length;
+      if (track) track.style.transform = `translateX(-${idx * 100}%)`;
+      if (curEl) curEl.textContent = String(idx + 1);
+    };
+    const autoplay = () => { if (timer) clearInterval(timer); if (multi) timer = setInterval(() => show(idx + 1), 5000); };
+    autoplay();
     on(activeModal.panel, "click", "[data-action='close']", () => closeModal());
     on(activeModal.panel, "click", "[data-action='zoom']", () =>
-      openLightbox({ src: imgUrl, alt: `${product.product} 샘플 사진`, caption: `${product.product} — ${product.price}` })
+      openLightbox({ src: imgs[idx], alt: `${product.product} 샘플 사진`, caption: `${product.product} — ${product.price}` })
     );
+    if (multi) {
+      on(activeModal.panel, "click", "[data-action='prev']", () => { show(idx - 1); autoplay(); });
+      on(activeModal.panel, "click", "[data-action='next']", () => { show(idx + 1); autoplay(); });
+    }
   }
 
   render();
