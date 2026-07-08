@@ -193,7 +193,7 @@ function markup() {
               </div>
             </div>
             <div class="imm-note" data-imm-note></div>
-            <p class="dt-info" data-dt-info>배송 시간은 <b>09:00 ~ 18:30</b> 사이에서 지정할 수 있어요 · <b>오전 11시 이전</b> 접수 건은 당일 배송할 수 있어요</p>
+            <p class="dt-info" data-dt-info>배송 시간은 <b>09:00 ~ 18:30</b> 사이에서 지정할 수 있어요</p>
           </div>
           <div class="cta-row">
             <button class="btn-back" data-goto="1">이전</button>
