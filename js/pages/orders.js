@@ -1,7 +1,7 @@
 /* ============================================================
    orders.js — ports RealTimeOrders.tsx (실시간 주문처리 내역)
    ============================================================ */
-import { html, raw, setHTML, on, qs, qsa } from "../dom.js";
+import { html, raw, setHTML, on, qs } from "../dom.js";
 import { icon } from "../icons.js";
 import { pageTitle, tableGrid, openModal, openLightbox } from "../ui.js";
 import { getDateRange, parseOrderDate, formatDateLabel } from "../util/date.js";
@@ -75,28 +75,6 @@ const searchDefs = [
   { key: "address", label: "주소지 검색", placeholder: "주소지를 입력해주세요" },
 ];
 
-/* ── 클레임 접수 (경조사화환 운영 클레임 대응·보상 정책) ─────────
-   유형별 희망 보상(options): 선택지가 2개 이상이면 접수 시 선택받는다. */
-const CLAIM_TYPES = [
-  { key: "배송 오류 (주소지·일시)", policy: "재배송 가능 시 즉시 무상 재배송, 불가 시 대금 100% 환불 + 보상 상품 제공", options: ["즉시 무상 재배송", "대금 100% 환불 + 보상 상품"] },
-  { key: "배송 누락 (미배송)", policy: "재배송 가능 시 즉시 무상 재배송, 불가 시 대금 100% 환불 + 보상 상품 제공", options: ["즉시 무상 재배송", "대금 100% 환불 + 보상 상품"] },
-  { key: "2시간 이상 배송지연 (사전 안내 없음)", policy: "대금 100% 환불 및 상품 무상 제공", options: ["대금 100% 환불 + 상품 무상 제공"] },
-  { key: "재사용·시든 꽃 사용", policy: "대금 100% 환불 + 피해보상금 100% 지급(총 200% 보상) + 신품 생화 상품 2시간 내 무상교환", note: "배송완료 1시간 내 접수 건에 한합니다.", options: ["대금 200% 보상 (환불 + 피해보상금)", "신품 생화 2시간 내 무상교환", "200% 보상 + 무상교환 모두"] },
-  { key: "상품 품질 수준 미달", policy: "표준 사양 대비 수준 미달 시 접수 2시간 내 무상교환", options: ["2시간 내 무상교환"] },
-  { key: "리본 문구 오작성", policy: "2시간 내 리본 무상 교체", options: ["2시간 내 리본 무상 교체"] },
-  { key: "기타 제반사항", policy: "주문자의 요구사항에 따라 환불 또는 충분한 보상 제공", options: ["대금 환불", "보상 상품 제공", "담당자 협의 후 결정"] },
-];
-const claimStatusStyle = {
-  "접수완료": { color: "#757575", bg: "#f5f5f5" },
-  "처리중": { color: "#4169e1", bg: "#eef0ff" },
-  "처리완료": { color: "#2e7d32", bg: "#e8f5e9" },
-};
-const initialClaims = [
-  { id: "CL-20260707-01", date: "2026/07/07 11:20", type: "상품 품질 수준 미달", desired: "2시간 내 무상교환", status: "처리완료", note: "국화 신선도 미달로 신품 교환 완료 (부산 고신대복음병원)" },
-  { id: "CL-20260704-01", date: "2026/07/04 16:05", type: "리본 문구 오작성", desired: "2시간 내 리본 무상 교체", status: "처리중", note: "보내는분 명의 오기입 (울산 롯데호텔 스탠드)" },
-  { id: "CL-20260703-01", date: "2026/07/03 10:50", type: "배송 오류 (주소지·일시)", desired: "즉시 무상 재배송", status: "접수완료", note: "호실 오배송 → 재배송 요청 (광주 조선대병원 오브제)" },
-];
-
 export function mount(root, { nav }) {
   const state = {
     activeStatus: "all",
@@ -106,7 +84,6 @@ export function mount(root, { nav }) {
   };
   let activeModal = null;
   const closeModal = () => { if (activeModal) { activeModal.close(); activeModal = null; } };
-  const claims = initialClaims.map((c) => ({ ...c })); // 접수 시 상단에 unshift
 
   function filtered() {
     const [rangeStart, rangeEnd] = getDateRange(state.activeDateFilter);
@@ -148,20 +125,6 @@ export function mount(root, { nav }) {
   }
   function countBody() {
     return html`총 <strong>${filtered().length}</strong>건`;
-  }
-
-  const claimCols = [
-    { label: "접수일시", width: "150px", render: (r) => html`<span class="num">${r.date}</span>` },
-    { label: "클레임 유형", width: "230px", render: (r) => html`<div class="orders-trunc">${r.type}</div>` },
-    { label: "희망 보상", render: (r) => html`<div class="orders-trunc">${r.desired}</div>` },
-    { label: "상세", render: (r) => html`<div class="orders-trunc">${r.note || "—"}</div>` },
-    {
-      label: "처리결과", width: "100px", align: "center",
-      render: (r) => { const s = claimStatusStyle[r.status] ?? { color: "#555", bg: "#f5f5f5" }; return html`<span class="orders-badge" style="color:${s.color};background:${s.bg}">${r.status}</span>`; },
-    },
-  ];
-  function claimBody() {
-    return tableGrid({ columns: claimCols, rows: claims, rowKey: (r) => r.id, compact: true });
   }
 
   function render() {
@@ -244,21 +207,6 @@ export function mount(root, { nav }) {
             <div class="orders-count" data-slot="count">${countBody()}</div>
 
             <div class="orders-table" data-slot="table">${tableBody()}</div>
-
-            <!-- 클레임 접수 -->
-            <section class="claims-sec">
-              <div class="claims-head">
-                <div class="claims-head__l">
-                  <span class="claims-bar"></span>
-                  <div>
-                    <h2 class="claims-title">클레임 접수</h2>
-                    <p class="claims-sub">배송·상품 관련 클레임을 접수하고 처리 현황을 확인하세요</p>
-                  </div>
-                </div>
-                <button class="claims-newbtn" data-action="new-claim">＋ 클레임 접수</button>
-              </div>
-              <div class="claims-table" data-slot="claims">${claimBody()}</div>
-            </section>
           </div>
         </div>
       `
@@ -323,86 +271,12 @@ export function mount(root, { nav }) {
     );
   }
 
-  /* ── 클레임 접수 모달 (유형 선택 → 유형별 희망 보상 선택 → 접수) ── */
-  function openClaimModal() {
-    closeModal();
-    const form = { typeIdx: null, option: null, note: "" };
-    const valid = () => form.typeIdx != null && !!form.option;
-    function compBody() {
-      if (form.typeIdx == null) return html`<p class="hm-help">클레임 유형을 먼저 선택하면 보상 옵션이 표시됩니다.</p>`;
-      const c = CLAIM_TYPES[form.typeIdx];
-      return html`
-        ${c.note ? html`<div class="hm-info"><span>${c.note}</span></div>` : ""}
-        <div class="claim-comps">
-          ${c.options.map((opt) => html`<label class="hm-radio ${form.option === opt ? "is-sel" : ""}">
-              <input type="radio" name="claim-comp" value="${opt}" ${form.option === opt ? "checked" : ""} data-claim-comp />
-              <div><p class="hm-radio__t">${opt}</p></div>
-            </label>`)}
-        </div>
-      `;
-    }
-    const body = html`
-      <div class="hm__head">
-        <div><p class="hm-eyebrow">클레임 접수</p><h3>배송·상품 클레임 접수</h3></div>
-        <button class="hm__x" data-action="close" aria-label="닫기">${icon("x", { size: 14 })}</button>
-      </div>
-      <div class="hm__body claim-form">
-        <div class="hm-section">클레임 유형</div>
-        <div class="claim-types">
-          ${CLAIM_TYPES.map((c, i) => html`<label class="hm-radio ${form.typeIdx === i ? "is-sel" : ""}">
-              <input type="radio" name="claim-type" value="${i}" ${form.typeIdx === i ? "checked" : ""} data-claim-type />
-              <div><p class="hm-radio__t">${c.key}</p><p class="hm-radio__d">${c.policy}</p></div>
-            </label>`)}
-        </div>
-        <div class="hm-section claim-sec2">희망 보상</div>
-        <div data-slot="comp">${compBody()}</div>
-        <div class="hm-section claim-sec2">상세 내용 <span class="claim-opt">선택</span></div>
-        <textarea class="textarea claim-note" data-claim-note rows="3" placeholder="상황을 간단히 적어주세요 (예: 3호실 오배송, 리본 명의 오기입 등)"></textarea>
-      </div>
-      <div class="hm__foot">
-        <button class="hm-btn hm-btn--secondary" data-action="close">취소</button>
-        <button class="hm-btn hm-btn--primary" data-action="submit-claim" disabled>클레임 접수하기</button>
-      </div>
-    `;
-    activeModal = openModal({ panelClass: "modal-panel--claim", body, onClose: () => {} });
-    const panel = activeModal.panel;
-    const refreshComp = () => { const s = qs(panel, "[data-slot='comp']"); if (s) setHTML(s, compBody()); };
-    const refreshSubmit = () => { const b = qs(panel, "[data-action='submit-claim']"); if (b) b.disabled = !valid(); };
-    on(panel, "click", "[data-action='close']", () => closeModal());
-    on(panel, "change", "[data-claim-type]", (e, t) => {
-      form.typeIdx = Number(t.value);
-      const opts = CLAIM_TYPES[form.typeIdx].options;
-      form.option = opts.length === 1 ? opts[0] : null; // 단일 옵션은 자동 선택
-      qsa(panel, ".claim-types .hm-radio").forEach((el, i) => el.classList.toggle("is-sel", i === form.typeIdx));
-      refreshComp(); refreshSubmit();
-    });
-    on(panel, "change", "[data-claim-comp]", (e, t) => {
-      form.option = t.value;
-      qsa(panel, ".claim-comps .hm-radio").forEach((el) => el.classList.toggle("is-sel", el.querySelector("input").value === t.value));
-      refreshSubmit();
-    });
-    on(panel, "input", "[data-claim-note]", (e, t) => { form.note = t.value.trim(); });
-    on(panel, "click", "[data-action='submit-claim']", () => {
-      if (!valid()) return;
-      const now = new Date();
-      const p2 = (n) => String(n).padStart(2, "0");
-      const ymd = `${now.getFullYear()}${p2(now.getMonth() + 1)}${p2(now.getDate())}`;
-      const date = `${now.getFullYear()}/${p2(now.getMonth() + 1)}/${p2(now.getDate())} ${p2(now.getHours())}:${p2(now.getMinutes())}`;
-      const sameDay = claims.filter((c) => c.id.startsWith(`CL-${ymd}`)).length + 1;
-      claims.unshift({ id: `CL-${ymd}-${p2(sameDay)}`, date, type: CLAIM_TYPES[form.typeIdx].key, desired: form.option, status: "접수완료", note: form.note || "—" });
-      const slot = qs(root, "[data-slot='claims']");
-      if (slot) setHTML(slot, claimBody());
-      closeModal();
-    });
-  }
-
   render();
 
   const offClick = on(root, "click", "[data-action]", (e, t) => {
     const a = t.dataset.action;
     if (a === "status") { state.activeStatus = t.dataset.v; render(); }
     else if (a === "date") { state.activeDateFilter = t.dataset.v; render(); }
-    else if (a === "new-claim") { openClaimModal(); }
     else if (a === "detail") {
       const o = orderData.find((x) => String(x.id) === t.dataset.id);
       if (o) openDetail(o);
