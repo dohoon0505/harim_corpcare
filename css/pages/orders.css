@@ -244,3 +244,19 @@
 .orders-photo.no:hover {
   background: var(--c-divider);
 }
+
+/* ── 클레임 접수 섹션 ─────────────────────────────────────── */
+.page-orders .claims-sec { margin-top: 44px; }
+.page-orders .claims-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
+.page-orders .claims-head__l { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.page-orders .claims-bar { flex: 0 0 4px; align-self: stretch; min-height: 34px; background: var(--c-orange); border-radius: 999px; }
+.page-orders .claims-title { font-size: 18px; font-weight: var(--fw-bold); color: var(--c-text-strong); letter-spacing: -0.01em; }
+.page-orders .claims-sub { margin-top: 2px; font-size: 13px; color: var(--c-text-muted); }
+.page-orders .claims-newbtn { display: inline-flex; align-items: center; gap: 6px; flex: 0 0 auto; padding: 10px 16px; background: var(--c-orange); color: #fff; border-radius: var(--r-md); font-size: var(--fs-14); font-weight: var(--fw-semibold); box-shadow: var(--sh-btn); transition: background 0.15s; }
+.page-orders .claims-newbtn:hover { background: var(--c-orange-hover); }
+
+/* ── 클레임 접수 모달(모달은 body 포털 → 전역 선택자) ── */
+.modal-panel--claim { width: 620px; }
+.claim-form .claim-types, .claim-form .claim-comps { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+.claim-form .claim-opt { font-size: 12px; font-weight: var(--fw-medium); color: var(--c-text-muted); }
+.claim-form .claim-note { width: 100%; margin-top: 4px; }
