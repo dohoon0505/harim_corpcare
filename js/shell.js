@@ -44,6 +44,30 @@ const ADMIN_MENU = [
 let shellEl = null; // <div class="shell">
 let offClick = null;
 let currentVariant = null;
+let deadlineTimer = null;
+
+/* 당일배송 마감(18:30) 안내 — login.js auth__deadline 과 동일 규격.
+   영업시간(09:00~18:30) 내엔 마감 카운트다운, 그 외엔 마감 안내. */
+function deadlineInfo() {
+  const now = new Date();
+  const t = now.getHours() * 60 + now.getMinutes();
+  const OPEN = 9 * 60, CLOSE = 18 * 60 + 30;
+  if (t >= OPEN && t < CLOSE) {
+    const r = CLOSE - t;
+    const h = Math.floor(r / 60), m = r % 60;
+    return { open: true, body: html`당일배송 마감까지 <b>${h > 0 ? `${h}시간 ${m}분` : `${m}분`}</b>` };
+  }
+  return { open: false, body: html`당일배송이 마감되었습니다` };
+}
+function renderDeadline() {
+  if (!shellEl) return;
+  const badge = qs(shellEl, ".badge--deadline");
+  if (!badge) return; // 관리자 콘솔엔 미표시
+  const info = deadlineInfo();
+  badge.classList.toggle("is-closed", !info.open);
+  setHTML(qs(badge, "[data-deadline-text]"), info.body);
+}
+function stopDeadlineTimer() { if (deadlineTimer) { clearInterval(deadlineTimer); deadlineTimer = null; } }
 
 function buildShell(variant = "enterprise") {
   const menu = variant === "admin" ? ADMIN_MENU : MENU;
@@ -65,6 +89,9 @@ function buildShell(variant = "enterprise") {
             <img src="./assets/company.png" alt="" />
             <span>${brand.company}</span>
           </div>
+          ${variant === "admin"
+            ? ""
+            : html`<div class="badge badge--deadline"><span class="badge__dot"></span><span data-deadline-text></span></div>`}
         </div>
       </header>
 
@@ -118,10 +145,12 @@ function buildShell(variant = "enterprise") {
 export function mountShell(appRoot, variant = "enterprise") {
   if (!shellEl || !appRoot.contains(shellEl) || currentVariant !== variant) {
     if (offClick) { offClick(); offClick = null; }
+    stopDeadlineTimer();
     appRoot.innerHTML = "";
     shellEl = buildShell(variant);
     currentVariant = variant;
     appRoot.appendChild(shellEl);
+    if (variant !== "admin") { renderDeadline(); deadlineTimer = setInterval(renderDeadline, 60000); }
   }
   return qs(shellEl, ".shell__main");
 }
@@ -131,6 +160,7 @@ export function unmountShell() {
     offClick();
     offClick = null;
   }
+  stopDeadlineTimer();
   shellEl = null;
   currentVariant = null;
 }

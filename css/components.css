@@ -26,6 +26,34 @@
   font-weight: var(--fw-medium);
   color: var(--c-company-text);
 }
+/* 당일배송 마감 안내 배지(회사 배지 우측, 동일 스타일) */
+.badge--deadline {
+  gap: 7px;
+  background: var(--c-company-bg);
+  border: 1px solid var(--c-company-border);
+}
+.badge--deadline .badge__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--c-success-ink);
+  flex-shrink: 0;
+}
+.badge--deadline.is-closed .badge__dot {
+  background: var(--c-text-4);
+}
+.badge--deadline [data-deadline-text] {
+  font-size: var(--fs-14);
+  font-weight: var(--fw-medium);
+  color: var(--c-company-text);
+}
+.badge--deadline [data-deadline-text] b {
+  font-weight: var(--fw-semibold);
+  color: var(--c-orange-ink);
+}
+.badge--deadline.is-closed [data-deadline-text] {
+  color: var(--c-text-muted);
+}
 
 /* ── Buttons ────────────────────────────────────────────── */
 .btn {
