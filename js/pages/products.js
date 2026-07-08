@@ -10,15 +10,15 @@ import { pageTitle, tableGrid, openModal, openLightbox } from "../ui.js";
 /* 상품별 샘플 사진(2:3 세로형) — assets/ 실제 배송 이미지.
    상품명(고유) → 파일명 배열. 2장 이상이면 모달에서 캐러셀(5초 자동 슬라이드 + ‹›). */
 const SAMPLE_IMAGES = {
-  "축하 3단화환 (기본)": ["축하_기본_예시.png"],
-  "축하 3단화환 (고급)": ["축하_고급_예시.png"],
-  "근조 3단화환 (기본)": ["근조_기본_예시_2.jpg"],
-  "근조 3단화환 (고급)": ["근조_고급_예시.jpg", "근조_고급_예시5.jpg"],
-  "오브제(대체발송)": ["오브제_예시.jpg", "오브제_예시_3.jpg"],
-  "스탠드(대체발송)": ["스탠드_예시_2.jpg"],
-  "10KG 쌀화환(대체발송)": ["쌀화환_예시.jpg", "쌀화환_예시_2.jpg", "쌀화환_예시_3.jpg", "쌀에-리본.png", "쌀화환 청주.jpg", "쌀화환-울산.jpg", "거창쌀화환.jpg", "옥천쌀화환.jpg"],
-  "근조바구니(대체발송)": ["근조바구니_예시.png"],
-  "꽃바구니(대체발송)": ["꽃바구니_예시.jpg"],
+  "축하 3단화환 (기본)": ["prod-chuka-basic-1.png"],
+  "축하 3단화환 (고급)": ["prod-chuka-premium-1.png"],
+  "근조 3단화환 (기본)": ["prod-geunjo-basic-1.jpg"],
+  "근조 3단화환 (고급)": ["prod-geunjo-premium-1.jpg", "prod-geunjo-premium-2.jpg"],
+  "오브제(대체발송)": ["prod-obje-1.jpg", "prod-obje-2.jpg", "prod-obje-3.jpg", "prod-obje-4.jpg", "prod-obje-5.jpg"],
+  "스탠드(대체발송)": ["prod-stand-1.jpg", "prod-stand-2.jpg", "prod-stand-3.jpg", "prod-stand-4.jpg"],
+  "10KG 쌀화환(대체발송)": ["prod-ssal-1.jpg", "prod-ssal-2.jpg", "prod-ssal-3.jpg", "prod-ssal-4.png", "prod-ssal-5.jpg", "prod-ssal-6.jpg", "prod-ssal-7.jpg", "prod-ssal-8.jpg"],
+  "근조바구니(대체발송)": ["prod-basket-1.png", "prod-basket-2.jpg", "prod-basket-3.jpg", "prod-basket-4.jpg"],
+  "꽃바구니(대체발송)": ["prod-flower-1.jpg"],
 };
 /* 파일명 → 안전한 URL(공백·한글 인코딩). 매핑 없으면 빈 배열. */
 const sampleUrls = (productName) => (SAMPLE_IMAGES[productName] || []).map((f) => encodeURI("./assets/" + f));
